@@ -245,8 +245,8 @@ begin
     'acertos', v_acertos, 'total', v_n, 'estado', public.sabedoria_estado());
 end $$;
 
--- Estado completo da pessoa numa só chamada (as respostas viram um objeto, sem limite de linhas da API).
-create or replace function public.sabedoria_estado() returns jsonb language sql stable security definer set search_path = '' as $$
+-- Estado completo da pessoa numa só chamada (lida com a RLS de quem chama; sem limite de linhas da API).
+create or replace function public.sabedoria_estado() returns jsonb language sql stable security invoker set search_path = '' as $$
   select jsonb_build_object(
     'linha', (select to_jsonb(s) - 'usuario_id' from public.sabedoria s where s.usuario_id = (select auth.uid())),
     'respostas', coalesce((select jsonb_agg(jsonb_build_object('pergunta_id', r.pergunta_id, 'acertos', r.acertos, 'erros', r.erros, 'ultima_em', r.ultima_em, 'secao', r.secao))
@@ -260,3 +260,7 @@ grant execute on function public.sabedoria_registrar_rodada(uuid, text, text, da
 revoke all on function public.sabedoria_estado() from public, anon;
 grant execute on function public.sabedoria_estado() to authenticated;
 revoke all on function privado.sabedoria_nivel(int) from public, anon, authenticated;
+
+-- Carga inicial (06/11/2026): as 1.087 perguntas de app/quiz/*.json foram inseridas com origem = 'app'
+-- (lidas do repositório público com a extensão http, removida em seguida). Para recarregar depois de
+-- rodar ferramentas/quiz/gerar.js, use o mesmo insert ... on conflict (id) do update.

@@ -152,8 +152,14 @@
 - **RLS:** cada pessoa só lê as próprias linhas. Não há política de inserção, alteração ou exclusão, e esses privilégios foram revogados de `anon` e `authenticated`.
 - **Quem calcula e grava:**
   - `public.sabedoria_registrar_rodada(p_id, p_modo, p_especial, p_dia, p_respostas)` (SECURITY DEFINER, `search_path` vazio, só `authenticated`) valida as respostas com o gabarito do servidor, calcula pontos, bônus, dias seguidos, nível e medalhas, e grava tudo.
-  - `public.sabedoria_estado()` devolve o estado completo numa chamada.
+  - `public.sabedoria_estado()` (SECURITY INVOKER, respeita a RLS) devolve o estado completo numa chamada.
 - **Pelo aplicativo, a pessoa não consegue** mudar pontos, nível ou medalhas, nem registrar perguntas inventadas.
+- **Conferido no banco real em 06/11/2026** (usuário temporário, transação desfeita):
+  - 10 acertos inéditos = 150 pontos (+100, +30, +20), subida para Discípulo e medalhas Primeiro Passo e Mente Atenta;
+  - a mesma rodada repetida = 50 pontos (sem os +10);
+  - pergunta inventada recusada;
+  - `update` em `sabedoria` e `insert` em `sabedoria_eventos` negados.
+- **Carga inicial:** as 1.087 perguntas foram inseridas com `origem = 'app'`.
 
 ## Sem conta e na prévia
 - O aparelho calcula com as mesmas regras e guarda em `sabedoria`.

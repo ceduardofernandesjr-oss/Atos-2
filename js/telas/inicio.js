@@ -80,9 +80,9 @@
     tela.appendChild(secao('Descubra mais'));
     tela.appendChild(descubra(diaN));
 
-    // ---------------------------------------------------------------- Sua jornada
-    tela.appendChild(secao('Sua jornada', 'Ver perfil', function () { App.ir('perfil'); }));
-    tela.appendChild(cardJornada(hoje, seq, q));
+    // ---------------------------------------------------------------- Minha jornada (resumo; o painel completo fica no Perfil)
+    tela.appendChild(secao('Minha jornada', 'Ver tudo', function () { App.ir('jornada'); }));
+    tela.appendChild(Telas.jornada.cartaoResumo());
 
     App.aoMudar(function (c) { if (c === 'planos' || c === 'leitura' || c === '*') App.atualizar(); });
     App.aoSair(Dados.ouvirConteudo(function (nome) { if (App.estado.aba === 'inicio' && (nome === 'reflexoes' || nome === 'devocionais')) App.atualizar(); }));
@@ -183,39 +183,8 @@
     }));
   }
 
-  function sequencia() {
-    var dias = diasAtivos(), n = 0, d = UI.hoje();
-    if (!dias[d]) d = A2Planos.addDias(d, -1);
-    while (dias[d]) { n++; d = A2Planos.addDias(d, -1); }
-    return n;
-  }
-  function diasAtivos() {
-    var dias = {};
-    Dados.todos('historico').forEach(function (m) { (m.itens || []).forEach(function (x) { if (x.tipo === 'leitura' || x.tipo === 'devocional' || x.tipo === 'plano') dias[x.em.slice(0, 10)] = 1; }); });
-    return dias;
-  }
+  function sequencia() { return A2Jornada.sequencia(Telas.jornada.eventos(), UI.hoje()); }
   function estatQuiz() { return Object.assign({ jogos: 0, pontos: 0, desafios: {} }, Dados.obter('quiz', 'estatisticas') || {}); }
-  function cardJornada(hoje, seq, q) {
-    var dias = diasAtivos(), lidos = Object.keys((Dados.obter('leitura', 'capitulos') || {}).lidos || {}).length;
-    var semana = h('div.semana', { 'aria-label': 'Atividade dos últimos 7 dias' });
-    for (var i = 6; i >= 0; i--) {
-      var d = A2Planos.addDias(hoje, -i), feito = !!dias[d], nome = new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
-      semana.appendChild(h('div.dia' + (feito ? '.feito' : '') + (i === 0 ? '.hoje' : ''), { title: UI.dataCurta(d) + (feito ? ': com leitura' : ': sem leitura') },
-        h('span.bolinha', feito ? '✓' : ''), h('small', nome.charAt(0).toUpperCase() + nome.slice(1, 3))));
-    }
-    function num(valor, rotulo, icone) { return h('div.jornada-num', ico(icone), h('b', valor), h('small', rotulo)); }
-    return h('section.jornada',
-      h('div.jornada-topo', h('div.jornada-seq', h('b', String(seq)), h('span', seq === 1 ? 'dia seguido' : 'dias seguidos')), semana),
-      h('div.jornada-bible', h('div.jornada-bible-txt', h('span', 'Bíblia lida'), h('b', UI.pct(lidos / 1189 * 100))),
-        h('div.barra', { role: 'progressbar', 'aria-label': 'Capítulos lidos da Bíblia', 'aria-valuenow': lidos, 'aria-valuemin': 0, 'aria-valuemax': 1189 }, h('i', { style: { width: (lidos / 1189 * 100) + '%' } })),
-        h('small', lidos + ' de 1.189 capítulos')),
-      h('div.jornada-nums',
-        num(String(Dados.todos('favoritos').length), 'favoritos', 'coracao'),
-        num(String(Dados.todos('artes').length), 'artes', 'pincel'),
-        num(String(q.pontos || 0), 'pontos no quiz', 'estrela'),
-        num(String(Dados.todos('devLidos').length), 'devocionais', 'luz')));
-  }
-
   function planoEmDestaque() {
     var ativos = Dados.todos('planos').sort(function (a, b) { return (b._t || 0) - (a._t || 0); });
     var ativo = ativos.filter(function (p) { return p.status === 'ativo'; })[0] || ativos[0];

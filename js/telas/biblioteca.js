@@ -227,7 +227,7 @@
     meses.forEach(function (m) { itens = itens.concat(m.itens || []); });
     itens.sort(function (a, b) { return b.em.localeCompare(a.em); });
     var tipo = App.estado.tipoHist || '';
-    var TIPOS = { leitura: ['livro', 'Leitura'], versiculo: ['sol', 'Versículo do dia'], devocional: ['luz', 'Devocional'], plano: ['planos', 'Plano'], busca: ['busca', 'Pesquisa'], arte: ['pincel', 'Arte'], estudo: ['nota', 'Estudo'], quiz: ['estrela', 'Quiz'] };
+    var TIPOS = { capitulo: ['ok', 'Capítulo concluído'], leitura: ['livro', 'Capítulo aberto'], versiculo: ['sol', 'Versículo do dia'], devocional: ['luz', 'Devocional'], plano: ['planos', 'Plano'], busca: ['busca', 'Pesquisa'], arte: ['pincel', 'Arte'], estudo: ['nota', 'Estudo'], quiz: ['estrela', 'Quiz'] };
     area.appendChild(h('div.chips', h('button.chip', { 'aria-pressed': String(!tipo), on: { click: function () { App.estado.tipoHist = ''; App.recarregar(); } } }, 'Tudo'),
       Object.keys(TIPOS).map(function (t) { return h('button.chip', { 'aria-pressed': String(tipo === t), on: { click: function () { App.estado.tipoHist = t; App.recarregar(); } } }, TIPOS[t][1]); })));
     itens = itens.filter(function (x) { return !tipo || x.tipo === tipo; }).slice(0, 300);
@@ -242,7 +242,7 @@
     area.appendChild(lista);
   }
   function abrirHist(x) {
-    if (x.tipo === 'leitura' || x.tipo === 'versiculo') { var r = Biblia.interpretar(x.ref || ''); if (r.ok) App.abrirBiblia(r.ref.livro, r.ref.cap, r.ref.v1); }
+    if (x.tipo === 'leitura' || x.tipo === 'versiculo' || x.tipo === 'capitulo') { var r = Biblia.interpretar(x.ref || ''); if (r.ok) App.abrirBiblia(r.ref.livro, r.ref.cap, r.ref.v1); }
     else if (x.tipo === 'busca') Telas.pesquisa.abrir(x.titulo);
     else if (x.tipo === 'devocional' && x.id) Telas.devocionais.abrir(x.id);
     else if (x.tipo === 'arte') { App.estado.secaoCriar = 'minhas'; App.ir('criar'); }

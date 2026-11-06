@@ -799,3 +799,79 @@ body.imersivo .abas, body.imersivo .audio, body.imersivo .barra-sel { display: n
 /* Navegação flutuante: fundo suave na aba ativa */
 .abas a[aria-current="page"]:not(.aba-criar)::before { content: ''; position: absolute; inset: 5px 6px 5px; border-radius: 18px; background: color-mix(in srgb, #A58A57 12%, transparent); z-index: -1; }
 .abas a:not(.aba-criar) { isolation: isolate; }
+
+/* ---------- Minha jornada (v2.2) ---------- */
+.jornada2 { display: grid; gap: 14px; padding: 16px; border-radius: 20px; background: var(--papel); border: 1px solid var(--linha); box-shadow: 0 6px 18px rgba(25, 45, 80, .05); }
+.jornada2 + .jornada2 { margin-top: 10px; }
+.j-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.j-sobre { display: block; font: 700 11px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--ouro); }
+.j-titulo { font: 700 19px/1.2 var(--f-display); color: var(--azul-texto); }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kpi { display: grid; justify-items: start; align-content: start; gap: 2px; padding: 12px 10px 10px; border-radius: 14px; background: var(--areia); min-width: 0; }
+.kpi-ico { display: grid; place-items: center; width: 28px; height: 28px; margin-bottom: 4px; border-radius: 9px; background: #192D50; }
+.kpi-ico .ico { width: 16px; height: 16px; color: #E2C894; }
+.kpi b { font: 700 26px/1 var(--f-display); color: var(--azul-texto); font-variant-numeric: tabular-nums; }
+.kpi small { font-size: 11.5px; line-height: 1.25; color: var(--tinta-2); }
+.j-graf { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--linha); }
+.j-graf-cab { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; }
+.j-graf-cab b { font: 700 15px var(--f-ui); color: var(--azul-texto); }
+.j-graf-cab small, .j-gran { font-size: 12px; color: var(--tinta-2); }
+.grafico { display: flex; align-items: stretch; gap: 6px; height: 150px; padding-top: 4px; }
+.grafico.denso { gap: 2px; }
+.grafico .coluna { flex: 1; min-width: 0; display: grid; grid-template-rows: 16px 1fr 16px; justify-items: center; gap: 3px; }
+.grafico .valor { font: 700 11px var(--f-ui); color: var(--azul-texto); }
+.grafico .trilho { position: relative; width: 100%; max-width: 30px; border-radius: 8px; background: var(--areia); display: flex; align-items: flex-end; overflow: hidden; }
+.grafico.denso .trilho { border-radius: 3px; }
+.grafico .barra-col { width: 100%; display: flex; flex-direction: column-reverse; border-radius: 8px; overflow: hidden; min-height: 0; transition: height .5s ease; }
+.grafico .barra-col i { display: block; width: 100%; }
+.grafico small { font-size: 10.5px; color: var(--tinta-2); white-space: nowrap; }
+.grafico .coluna.hoje small { color: var(--azul-texto); font-weight: 800; }
+.seg-capitulo { background: linear-gradient(180deg, #C2A671, #A58A57); }
+.seg-plano { background: #192D50; }
+.seg-estudo { background: #5E7A9E; }
+.seg-devocional { background: #D9B97A; }
+.seg-quiz { background: #8C6BB1; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--tinta-2); }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+.j-dica { font-size: 13px; color: var(--tinta-2); text-align: center; }
+.j-intro { margin: -4px 2px 10px; }
+.j-periodos { margin-bottom: 4px; }
+.j-periodo-txt { margin: 2px 2px 10px; font-size: 12.5px; color: var(--tinta-2); }
+.j-seq { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--linha); text-align: center; }
+.j-seq b { display: block; font: 700 22px var(--f-display); color: var(--azul-texto); }
+.j-seq small { font-size: 11.5px; color: var(--tinta-2); }
+.j-leitura .j-livro { display: flex; align-items: center; gap: 12px; }
+.j-leitura .j-livro small { display: block; font-size: 12.5px; color: var(--tinta-2); }
+.j-barra { display: grid; gap: 5px; }
+.j-barra-txt { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; color: var(--tinta-2); }
+.j-barra-txt b { font: 700 16px var(--f-display); color: var(--azul-texto); }
+.j-barra .barra { height: 8px; }
+.j-barra small { font-size: 11.5px; color: var(--tinta-2); }
+.j-leitura .bt.pri { justify-self: start; }
+.j-plano-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.j-plano .barra { height: 8px; }
+.j-plano-nums { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--tinta-2); }
+.j-plano-nums b { color: var(--azul-texto); }
+.j-prox { font-size: 14px; } .j-prox span { color: var(--tinta-2); }
+.j-plano small { font-size: 12px; color: var(--tinta-2); }
+.j-plano .bt { justify-self: start; }
+.j-tempo { display: grid; gap: 6px; margin-top: 8px; }
+.j-dia { margin-top: 10px; }
+.j-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--linha); background: var(--papel); text-align: left; color: var(--tinta); }
+.j-item > div { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.j-item b { font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.j-item small { font-size: 12px; color: var(--tinta-2); flex: none; }
+.j-item-tipo { font: 700 10.5px var(--f-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-2); }
+.j-item-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; flex: none; color: #FFFFFF; }
+.j-item-ico .ico { width: 18px; height: 18px; }
+.j-item-ico.t-capitulo { background: #A58A57; } .j-item-ico.t-plano { background: #192D50; } .j-item-ico.t-estudo { background: #5E7A9E; }
+.j-item-ico.t-devocional { background: #C9A562; } .j-item-ico.t-quiz { background: #8C6BB1; }
+.j-criterios { margin-top: 22px; padding: 12px 14px; border-radius: 14px; background: var(--areia-2); font-size: 13.5px; }
+.j-criterios summary { cursor: pointer; font-weight: 700; color: var(--azul-texto); }
+.j-criterios ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 8px; color: var(--tinta-2); }
+.concluir-devo { display: grid; gap: 6px; justify-items: start; margin-top: 18px; padding: 14px; border-radius: 14px; background: color-mix(in srgb, #A58A57 10%, var(--papel)); border: 1px solid color-mix(in srgb, #A58A57 35%, transparent); }
+.concluir-devo small { font-size: 12.5px; color: var(--tinta-2); }
+@media (max-width: 360px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* números das estatísticas com algarismos alinhados (Cormorant usa algarismos antigos por padrão) */
+.kpi b, .j-seq b, .j-barra-txt b, .grafico .valor, .jornada-num b, .anel span, .selo-seq, .j-plano-nums b, .cont-prog small { font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum" 1, "tnum" 1; }

@@ -150,11 +150,22 @@
   function rotuloCap(d) { var v = vizinho(d); return v ? (v.livro === atual.livro ? 'Capítulo ' + v.cap : A2Ref.POR_ID[v.livro].abrev + ' ' + v.cap) : (d < 0 ? 'Início' : 'Fim'); }
   function irCap(d) { var v = vizinho(d); if (v) { App.estado.leitor = v; App.recarregar(); } }
 
+  // Capítulo concluído = marcado como lido (botão, “Próximo” no plano ou dia do plano concluído). Abrir não conta.
   function marcarLido(on, livro, cap) {
+    livro = livro || atual.livro; cap = cap || atual.cap;
     var doc = Dados.obter('leitura', 'capitulos') || { lidos: {} }, l = Object.assign({}, doc.lidos || {});
-    var k = (livro || atual.livro) + '.' + (cap || atual.cap);
-    if (on) l[k] = UI.hoje(); else delete l[k];
-    Dados.salvar('leitura', 'capitulos', { lidos: l });
+    var k = livro + '.' + cap, hoje = UI.hoje();
+    if (on) {
+      if (l[k] === hoje) return;                      // já concluído hoje: não duplica
+      l[k] = hoje;
+      Dados.salvar('leitura', 'capitulos', { lidos: l });
+      App.registrar('capitulo', { chave: k, livro: livro, cap: cap, ref: A2Ref.formatar({ livro: livro, cap: cap }) });
+    } else {
+      if (!l[k]) return;
+      delete l[k];
+      Dados.salvar('leitura', 'capitulos', { lidos: l });
+      App.removerDoHistorico(function (x) { return x.tipo === 'capitulo' && x.chave === k; });
+    }
   }
   root.Leitura = { marcarLido: marcarLido };
 

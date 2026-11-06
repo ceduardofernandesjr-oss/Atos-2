@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural'];
+  var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
 
@@ -40,6 +40,13 @@
       if (ult && ult.tipo === tipo && ult.ref === novo.ref && ult.titulo === novo.titulo && Date.parse(novo.em) - Date.parse(ult.em) < 10 * 60000) return;
       itens.push(novo);
       Dados.salvar('historico', mes, { itens: itens });
+    },
+    // Remove itens do histórico (ex.: conclusões de um capítulo que foi desmarcado)
+    removerDoHistorico: function (filtro) {
+      Dados.todos('historico').forEach(function (m) {
+        var itens = m.itens || [], resto = itens.filter(function (x) { return !filtro(x); });
+        if (resto.length !== itens.length) Dados.salvar('historico', m.id, { itens: resto });
+      });
     },
     // Abre a Bíblia em uma referência; contexto opcional de plano de leitura
     abrirBiblia: function (livro, cap, v, contexto) {

@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.7.4';
+  var VERSAO_APP = '2.7.5';
   var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
@@ -212,6 +212,44 @@
     } catch (e) { /* ambiente sem notificações */ }
   }
 
+  // ---------------------------------------------------------------- nome e foto da conta Google
+  // Na primeira vez que a pessoa entra com o Google (em qualquer aparelho), o perfil do app recebe o nome e a foto
+  // da conta. Se depois ela mudar nome ou foto em Editar perfil, a escolha dela prevalece.
+  function fotoComoDados(url) {
+    return new Promise(function (res) {
+      var img = new Image(), fim = setTimeout(function () { res(null); }, 8000);
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        clearTimeout(fim);
+        try {
+          var lado = 256, c = document.createElement('canvas'); c.width = c.height = lado;
+          var k = Math.max(lado / img.width, lado / img.height);
+          c.getContext('2d').drawImage(img, (lado - img.width * k) / 2, (lado - img.height * k) / 2, img.width * k, img.height * k);
+          res(c.toDataURL('image/jpeg', 0.85));
+        } catch (e) { res(null); }
+      };
+      img.onerror = function () { clearTimeout(fim); res(null); };
+      img.src = /googleusercontent\.com/.test(url) ? url.replace(/=s\d+(-c)?$/, '=s256-c') : url;
+    });
+  }
+  var aplicandoGoogle = false;
+  App.perfilDoGoogle = async function () {
+    if (aplicandoGoogle || !(root.A2Nuvem && A2Nuvem.configurado() && Dados.estado.tipo === 'nuvem')) return false;
+    var c = A2Nuvem.conta();
+    if (!c || c.provedores.indexOf('google') < 0 || !(c.nomeGoogle || c.fotoGoogle)) return false;
+    var p = App.perfil();
+    if (p.googleDe === c.id) return false;
+    aplicandoGoogle = true;
+    try {
+      var novo = Object.assign({}, p, { googleDe: c.id });
+      if (c.nomeGoogle && !p.nomeManual) novo.nome = c.nomeGoogle.trim().slice(0, 40);
+      if (c.fotoGoogle && !p.fotoManual) { var f = await fotoComoDados(c.fotoGoogle); novo.foto = f || c.fotoGoogle; }
+      Dados.salvar('perfil', 'eu', novo);
+      if (!UI.temFolha()) App.recarregar();
+      return true;
+    } finally { aplicandoGoogle = false; }
+  };
+
   // ---------------------------------------------------------------- partida
   async function iniciar() {
     document.querySelector('#abertura .abertura-marca').innerHTML = UI.logo(132);
@@ -229,6 +267,11 @@
     var ab = document.getElementById('abertura'); ab.classList.add('sai'); setTimeout(function () { ab.remove(); }, 600);
     if (!App.config().boasVindas) await boasVindas();
     mostrar();
+    if (root.A2Nuvem && A2Nuvem.configurado()) {
+      // espera a conta sincronizar o perfil antes de conferir se já recebeu os dados do Google
+      setTimeout(function () { App.perfilDoGoogle(); }, 2500);
+      A2Nuvem.ouvirConta(function (evento) { if (evento === 'SIGNED_IN' || evento === 'USER_UPDATED') setTimeout(function () { App.perfilDoGoogle(); }, 2500); });
+    }
     setInterval(verificarNotificacoes, 60000); verificarNotificacoes();
     // versão instalada (GitHub Pages): guarda os arquivos do app para abrir sem internet
     try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) { reg.update(); });

@@ -198,12 +198,13 @@
       var nome = h('input.entrada#perfil-nome', { type: 'text', maxlength: 40, value: p.nome || '', autocomplete: 'given-name' });
       return h('form.form.editar-perfil', { on: { submit: function (ev) {
         ev.preventDefault();
-        Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { nome: nome.value.trim() }));
+        var atual = App.perfil(), novoNome = nome.value.trim();
+        Dados.salvar('perfil', 'eu', Object.assign({}, atual, { nome: novoNome }, novoNome !== (atual.nome || '') ? { nomeManual: true } : {}));
         api.fechar(); UI.aviso('Perfil atualizado.'); App.recarregar();
       } } },
         h('div.editar-foto', avatar(p),
           h('div.linha-bts', h('button.bt.peq', { type: 'button', on: { click: function () { api.fechar(); arq.click(); } } }, ico('imagem'), p.foto ? 'Trocar foto' : 'Escolher foto'),
-            p.foto ? h('button.bt.peq.fant', { type: 'button', on: { click: function () { var q = App.perfil(); delete q.foto; Dados.salvar('perfil', 'eu', q); api.fechar(); App.recarregar(); } } }, 'Remover foto') : null)),
+            p.foto ? h('button.bt.peq.fant', { type: 'button', on: { click: function () { var q = App.perfil(); delete q.foto; q.fotoManual = true; Dados.salvar('perfil', 'eu', q); api.fechar(); App.recarregar(); } } }, 'Remover foto') : null)),
         h('label.campo', { for: 'perfil-nome' }, h('span', 'Nome'), nome),
         h('p.sub', 'A foto fica no seu perfil e aparece no Início. Ela é reduzida no aparelho antes de ser guardada.'),
         h('div.linha-bts', h('button.bt.pri', { type: 'submit' }, 'Salvar')));
@@ -215,7 +216,7 @@
       var img = await new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = URL.createObjectURL(arq); });
       var lado = 256, c = h('canvas', { width: lado, height: lado }), s = Math.max(lado / img.width, lado / img.height);
       c.getContext('2d').drawImage(img, (lado - img.width * s) / 2, (lado - img.height * s) / 2, img.width * s, img.height * s);
-      Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { foto: c.toDataURL('image/jpeg', 0.82) }));
+      Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { foto: c.toDataURL('image/jpeg', 0.82), fotoManual: true }));
       App.recarregar();
     } catch (e) { UI.aviso('Não foi possível usar esta imagem.', true); }
   }

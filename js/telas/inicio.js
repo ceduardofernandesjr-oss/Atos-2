@@ -25,6 +25,23 @@
 
   function saudacao() { var hr = new Date().getHours(); return hr < 5 ? 'Boa noite' : hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite'; }
 
+  // Cartão discreto abaixo do Versículo do Dia (o cartão do versículo não muda). Some com a conta ou com “Agora não”.
+  function conviteGoogle() {
+    if (!(root.A2Nuvem && A2Nuvem.configurado() && Dados.estado.tipo === 'nuvem') || A2Nuvem.conta() || App.config().ocultarConviteGoogle) return null;
+    var msg = h('small.convite-google-msg', { role: 'status' });
+    var bt = h('button.bt.pri.convite-google-bt#inicio-google', { on: { click: async function () {
+      bt.disabled = true; msg.textContent = 'Abrindo o Google…';
+      try { await A2Nuvem.Conta.entrarComGoogle(); } catch (e) { bt.disabled = false; msg.textContent = A2Nuvem.mensagem(e); }
+    } } }, h('span.conta-google-g', { 'aria-hidden': 'true' }, 'G'), 'Continuar com o Google');
+    var el = h('section.cartao.convite-google', { hidden: true, 'aria-label': 'Entrar com o Google' },
+      h('div.convite-google-topo', h('span.acesso-ico', ico('nuvem')),
+        h('div', h('b', 'Guarde tudo na sua conta'), h('small', 'Entre com o Google e veja favoritos, planos, anotações e pontos da Jornada em qualquer aparelho.'))),
+      h('div.linha-bts', bt, h('button.bt.fant#inicio-google-depois', { on: { click: function () { App.salvarConfig({ ocultarConviteGoogle: true }); el.remove(); UI.aviso('Você pode entrar quando quiser em Perfil › Conta.'); } } }, 'Agora não')),
+      msg);
+    if (A2Nuvem.Conta && A2Nuvem.Conta.provedores) A2Nuvem.Conta.provedores().then(function (p) { if (p.google) el.hidden = false; });
+    return el;
+  }
+
   function render(tela) {
     var perfil = App.perfil(), hoje = UI.hoje(), lembretes = App.lembretesPendentes(), diaN = A2Conteudo.diaNumero(hoje);
 
@@ -49,6 +66,10 @@
     if (lembretes.length) tela.appendChild(h('div.lembretes-hoje', lembretes.map(function (l) {
       return h('button.lembrete-chip', { on: { click: function () { App.abrirLembrete(l); } } }, ico('sino'), h('span', l.texto), ico('direita'));
     })));
+
+    // ---------------------------------------------------------------- convite para entrar com o Google (sem conta)
+    var convite = conviteGoogle();
+    if (convite) tela.appendChild(convite);
 
     // ---------------------------------------------------------------- Continue: última leitura e plano
     tela.appendChild(secao('Continue'));

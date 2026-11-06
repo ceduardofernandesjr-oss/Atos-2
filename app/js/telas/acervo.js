@@ -185,6 +185,9 @@
         h('h2', p.titulo), p.tituloOriginal ? h('p.sub.tit-original', p.tituloOriginal) : null,
         h('b.ficha-autor', p.autor + (p.autorDatas ? ' (' + p.autorDatas + ')' : '')))));
       c.appendChild(h('div.linha-bts.ficha-bts', botaoPrincipal(p, api), p.acesso === 'link' ? h('small.sub', 'Abre o site da publicação original') : null));
+      var par = outraLingua(p);
+      if (par) c.appendChild(h('button.outra-lingua#obra-outra-lingua', { type: 'button', on: { click: function () { api.fechar(); setTimeout(function () { abrirFicha(par.id); }, 30); } } },
+        ico('globo'), h('span.outra-lingua-txt', h('b', par.idioma === 'pt' ? 'Ler em português' : 'Ver o original em inglês'), h('small', par.idioma === 'pt' ? 'Tradução do ATOS 2' + (A.visivel(par) ? '' : ' — em revisão') : 'Tradução inglesa de ' + (par.tradutor || 'domínio público'))), ico('direita')));
       c.appendChild(acoesIcone(p, api));
       c.appendChild(h('p.ficha-desc', p.descricao));
       if ((p.temas || []).length) c.appendChild(h('div.chips.quebra.temas-obra', p.temas.map(function (t) { return h('span.chip.peq', t); })));
@@ -210,6 +213,13 @@
         sit === 'publicado' ? h('button.bt.perigo', { on: { click: function () { retirar(p, api); } } }, ico('lixo'), 'Retirar do acervo') : null));
       return c;
     }, { cheia: true });
+  }
+  // original ↔ tradução: a tradução aponta para o original em traducaoDe; só aparece o que o leitor pode abrir
+  function outraLingua(p) {
+    if (p.traducaoDe) return porId(p.traducaoDe);
+    var t = todas().filter(function (x) { return x.traducaoDe === p.id && !x.removido; })
+      .map(function (x) { return porId(x.id); }).filter(Boolean);
+    return t.filter(A.visivel)[0] || t[0] || null;
   }
   function acoes(id) { abrirFicha(id); }
 

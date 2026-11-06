@@ -152,7 +152,7 @@ async function abrir(browser, cfg) {
   // ---------- Biblioteca › Livros e Artigos: administração do acervo (revisão editorial antes de publicar)
   await a.evaluate(() => { App.estado.secaoBiblioteca = 'acervo'; App.ir('biblioteca'); }); await a.waitForSelector('#acervo-admin', { timeout: 10000 });
   await a.click('#acervo-admin'); await a.waitForSelector('.admin-acervo');
-  checar(await a.locator('.admin-acervo [data-revisar]').count() === 4, 'Acervo: quatro traduções do ATOS 2 aguardam revisão');
+  checar(await a.locator('.admin-acervo [data-revisar]').count() === 5, 'Acervo: cinco traduções do ATOS 2 aguardam revisão');
   checar(await c.evaluate(() => !Telas.acervo.porId('didaque')), 'Acervo: leitor não vê rascunho em revisão');
   await a.click('.admin-acervo [data-revisar="didaque"]'); await a.waitForSelector('#rev-publicar');
   await a.click('#rev-publicar'); await a.waitForTimeout(150);
@@ -163,6 +163,17 @@ async function abrir(browser, cfg) {
   checar(!!pubDid && pubDid.situacao === 'publicado' && !!pubDid.verificacao.editorialEm, 'Acervo: aprovado e publicado com revisão registrada');
   await c.waitForFunction(() => !!Telas.acervo.porId('didaque'), null, { timeout: 6000 });
   checar(true, 'Acervo: leitor passa a ver a publicação aprovada');
+  // original em inglês ↔ tradução do ATOS 2
+  await c.evaluate(() => Telas.acervo.abrirFicha('liberdade-crista-lutero')); await c.waitForSelector('.ficha-obra');
+  checar(await c.locator('#obra-outra-lingua').count() === 0, 'Tradução: leitor não vê link para tradução em revisão');
+  await c.evaluate(() => UI.fecharTodas());
+  await a.evaluate(() => { UI.fecharTodas(); Telas.acervo.abrirFicha('liberdade-crista-lutero'); }); await a.waitForSelector('#obra-outra-lingua');
+  checar((await a.textContent('#obra-outra-lingua')).includes('Ler em português') && (await a.textContent('#obra-outra-lingua')).includes('em revisão'), 'Tradução: editor vê “Ler em português (em revisão)” no original');
+  await a.click('#obra-outra-lingua'); await a.waitForSelector('.ficha-obra .aviso-ia', { timeout: 5000 });
+  checar((await a.textContent('#obra-outra-lingua')).includes('Ver o original em inglês'), 'Tradução: a ficha em português leva ao original em inglês');
+  await a.evaluate(() => { UI.fecharTodas(); Telas.acervo.abrirLeitura('liberdade-crista-lutero-pt', { secao: 2, par: 0 }); }); await a.waitForSelector('.obra-par[data-p="51"]', { timeout: 15000 });
+  checar(await a.evaluate(() => [...document.querySelectorAll('.obra-par[data-p="51"] .ref-obra')].map(b => b.textContent).join('|')).then(t => /Romanos 7:22/.test(t) && /Gálatas 5:24/.test(t)), 'Tradução: referências bíblicas em português ficam tocáveis');
+  await a.evaluate(() => App.ir('biblioteca'));
   await a.evaluate(() => Telas.acervo.admin()); await a.waitForSelector('#acervo-nova'); await a.click('#acervo-nova'); await a.waitForSelector('#ad-tit');
   await a.fill('#ad-tit', 'Artigo de teste'); await a.fill('#ad-aut', 'Autora Exemplo'); await a.fill('#ad-des', 'Descrição de teste.'); await a.fill('#ad-url', 'https://exemplo.org/artigo');
   await a.click('#ad-salvar'); await a.waitForFunction(() => !document.querySelector('#ad-salvar'), null, { timeout: 5000 });

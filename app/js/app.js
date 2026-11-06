@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.7.5';
+  var VERSAO_APP = '2.7.6';
   var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];

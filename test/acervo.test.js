@@ -32,6 +32,22 @@ test('catálogo: ids únicos, publicados válidos, arquivos presentes e rascunho
   assert.ok(pubs.filter(p => p.idioma === 'pt').length >= 8, 'prioridade ao português');
 });
 
+test('traduções do ATOS 2: apontam para o original e têm os mesmos parágrafos', () => {
+  pubs.filter(p => p.traducaoDe).forEach(p => {
+    const o = pubs.find(x => x.id === p.traducaoDe);
+    assert.ok(o, 'original existe: ' + p.id);
+    assert.notEqual(o.idioma, p.idioma, 'idiomas diferentes: ' + p.id);
+    const tt = JSON.parse(fs.readFileSync(path.join(app, p.arquivo), 'utf8')), to = JSON.parse(fs.readFileSync(path.join(app, o.arquivo), 'utf8'));
+    assert.deepEqual(tt.secoes.map(s => s.p.length), to.secoes.map(s => s.p.length), 'mesma estrutura: ' + p.id);
+    tt.secoes.forEach((s, i) => s.p.forEach((x, j) => {
+      assert.ok(typeof x === 'string' && x.trim().length > 0, 'parágrafo vazio: ' + p.id + ' ' + i + '.' + j);
+      assert.ok(!/\[\d+\.\d+\]/.test(x), 'marcador de trabalho no texto: ' + p.id + ' ' + i + '.' + j);
+      const r = x.length / Math.max(1, to.secoes[i].p[j].length);
+      assert.ok(r > 0.7 && r < 1.8, 'tamanho incompatível (resumo ou corte?): ' + p.id + ' ' + i + '.' + j + ' ' + r.toFixed(2));
+    }));
+  });
+});
+
 test('mesclar: edição da administração, item novo, retirado e rascunho', () => {
   const seed = [{ id: 'a', titulo: 'A', situacao: 'publicado' }, { id: 'b', titulo: 'B', situacao: 'revisao' }];
   const m = A.mesclar(seed, [{ id: 'a', titulo: 'A2' }, { id: 'c', titulo: 'C', situacao: 'publicado' }, { id: 'b', removido: true }], [{ id: 'd', titulo: 'D' }, { id: 'a', titulo: 'A3' }]);

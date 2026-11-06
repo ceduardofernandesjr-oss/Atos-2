@@ -36,6 +36,27 @@ Credo Apostólico (latim), Credo Niceno-Constantinopolitano (grego, 381), Defini
 
 As traduções foram feitas com apoio de IA e marcadas `origem.ia = true`. Ficam com `situacao: "revisao"`, invisíveis para os leitores, até que um editor confira o texto com o original e aprove na administração do acervo.
 
+### Traduções das obras em inglês
+
+Cada obra do acervo que estava só em inglês ganha uma versão em português, cadastrada à parte e ligada ao original pelo campo `traducaoDe`. O original em inglês continua no acervo. Na ficha, o original mostra **Ler em português** e a tradução mostra **Ver o original em inglês**. O leitor comum só vê o link depois que a tradução é aprovada.
+
+| id | Original | Base da tradução | Estrutura |
+|---|---|---|---|
+| liberdade-crista-lutero-pt | liberdade-crista-lutero | Tradução inglesa de R. S. Grignon (1883), em *First Principles of the Reformation* | 3 seções, 127 parágrafos, iguais ao original |
+
+Critérios da tradução:
+
+- tradução integral, parágrafo por parágrafo, sem resumir nem cortar;
+- quando a citação bíblica do autor corresponde à Bíblia Livre, usa-se a redação da Bíblia Livre;
+- quando o autor segue a Vulgata e o sentido muda (em Lutero: Isaías 3:12, Isaías 10:22-23, Oseias 13:9), traduz-se a leitura dele;
+- referências no formato “Livro capítulo:versículo”, para ficarem tocáveis no leitor.
+
+Ordem prevista para as próximas traduções: Vida de São Paulo (Stalker), Imitação de Cristo, Julgamento e morte de Jesus (Stalker), Comentário a Gálatas (Lutero), Confissões (Agostinho), Credo Apostólico (Dodds).
+
+Para Agostinho, Kempis e Lutero, o ideal na revisão é conferir com o original latino (ou alemão, no caso de Lutero), já que a base é uma tradução inglesa.
+
+`test/acervo.test.js` confere que toda tradução aponta para um original existente e tem as mesmas seções e o mesmo número de parágrafos. Também barra parágrafos vazios e diferenças de tamanho que indiquem resumo ou corte.
+
 ## 3. Registros só com dados bibliográficos e link
 
 | id | Fonte | Licença conferida |

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14284B">
+<meta name="description" content="ATOS 2 — Bíblia, planos de leitura, devocionais e artes bíblicas. De volta à doutrina dos apóstolos.">
+<title>ATOS 2</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Great+Vibes&family=Josefin+Sans:wght@300;600&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="abertura" class="abertura" aria-hidden="true">
+  <div class="abertura-marca"></div>
+  <p class="abertura-frase">De volta à doutrina dos apóstolos</p>
+</div>
+<div id="app" class="app" hidden>
+  <main id="tela" class="tela" tabindex="-1"></main>
+  <nav class="abas" aria-label="Navegação principal">
+    <a href="#inicio" data-aba="inicio"><span class="ico" data-ico="casa"></span><span>Início</span></a>
+    <a href="#biblia" data-aba="biblia"><span class="ico" data-ico="livro"></span><span>Bíblia</span></a>
+    <a href="#criar" data-aba="criar" class="aba-criar"><span class="ico" data-ico="pincel"></span><span>Criar</span></a>
+    <a href="#biblioteca" data-aba="biblioteca"><span class="ico" data-ico="estante"></span><span>Biblioteca</span></a>
+    <a href="#perfil" data-aba="perfil"><span class="ico" data-ico="pessoa"></span><span>Perfil</span></a>
+  </nav>
+</div>
+<div id="camadas"></div>
+<div id="avisos" class="avisos" role="status" aria-live="polite"></div>
+
+<script src="js/nucleo/referencias.js"></script>
+<script src="js/nucleo/conteudo.js"></script>
+<script src="js/nucleo/planos.js"></script>
+<script src="js/nucleo/busca.js"></script>
+<script src="js/nucleo/arte.js"></script>
+<script src="js/nucleo/sinc.js"></script>
+<script src="js/nucleo/quiz.js"></script>
+<script src="js/nucleo/mural.js"></script>
+<script src="js/nucleo/assistente.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/config.js"></script>
+<script src="js/nuvem.js"></script>
+<script src="js/dados.js"></script>
+<script src="js/biblia.js"></script>
+<script src="js/telas/inicio.js"></script>
+<script src="js/telas/leitor.js"></script>
+<script src="js/telas/pesquisa.js"></script>
+<script src="js/telas/fotos.js"></script>
+<script src="js/telas/cartao.js"></script>
+<script src="js/telas/estudio.js"></script>
+<script src="js/telas/biblioteca.js"></script>
+<script src="js/telas/planos.js"></script>
+<script src="js/telas/devocionais.js"></script>
+<script src="js/telas/perfil.js"></script>
+<script src="js/telas/explorar.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

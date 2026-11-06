@@ -1,0 +1,182 @@
+[
+ {
+  "id": "rochas-mar",
+  "nome": "Rochas e mar",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.25
+ },
+ {
+  "id": "praia",
+  "nome": "Praia de águas claras",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3,
+  "y": 0.3
+ },
+ {
+  "id": "aurora-boreal",
+  "nome": "Aurora boreal",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.1
+ },
+ {
+  "id": "vulcao",
+  "nome": "Vulcão sob as estrelas",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.15
+ },
+ {
+  "id": "pier",
+  "nome": "Píer ao pôr do sol",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.25
+ },
+ {
+  "id": "jardim",
+  "nome": "Jardim refletido",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "fiorde",
+  "nome": "Fiorde",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "capim",
+  "nome": "Capim ao vento",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.25
+ },
+ {
+  "id": "lago-amanhecer",
+  "nome": "Lago ao amanhecer",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.25
+ },
+ {
+  "id": "urzes",
+  "nome": "Flores na encosta",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "lago-outono",
+  "nome": "Lago no outono",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.25
+ },
+ {
+  "id": "floresta-nevoa",
+  "nome": "Floresta na névoa",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "caminho-outono",
+  "nome": "Caminho de outono",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "cisnes",
+  "nome": "Cisnes no lago",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.2
+ },
+ {
+  "id": "caminho-estreito",
+  "nome": "Caminho estreito",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "iceberg",
+  "nome": "Iceberg",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "leao",
+  "nome": "Leão de Judá",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.2
+ },
+ {
+  "id": "cidade",
+  "nome": "Cidade ao entardecer",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "papoulas",
+  "nome": "Papoulas ao sol",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3,
+  "y": 0.74
+ },
+ {
+  "id": "mapa-mundi",
+  "nome": "O mundo inteiro",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.45
+ },
+ {
+  "id": "folha",
+  "nome": "Folhas sobre o branco",
+  "pc": true,
+  "cor": "#14284B",
+  "escurecer": 0,
+  "y": 0.16
+ },
+ {
+  "id": "telhado",
+  "nome": "Linhas e luz",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.4
+ },
+ {
+  "id": "vela",
+  "nome": "Vela acesa",
+  "pc": false,
+  "cor": "#14284B",
+  "escurecer": 0,
+  "y": 0.17
+ },
+ {
+  "id": "flores-vermelhas",
+  "nome": "Flores vermelhas",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3
+ },
+ {
+  "id": "margaridas",
+  "nome": "Margaridas",
+  "pc": true,
+  "cor": "#FFFFFF",
+  "escurecer": 0.3,
+  "y": 0.27
+ }
+]

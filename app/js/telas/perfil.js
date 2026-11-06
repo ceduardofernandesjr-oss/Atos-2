@@ -3,107 +3,111 @@
   'use strict';
   var h = UI.h, ico = UI.icone;
 
+  // v2.5: mesmo vocabulário visual do Início, Bíblia, Biblioteca e Criar (cabeçalho serifado, cartão azul-marinho de destaque,
+  // cartões de acesso com ícone em azul, grupos de ajustes em cartão branco, chips com seleção em azul-marinho).
+  var MODOS = { sincronizado: ['ok', 'Sincronizado com sua conta'], conectando: ['', 'Conectando…'], offline: ['alerta', 'Sem conexão: salvando neste aparelho'], local: ['', 'Salvo neste aparelho'], memoria: ['alerta', 'Armazenamento do navegador indisponível'], iniciando: ['', 'Iniciando…'] };
+  function modoSinc() { var est = Dados.estado; return MODOS[est.modo] || ['', est.modo]; }
+
+  function avatar(p, classe) {
+    return h('div.' + (classe || 'perfil-foto'), p.foto ? h('img', { src: p.foto, alt: 'Sua foto' }) : h('span', (p.nome || 'A').trim().charAt(0).toUpperCase() || 'A'));
+  }
+  function ajusteIco(i) { return h('span.ajuste-ico', ico(i)); }
+  // linha de ajuste com ação: ícone · título e descrição · seta
+  function linhaAjuste(i, t, s, fn, extra) {
+    return h('button.ajuste.ajuste-link' + (extra || ''), { on: { click: fn } }, ajusteIco(i), h('div.ajuste-txt', h('b', t), s ? h('small', s) : null), ico('direita'));
+  }
+  function grupo() { return h('section.cartao.grupo-ajustes', Array.prototype.slice.call(arguments)); }
+  function secao(t, link) { return h('div.secao', h('h2', t), link ? h('div.esp') : null, link || null); }
+
   function render(tela) {
     var p = App.perfil(), cfg = App.config(), est = Dados.estado;
-    var lidos = Object.keys((Dados.obter('leitura', 'capitulos') || {}).lidos || {}).length;
-    tela.appendChild(h('header.cab', h('h1', 'Perfil')));
+    tela.appendChild(h('header.cab.cab-bib', h('div.cab-bib-txt', h('h1', 'Perfil'), h('p.sub', 'Sua conta, sua jornada e suas preferências.'))));
 
-    // identidade
-    var foto = h('div', { style: { width: '76px', height: '76px', borderRadius: '50%', overflow: 'hidden', background: 'var(--azul)', display: 'grid', placeItems: 'center', flex: 'none', border: '2px solid var(--ouro)' } },
-      p.foto ? h('img', { src: p.foto, alt: 'Sua foto', style: { width: '100%', height: '100%', objectFit: 'cover' } }) : h('span', { style: { font: '700 30px var(--f-display)', color: '#E9D3A1' } }, (p.nome || 'A').charAt(0).toUpperCase()));
+    // destaque: identidade
     var arq = h('input#foto-perfil', { type: 'file', accept: 'image/*', style: { display: 'none' } });
     arq.addEventListener('change', function () { if (arq.files[0]) trocarFoto(arq.files[0]); });
-    tela.appendChild(h('section.cartao', { style: { display: 'flex', gap: '14px', alignItems: 'center' } }, foto,
-      h('div', { style: { flex: 1, minWidth: 0, display: 'grid', gap: '6px' } },
-        h('b', { style: { font: '700 24px var(--f-display)', color: 'var(--azul-texto)' } }, p.nome || 'Sem nome'),
-        h('div.linha-bts', h('button.bt.peq', { on: { click: async function () { var n = await UI.perguntar('Seu nome', 'Nome', p.nome, { max: 40 }); if (n != null) { Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { nome: n })); App.recarregar(); } } } }, ico('editar'), 'Nome'),
-          h('label.bt.peq', { for: 'foto-perfil' }, ico('imagem'), 'Foto'), arq,
-          p.foto ? h('button.bt.peq.fant', { on: { click: function () { var q = App.perfil(); delete q.foto; Dados.salvar('perfil', 'eu', q); App.recarregar(); } } }, 'Remover foto') : null))));
+    var v = Biblia.versao(cfg.traducao || Biblia.padrao());
+    var selo = h('span.perfil-sinc');
+    function desenharSelo() { var m = modoSinc(); selo.className = 'perfil-sinc' + (m[0] ? ' ' + m[0] : ''); UI.trocar(selo, ico(est.modo === 'sincronizado' ? 'nuvem' : 'escudo'), m[1]); }
+    desenharSelo(); App.aoMudar(function (c) { if (c === '_estado') desenharSelo(); });
+    tela.appendChild(h('section.perfil-hero',
+      h('div.perfil-id', avatar(p),
+        h('div.perfil-nome', h('span.sobre', 'Meu perfil'), h('b#perfil-nome-txt', p.nome || 'Sem nome'), h('small', ico('livro'), 'Lendo a ' + (v ? v.nome + ' (' + v.sigla + ')' : 'Bíblia')))),
+      h('div.perfil-rodape', selo, h('button.bt.perfil-editar#editar-perfil', { on: { click: function () { editarPerfil(arq); } } }, ico('editar'), 'Editar perfil')), arq));
 
-    // Minha jornada (painel completo em #jornada)
-    var ativos = Dados.todos('planos');
-    tela.appendChild(h('div.secao', h('h2', 'Minha jornada'), h('div.esp'), h('button.link-secao', { on: { click: function () { App.ir('jornada'); } } }, 'Painel completo', ico('direita'))));
+    // Minha jornada (o mesmo resumo do Início; painel completo em #jornada)
+    tela.appendChild(secao('Minha jornada', h('button.link-secao#ver-jornada', { on: { click: function () { App.ir('jornada'); } } }, 'Painel completo', ico('direita'))));
     tela.appendChild(Telas.jornada.cartaoResumo());
-    tela.appendChild(h('button.bt.pri#ver-jornada', { style: { marginTop: '10px', width: '100%', justifyContent: 'center' }, on: { click: function () { App.ir('jornada'); } } }, ico('planos'), 'Ver minha jornada: períodos, evolução, planos e histórico'));
 
-    // atalhos pessoais
-    tela.appendChild(h('div.secao', h('h2', 'Minha caminhada')));
-    tela.appendChild(h('div.lista',
-      linha('planos', 'Planos de leitura', ativos.length ? ativos.map(function (x) { var d = A2Planos.DEFINICOES.filter(function (y) { return y.id === x.planoId; })[0]; return d ? d.nome + ' (' + UI.pct(A2Planos.resumo(x, d.dias, UI.hoje()).percentual) + ')' : ''; }).join(' · ') : 'Nenhum plano ativo', function () { App.estado.secaoBiblioteca = 'planos'; App.ir('biblioteca'); }),
-      linha('coracao', 'Versículos favoritos', Dados.todos('favoritos').length + ' salvos', function () { App.estado.secaoBiblioteca = 'favoritos'; App.ir('biblioteca'); }),
-      linha('luz', 'Devocionais favoritos', Dados.todos('devSalvos').length + ' salvos', function () { App.estado.secaoBiblioteca = 'devocionais'; App.estado.abaDevo = 'salvos'; App.ir('biblioteca'); }),
-      linha('pincel', 'Artes criadas', Dados.todos('artes').length + ' artes', function () { App.estado.secaoCriar = 'minhas'; App.ir('criar'); }),
-      linha('historico', 'Histórico de leitura', 'Leituras, devocionais e pesquisas', function () { App.estado.secaoBiblioteca = 'historico'; App.ir('biblioteca'); })));
+    // Minha caminhada: atalhos no padrão de Acesso rápido da Biblioteca
+    var ativos = Dados.todos('planos').filter(function (x) { return x.status !== 'concluido'; });
+    function n(qt, um, varios, nada) { return qt ? qt + ' ' + (qt === 1 ? um : varios) : nada; }
+    function irBib(sec, extra) { return function () { App.estado.secaoBiblioteca = sec; if (extra) extra(); App.ir('biblioteca'); }; }
+    tela.appendChild(secao('Minha caminhada'));
+    tela.appendChild(h('div.acesso-bib.caminhada', [
+      ['planos', 'planos', 'Planos de leitura', n(ativos.length, 'ativo', 'ativos', 'Nenhum ativo'), irBib('planos')],
+      ['favoritos', 'coracao', 'Versículos', n(Dados.todos('favoritos').length, 'favorito', 'favoritos', 'Nenhum ainda'), irBib('favoritos')],
+      ['devocionais', 'luz', 'Devocionais', n(Dados.todos('devSalvos').length, 'salvo', 'salvos', 'Nenhum ainda'), irBib('devocionais', function () { App.estado.abaDevo = 'salvos'; })],
+      ['artes', 'pincel', 'Minhas artes', n(Dados.todos('artes').length, 'arte', 'artes', 'Nenhuma ainda'), function () { App.estado.secaoCriar = 'minhas'; App.ir('criar'); }],
+      ['colecoes', 'colecao', 'Coleções', n(Dados.todos('colecoes').length, 'coleção', 'coleções', 'Nenhuma ainda'), irBib('colecoes')],
+      ['historico', 'historico', 'Histórico', 'Leituras e estudos', irBib('historico')]
+    ].map(function (x) { return h('button.acesso-card', { 'data-acesso': x[0], on: { click: x[4] } }, h('span.acesso-ico', ico(x[1])), h('b', x[2]), h('small', x[3])); })));
 
-    // preferências
-    tela.appendChild(h('div.secao', h('h2', 'Preferências')));
-    var trad = h('select.entrada#pref-trad', Biblia.VERSOES.map(function (v) { var o = h('option', { value: v.id, disabled: !v.ativa }, v.nome + ' (' + v.sigla + ')' + (v.ativa ? '' : ' — licença pendente')); if (v.id === cfg.traducao) o.selected = true; return o; }));
+    // Preferências
+    tela.appendChild(secao('Preferências'));
+    var trad = h('select.entrada#pref-trad', Biblia.VERSOES.map(function (x) { var o = h('option', { value: x.id, disabled: !x.ativa }, x.nome + ' (' + x.sigla + ')' + (x.ativa ? '' : ' — licença pendente')); if (x.id === cfg.traducao) o.selected = true; return o; }));
     trad.addEventListener('change', function () { App.salvarConfig({ traducao: trad.value }); });
-    var tema = h('select.entrada#pref-tema', [['sistema', 'Automático (do aparelho)'], ['claro', 'Claro'], ['escuro', 'Noturno']].map(function (t) { var o = h('option', { value: t[0] }, t[1]); if (t[0] === cfg.tema) o.selected = true; return o; }));
-    tema.addEventListener('change', function () { App.salvarConfig({ tema: tema.value }); });
-    var tam = h('input#pref-tam', { type: 'range', min: 15, max: 28, value: cfg.fonteTam }), tamV = h('b', cfg.fonteTam + ' px');
-    tam.addEventListener('input', function () { tamV.textContent = tam.value + ' px'; }); tam.addEventListener('change', function () { App.salvarConfig({ fonteTam: +tam.value }); });
-    tela.appendChild(h('section.cartao.form',
-      h('label.campo', { for: 'pref-trad' }, h('span', 'Tradução preferida'), trad),
-      h('label.campo', { for: 'pref-tema' }, h('span', 'Aparência'), tema),
-      h('label.campo', { for: 'pref-tam' }, h('span', 'Tamanho do texto bíblico'), h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center' } }, tam, tamV))));
+    var temas = [['sistema', 'Automático'], ['claro', 'Claro'], ['escuro', 'Noturno']];
+    var seg = h('div.seg-perfil#pref-tema', { role: 'group', 'aria-label': 'Aparência' }, temas.map(function (t) {
+      return h('button.chip', { 'data-tema': t[0], 'aria-pressed': String((cfg.tema || 'sistema') === t[0]), on: { click: function () {
+        seg.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', String(c.dataset.tema === t[0])); }); App.salvarConfig({ tema: t[0] }); } } }, t[1]);
+    }));
+    var tam = h('input#pref-tam', { type: 'range', min: 15, max: 28, value: cfg.fonteTam, 'aria-label': 'Tamanho do texto bíblico' });
+    var amostra = h('span.amostra-tam', { style: { fontSize: cfg.fonteTam + 'px' } }, 'Aa'), tamV = h('b.tam-v', cfg.fonteTam + ' px');
+    tam.addEventListener('input', function () { tamV.textContent = tam.value + ' px'; amostra.style.fontSize = tam.value + 'px'; });
+    tam.addEventListener('change', function () { App.salvarConfig({ fonteTam: +tam.value }); });
+    tela.appendChild(grupo(
+      h('div.ajuste.empilhado', ajusteIco('livro'), h('label.ajuste-txt', { for: 'pref-trad' }, h('b', 'Tradução preferida'), h('small', 'Usada na leitura, no versículo do dia, na pesquisa e nas artes')), trad),
+      h('div.ajuste.empilhado', ajusteIco('lua'), h('div.ajuste-txt', h('b', 'Aparência'), h('small', 'O automático segue o tema do aparelho')), seg),
+      h('div.ajuste.empilhado', ajusteIco('texto'), h('label.ajuste-txt', { for: 'pref-tam' }, h('b', 'Tamanho do texto bíblico'), h('small', 'Vale para o leitor')), h('div.tam-linha', amostra, tam, tamV))));
 
-    // notificações
-    tela.appendChild(h('div.secao', h('h2', 'Notificações')));
-    var notif = h('section.cartao');
-    [['versiculo', 'Versículo do dia'], ['devocional', 'Devocional diário'], ['leitura', 'Lembrete de leitura'], ['plano', 'Plano de leitura'], ['estudos', 'Continuação de estudos']].forEach(function (n) {
-      var c = cfg.notif[n[0]], on = h('input.interruptor#nt-' + n[0], { type: 'checkbox' }), hr = h('input.entrada#nh-' + n[0], { type: 'time', value: c.hora, 'aria-label': 'Horário: ' + n[1] });
+    // Notificações
+    tela.appendChild(secao('Notificações'));
+    var notif = grupo();
+    [['versiculo', 'Versículo do dia', 'marcador'], ['devocional', 'Devocional diário', 'luz'], ['leitura', 'Lembrete de leitura', 'livro'], ['plano', 'Plano de leitura', 'planos'], ['estudos', 'Continuação de estudos', 'nota']].forEach(function (x) {
+      var c = cfg.notif[x[0]], on = h('input.interruptor#nt-' + x[0], { type: 'checkbox', 'aria-label': x[1] }), hr = h('input.entrada.hora#nh-' + x[0], { type: 'time', value: c.hora, 'aria-label': 'Horário: ' + x[1] });
       on.checked = c.on; hr.disabled = !c.on;
-      function salvar() { var x = App.config().notif; x[n[0]] = { on: on.checked, hora: hr.value || c.hora }; hr.disabled = !on.checked; App.salvarConfig({ notif: x }); }
+      function salvar() { var y = App.config().notif; y[x[0]] = { on: on.checked, hora: hr.value || c.hora }; hr.disabled = !on.checked; App.salvarConfig({ notif: y }); }
       on.addEventListener('change', salvar); hr.addEventListener('change', salvar);
-      notif.appendChild(h('div.chave', h('label', { for: 'nt-' + n[0] }, n[1]), h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } }, hr, on)));
+      notif.appendChild(h('div.ajuste.notif', ajusteIco(x[2]), h('div.ajuste-txt', h('label', { for: 'nt-' + x[0] }, h('b', x[1])), h('div.hora-linha', ico('relogio'), hr)), on));
     });
-    var permissao = h('div', { style: { marginTop: '10px' } });
+    var permissao = h('div.ajuste-nota');
     function estadoPermissao() {
       var suporta = 'Notification' in window, perm = suporta ? Notification.permission : 'indisponivel';
       UI.trocar(permissao, h('p.sub', 'Os lembretes aparecem no Início e no sino quando chega o horário. ' +
         (perm === 'granted' ? 'Notificações do navegador ativadas neste aparelho.' : perm === 'denied' ? 'O navegador bloqueou notificações para este app.' : perm === 'indisponivel' ? 'Este ambiente não permite notificações do sistema; na versão instalada no celular elas funcionam.' : '')),
-        suporta && perm === 'default' ? h('button.bt.peq', { style: { marginTop: '8px' }, on: { click: function () { try { Notification.requestPermission().then(estadoPermissao, function () { UI.aviso('Este ambiente não permite notificações do sistema.', true); }); } catch (e) { UI.aviso('Este ambiente não permite notificações do sistema.', true); } } } }, ico('sino'), 'Permitir notificações do navegador') : null);
+        suporta && perm === 'default' ? h('button.bt.peq', { on: { click: function () { try { Notification.requestPermission().then(estadoPermissao, function () { UI.aviso('Este ambiente não permite notificações do sistema.', true); }); } catch (e) { UI.aviso('Este ambiente não permite notificações do sistema.', true); } } } }, ico('sino'), 'Permitir notificações do navegador') : null);
     }
     estadoPermissao(); notif.appendChild(permissao);
     tela.appendChild(notif);
 
-    // dados e sincronização
-    tela.appendChild(h('div.secao', h('h2', 'Dados e sincronização')));
-    var sinc = h('section.cartao.form');
-    function desenharSinc() {
-      var modo = { sincronizado: ['ok', 'Sincronizado com sua conta'], conectando: ['', 'Conectando…'], offline: ['alerta', 'Sem conexão: salvando neste aparelho'], local: ['', 'Salvando neste aparelho'], memoria: ['alerta', 'Armazenamento do navegador indisponível: os dados podem se perder ao fechar'], iniciando: ['', 'Iniciando…'] }[est.modo] || ['', est.modo];
-      UI.trocar(sinc,
-        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } }, h('span.selo' + (modo[0] ? '.' + modo[0] : ''), modo[1]), est.pendentes ? h('span.selo', est.pendentes + ' alteração(ões) a enviar') : null),
-        est.erro ? h('p.sub', { style: { color: 'var(--perigo)' } }, est.erro) : null,
-        h('p.sub', est.modo === 'sincronizado' ? 'Seus favoritos, notas, planos e artes acompanham você em qualquer aparelho onde abrir este app com a mesma conta.' : 'Tudo é salvo primeiro no aparelho e enviado quando houver conexão.'),
-        h('div.linha-bts', h('button.bt.peq', { on: { click: baixarBiblia } }, ico('baixar'), 'Guardar a Bíblia para usar sem internet'),
-          h('button.bt.peq', { on: { click: exportar } }, ico('copiar'), 'Exportar meus dados'),
-          h('button.bt.peq.perigo', { on: { click: async function () { if (await UI.confirmar('Apagar dados deste aparelho', est.modo === 'sincronizado' ? 'A cópia local será apagada; seus dados continuam na sua conta e voltam ao recarregar.' : 'Os dados que só existem neste aparelho serão perdidos.', 'Apagar', true)) { await Dados.apagarAparelho(); UI.aviso('Dados locais apagados.'); } } } }, ico('lixo'), 'Apagar dados deste aparelho')));
-      Biblia.baixadosOffline().then(function (n) { sinc.appendChild(h('p.sub', (n >= 66 ? 'Bíblia completa' : n + ' de 66 livros') + ' (' + Biblia.versao(Biblia.padrao()).sigla + ') guardad' + (n >= 66 ? 'a' : 'os') + ' neste aparelho.')); });
-    }
-    desenharSinc();
-    App.aoMudar(function (c) { if (c === '_estado') desenharSinc(); });
-    tela.appendChild(sinc);
-
-    // conta
-    tela.appendChild(h('div.secao', h('h2', 'Conta')));
-    var contaEl = h('section.cartao.form');
+    // Conta
+    tela.appendChild(secao('Conta'));
+    var contaEl = h('section.cartao.grupo-ajustes.conta-perfil');
     function desenharConta() {
       var c = est.conta;
-      if (est.tipo === 'claude') { UI.trocar(contaEl, h('p', est.usuario ? 'Você está identificado pela sua conta do claude.ai nesta versão de prévia.' : 'Nesta visualização não há conta conectada: os dados ficam só neste aparelho.')); return; }
-      if (!(root.A2Nuvem && A2Nuvem.configurado())) { UI.trocar(contaEl, h('p', 'Os dados ficam só neste aparelho.')); return; }
+      if (est.tipo === 'claude') { UI.trocar(contaEl, h('div.ajuste', ajusteIco('pessoa'), h('div.ajuste-txt', h('b', est.usuario ? 'Conta do claude.ai' : 'Sem conta conectada'), h('small', est.usuario ? 'Nesta versão de prévia você é identificado pela sua conta do claude.ai.' : 'Nesta visualização os dados ficam só neste aparelho.')))); return; }
+      if (!(root.A2Nuvem && A2Nuvem.configurado())) { UI.trocar(contaEl, h('div.ajuste', ajusteIco('pessoa'), h('div.ajuste-txt', h('b', 'Sem conta'), h('small', 'Os dados ficam só neste aparelho.')))); return; }
       if (c) {
         UI.trocar(contaEl,
-          h('p', 'Conectado como ', h('b', c.email), c.papel !== 'leitor' ? h('span.selo.ouro', { style: { marginLeft: '6px' } }, c.papel === 'administrador' ? 'Administração' : 'Edição') : null),
-          h('p.sub', 'Favoritos, notas, planos, estudos e artes ficam guardados na sua conta e aparecem em qualquer aparelho em que você entrar.'),
-          h('div.linha-bts', h('button.bt.peq', { on: { click: function () { Telas.perfil.novaSenha(); } } }, ico('escudo'), 'Trocar senha'),
-            h('button.bt.peq', { on: { click: sair } }, 'Sair da conta')));
+          h('div.ajuste', ajusteIco('pessoa'), h('div.ajuste-txt', h('b', c.email), h('small', 'Favoritos, notas, planos, estudos e artes ficam na sua conta e aparecem em qualquer aparelho em que você entrar.')),
+            c.papel !== 'leitor' ? h('span.selo.ouro', c.papel === 'administrador' ? 'Administração' : 'Edição') : null),
+          linhaAjuste('cadeado', 'Trocar senha', null, function () { Telas.perfil.novaSenha(); }),
+          linhaAjuste('esquerda', 'Sair da conta', 'Seus dados continuam guardados na conta', sair));
       } else {
         UI.trocar(contaEl,
-          h('p', 'Crie uma conta gratuita para guardar seus favoritos, notas, planos e artes e usar em qualquer aparelho.'),
-          h('p.sub', 'Sem conta, tudo continua funcionando e fica salvo só neste aparelho.'),
-          h('div.linha-bts', h('button.bt.pri', { on: { click: function () { abrirConta('cadastro'); } } }, 'Criar conta'), h('button.bt', { on: { click: function () { abrirConta('entrar'); } } }, 'Entrar')));
+          h('div.ajuste', ajusteIco('nuvem'), h('div.ajuste-txt', h('b', 'Guarde tudo na sua conta'), h('small', 'Crie uma conta gratuita para usar seus favoritos, notas, planos e artes em qualquer aparelho. Sem conta, tudo continua funcionando e fica salvo só neste aparelho.'))),
+          h('div.linha-bts.conta-bts', h('button.bt.pri', { on: { click: function () { abrirConta('cadastro'); } } }, 'Criar conta'), h('button.bt', { on: { click: function () { abrirConta('entrar'); } } }, 'Entrar')));
       }
     }
     async function sair() {
@@ -114,38 +118,86 @@
     App.aoMudar(function (c) { if (c === '_estado') desenharConta(); });
     tela.appendChild(contaEl);
 
-    // editorial
+    // Dados e armazenamento
+    tela.appendChild(secao('Dados e armazenamento'));
+    var sinc = grupo();
+    function desenharSinc() {
+      var m = modoSinc();
+      var offline = h('small', 'Conferindo…');
+      UI.trocar(sinc,
+        h('div.ajuste', ajusteIco(est.modo === 'sincronizado' ? 'nuvem' : 'escudo'), h('div.ajuste-txt', h('b', m[1]),
+          h('small', est.modo === 'sincronizado' ? 'Tudo o que você salva acompanha você em qualquer aparelho com a mesma conta.' : 'Tudo é salvo primeiro no aparelho e enviado quando houver conexão.')),
+          est.pendentes ? h('span.selo', est.pendentes + ' a enviar') : null),
+        est.erro ? h('p.sub.ajuste-nota', { style: { color: 'var(--perigo)' } }, est.erro) : null,
+        h('button.ajuste.ajuste-link#guardar-biblia', { on: { click: baixarBiblia } }, ajusteIco('baixar'), h('div.ajuste-txt', h('b', 'Guardar a Bíblia sem internet'), offline), ico('direita')),
+        linhaAjuste('copiar', 'Exportar meus dados', 'Arquivo com tudo o que você salvou', exportar),
+        linhaAjuste('lixo', 'Apagar dados deste aparelho', est.modo === 'sincronizado' ? 'A cópia local; a conta continua com tudo' : 'O que só existe aqui será perdido', async function () {
+          if (await UI.confirmar('Apagar dados deste aparelho', est.modo === 'sincronizado' ? 'A cópia local será apagada; seus dados continuam na sua conta e voltam ao recarregar.' : 'Os dados que só existem neste aparelho serão perdidos.', 'Apagar', true)) { await Dados.apagarAparelho(); UI.aviso('Dados locais apagados.'); }
+        }, '.perigo'));
+      Biblia.baixadosOffline().then(function (q) { offline.textContent = (q >= 66 ? 'Bíblia completa guardada' : q + ' de 66 livros guardados') + ' · ' + Biblia.versao(Biblia.padrao()).sigla; });
+    }
+    desenharSinc();
+    App.aoMudar(function (c) { if (c === '_estado') desenharSinc(); });
+    tela.appendChild(sinc);
+
+    // Edição de conteúdo
     if (est.dono || est.podeEditar) {
-      tela.appendChild(h('div.secao', h('h2', 'Edição de conteúdo')));
-      tela.appendChild(h('div.lista',
-        linha('luz', 'Devocionais', 'Revisar rascunhos e publicar', function () { App.estado.secaoBiblioteca = 'devocionais'; App.estado.abaDevo = 'edicao'; App.ir('biblioteca'); }),
-        linha('sol', 'Reflexão do versículo de hoje', 'Escrever ou revisar', function () { Telas.devocionais.editarReflexao(UI.hoje(), A2Conteudo.versiculoDoDia(UI.hoje())); })));
+      tela.appendChild(secao('Edição de conteúdo'));
+      tela.appendChild(grupo(
+        linhaAjuste('luz', 'Devocionais', 'Revisar rascunhos e publicar', function () { App.estado.secaoBiblioteca = 'devocionais'; App.estado.abaDevo = 'edicao'; App.ir('biblioteca'); }),
+        linhaAjuste('sol', 'Reflexão do versículo de hoje', 'Escrever ou revisar', function () { Telas.devocionais.editarReflexao(UI.hoje(), A2Conteudo.versiculoDoDia(UI.hoje())); })));
     }
 
-    // sobre
-    tela.appendChild(h('div.secao', h('h2', 'Sobre e licenças')));
-    var sobre = h('section.cartao.form', h('div.marca-peq', { html: UI.logo(40) + '<b>ATOS 2</b>' }), h('p', { style: { font: 'italic 500 18px var(--f-display)' } }, 'De volta à doutrina dos apóstolos.'),
-      h('p.sub', 'O ATOS 2 não pertence a nenhuma denominação. As Escrituras vêm sempre das traduções, sem alterações; conteúdos com apoio de inteligência artificial são identificados e revisados antes de publicar.'));
-    var creditos = h('div.lista');
-    sobre.appendChild(creditos);
-    Biblia.licenciadas().then(function (vs) {
-      vs.forEach(function (v) {
-        creditos.appendChild(h('div.item', { style: { alignItems: 'flex-start' } }, ico('livro'), h('div.corpo',
-          h('span.titulo', v.nome + ' (' + v.sigla + ')'),
-          h('span.meta', { style: { whiteSpace: 'normal' } }, v.credito),
-          v.alteracoes ? h('span.meta', { style: { whiteSpace: 'normal' } }, v.alteracoes) : null)));
-      });
-    }, function () {});
-    sobre.appendChild(h('div.aviso', ico('imagem'), h('span', A2Fotos.CREDITO)));
-    sobre.appendChild(h('div.aviso', ico('texto'), h('span', A2Originais.CREDITO)));
-    sobre.appendChild(h('div.aviso', ico('pincel'), h('span', 'Fontes das artes e do app: Cormorant Garamond, Literata, Manrope, Playfair Display, Lora, Libre Baskerville, Cinzel, Montserrat, Josefin Sans, Bebas Neue, Dancing Script e Great Vibes, sob a SIL Open Font License 1.1 (arquivos via Fontsource). Ícones e decorações das artes: desenho próprio do ATOS 2.')));
-    sobre.appendChild(h('div.aviso', ico('escudo'), h('span', 'As 95 Teses, as fichas dos livros, as explicações de palavras e os temas de doutrina são redação do ATOS 2. Confira tudo nas Escrituras.')));
-    sobre.appendChild(h('div.rotulo', 'Aguardando licença'));
-    sobre.appendChild(h('div.lista', Biblia.VERSOES.filter(function (v) { return !v.ativa; }).map(function (v) { return h('div.item', h('div.corpo', h('span.titulo', v.nome + ' (' + v.sigla + ')'), h('span.meta', v.situacao))); })));
-    tela.appendChild(sobre);
+    // Sobre
+    tela.appendChild(secao('Sobre o Atos 2'));
+    tela.appendChild(h('section.cartao.grupo-ajustes.sobre-perfil',
+      h('div.sobre-marca', h('div.marca-peq', { html: UI.logo(40) + '<b>ATOS 2</b>' }), h('p.lema', 'De volta à doutrina dos apóstolos.'),
+        h('p.sub', 'O ATOS 2 não pertence a nenhuma denominação. As Escrituras vêm sempre das traduções, sem alterações; conteúdos com apoio de inteligência artificial são identificados e revisados antes de publicar.')),
+      linhaAjuste('escudo', 'Licenças e créditos', 'Traduções, textos originais, fotos e fontes', abrirLicencas, '#ver-licencas')));
   }
-  function num(v, r) { return h('div.numero', h('b', v), h('small', r)); }
-  function linha(i, t, s, fn) { return h('button.item', { on: { click: fn } }, ico(i), h('div.corpo', h('span.titulo', t), h('span.meta', s)), ico('direita')); }
+
+  function abrirLicencas() {
+    UI.folha('Licenças e créditos', function () {
+      var corpo = h('div.form.licencas');
+      var creditos = h('div.lista');
+      corpo.appendChild(h('div.rotulo', 'Traduções'));
+      corpo.appendChild(creditos);
+      Biblia.licenciadas().then(function (vs) {
+        vs.forEach(function (v) {
+          creditos.appendChild(h('div.item', { style: { alignItems: 'flex-start' } }, ico('livro'), h('div.corpo',
+            h('span.titulo', v.nome + ' (' + v.sigla + ')'),
+            h('span.meta', { style: { whiteSpace: 'normal' } }, v.credito),
+            v.alteracoes ? h('span.meta', { style: { whiteSpace: 'normal' } }, v.alteracoes) : null)));
+        });
+      }, function () {});
+      corpo.appendChild(h('div.rotulo', 'Outros conteúdos'));
+      corpo.appendChild(h('div.aviso', ico('imagem'), h('span', A2Fotos.CREDITO)));
+      corpo.appendChild(h('div.aviso', ico('texto'), h('span', A2Originais.CREDITO)));
+      corpo.appendChild(h('div.aviso', ico('pincel'), h('span', 'Fontes das artes e do app: Cormorant Garamond, Literata, Manrope, Playfair Display, Lora, Libre Baskerville, Cinzel, Montserrat, Josefin Sans, Bebas Neue, Dancing Script e Great Vibes, sob a SIL Open Font License 1.1 (arquivos via Fontsource). Ícones e decorações das artes: desenho próprio do ATOS 2.')));
+      corpo.appendChild(h('div.aviso', ico('escudo'), h('span', 'As 95 Teses, as fichas dos livros, as explicações de palavras e os temas de doutrina são redação do ATOS 2. Confira tudo nas Escrituras.')));
+      corpo.appendChild(h('div.rotulo', 'Aguardando licença'));
+      corpo.appendChild(h('div.lista', Biblia.VERSOES.filter(function (v) { return !v.ativa; }).map(function (v) { return h('div.item', h('div.corpo', h('span.titulo', v.nome + ' (' + v.sigla + ')'), h('span.meta', v.situacao))); })));
+      return corpo;
+    }, { cheia: true });
+  }
+
+  function editarPerfil(arq) {
+    UI.folha('Editar perfil', function (api) {
+      var p = App.perfil();
+      var nome = h('input.entrada#perfil-nome', { type: 'text', maxlength: 40, value: p.nome || '', autocomplete: 'given-name' });
+      return h('form.form.editar-perfil', { on: { submit: function (ev) {
+        ev.preventDefault();
+        Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { nome: nome.value.trim() }));
+        api.fechar(); UI.aviso('Perfil atualizado.'); App.recarregar();
+      } } },
+        h('div.editar-foto', avatar(p),
+          h('div.linha-bts', h('button.bt.peq', { type: 'button', on: { click: function () { api.fechar(); arq.click(); } } }, ico('imagem'), p.foto ? 'Trocar foto' : 'Escolher foto'),
+            p.foto ? h('button.bt.peq.fant', { type: 'button', on: { click: function () { var q = App.perfil(); delete q.foto; Dados.salvar('perfil', 'eu', q); api.fechar(); App.recarregar(); } } }, 'Remover foto') : null)),
+        h('label.campo', { for: 'perfil-nome' }, h('span', 'Nome'), nome),
+        h('p.sub', 'A foto fica no seu perfil e aparece no Início. Ela é reduzida no aparelho antes de ser guardada.'),
+        h('div.linha-bts', h('button.bt.pri', { type: 'submit' }, 'Salvar')));
+    });
+  }
 
   async function trocarFoto(arq) {
     try {
@@ -220,5 +272,5 @@
     });
   }
 
-  root.Telas.perfil = { render: render, abrirConta: abrirConta, novaSenha: novaSenha };
+  root.Telas.perfil = { render: render, abrirConta: abrirConta, novaSenha: novaSenha, editarPerfil: editarPerfil, abrirLicencas: abrirLicencas };
 })(window);

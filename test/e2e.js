@@ -339,12 +339,14 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   // Perfil e tema noturno
   await p.click('a[data-aba="perfil"]'); await p.waitForTimeout(300);
   checar((await p.textContent('.jornada2')).includes('Capítulos lidos') && !!(await p.$('#ver-jornada')), 'Perfil: estatísticas de Minha jornada');
-  await p.selectOption('#pref-tema', 'escuro'); await p.waitForTimeout(200);
+  await p.click('#pref-tema .chip[data-tema="escuro"]'); await p.waitForTimeout(200);
   checar(await p.getAttribute('html', 'data-tema') === 'escuro', 'Perfil: modo noturno');
+  checar(await p.getAttribute('#pref-tema .chip[data-tema="escuro"]', 'aria-pressed') === 'true', 'Perfil: aparência em chips com seleção');
+  checar(await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--vdia-azul').trim() !== ''), 'Paleta: tons do Versículo do Dia guardados');
   await p.screenshot({ path: '/tmp/shots/7-perfil-escuro.png', fullPage: true });
   await p.click('a[data-aba="biblia"]'); await p.waitForTimeout(500);
   await p.screenshot({ path: '/tmp/shots/8-biblia-escuro.png' });
-  await p.click('a[data-aba="perfil"]'); await p.waitForTimeout(200); await p.selectOption('#pref-tema', 'claro'); await p.waitForTimeout(150);
+  await p.click('a[data-aba="perfil"]'); await p.waitForTimeout(200); await p.click('#pref-tema .chip[data-tema="claro"]'); await p.waitForTimeout(150);
 
   // Traduções: Almeida 1911 e Nova Bíblia Viva
   await p.click('a[data-aba="biblia"]'); await p.waitForTimeout(300);
@@ -389,8 +391,10 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.screenshot({ path: '/tmp/shots/13-onbv.png' });
   // créditos
   await p.click('a[data-aba="perfil"]'); await p.waitForTimeout(800);
-  var sobre = await p.textContent('.tela');
+  await p.click('#ver-licencas'); await p.waitForTimeout(800);
+  var sobre = await p.textContent('.folha');
   checar(sobre.includes('marca registrada') && sobre.includes('Gutenberg') && sobre.includes('Bíblia Livre'), 'Perfil: créditos e licenças das três traduções');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
   // a arte nova usa a tradução escolhida
   checar(await p.evaluate(() => Biblia.padrao()) === 'onbv', 'Tradução padrão segue a escolha');
   var vd2 = await p.evaluate(async () => { await App.ir('inicio'); await new Promise(r => setTimeout(r, 800)); return document.querySelector('.vdia').textContent; });
@@ -427,6 +431,12 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   checar((await p.textContent('.seletor-cap')).includes('Filipenses 4'), 'Jornada: item do histórico abre o capítulo');
   await p.evaluate(() => App.ir('perfil')); await p.waitForSelector('#ver-jornada');
   checar(await p.locator('.jornada2 .kpis .kpi').count() === 6, 'Perfil: resumo de Minha jornada e acesso ao painel');
+  checar(await p.locator('.perfil-hero .perfil-foto').count() === 1 && await p.locator('.caminhada .acesso-card').count() === 6, 'Perfil: destaque com foto e seis atalhos da caminhada');
+  checar(await p.evaluate(() => { var r = getComputedStyle(document.documentElement); return r.getPropertyValue('--azul').trim().toUpperCase() === '#192D50' && r.getPropertyValue('--ouro').trim().toUpperCase() === '#A58A57' && r.getPropertyValue('--areia').trim().toUpperCase() === '#F4F0E5'; }), 'Paleta oficial nas variáveis base');
+  checar(await p.evaluate(() => { var a = document.querySelector('.abas'); return !!a && !!a.querySelector('[data-aba="criar"]'); }), 'Perfil: navegação flutuante com Criar no centro');
+  await p.click('#editar-perfil'); await p.waitForSelector('#perfil-nome'); await p.fill('#perfil-nome', 'Cadu F.'); await p.click('.folha button[type=submit]'); await p.waitForTimeout(400);
+  checar((await p.textContent('#perfil-nome-txt')) === 'Cadu F.', 'Perfil: editar nome');
+  await p.click('#editar-perfil'); await p.waitForSelector('#perfil-nome'); await p.fill('#perfil-nome', 'Cadu'); await p.click('.folha button[type=submit]'); await p.waitForTimeout(400);
   await p.evaluate(() => App.ir('inicio')); await p.waitForSelector('.explorar .atalho');
   checar(await p.locator('.vdia .acoes-ico .bt-ico').count() === 4 && (await p.textContent('.vdia')).includes('Anteriores'), 'Início: cartão do Versículo do Dia preservado');
   await p.click('.descubra-card:has-text("Tema da semana")'); await p.waitForSelector('.folha .lista .item'); await p.keyboard.press('Escape'); await p.waitForTimeout(200);

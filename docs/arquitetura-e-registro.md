@@ -1,7 +1,7 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 06/11/2026 (v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
+Última atualização: 06/11/2026 (v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
 Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões
@@ -14,6 +14,7 @@ Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositór
 | **Local primeiro**, sincronização plugável | (v1.8) Projeto Supabase `atos2` (sa-east-1, id `cxzmijbcoxbicsfchkac`) criado depois de pausar o `acs-digital` a pedido do usuário em 05/11/2026 (restaurável por 90 dias). Antes: Supabase sem vaga (limite de 2 projetos gratuitos). Os dados vão primeiro ao IndexedDB; na prévia sincronizam com o banco do claude.ai por usuário; na produção, o mesmo contrato vai para o Supabase (`schema.sql`). |
 | A IA **nunca escreve o texto** das artes | O versículo é composto pelo editor a partir da tradução. A IA pode criar um fundo em SVG (saneado: sem `<text>`, scripts, links ou imagens externas) ou sugerir a composição em JSON (fundo, fontes, cores, elementos), validada por `A2Arte.validarDesenhoIA`, que descarta qualquer texto. |
 | Fontes hospedadas com o app (v2.0) | As 12 famílias (SIL OFL 1.1, via Fontsource, só o subconjunto latino, ≈ 0,9 MB) ficam em `app/fontes/`. O canvas só desenha com a fonte carregada; antes o app dependia do Google Fonts (sem internet as artes saíam com fonte genérica). A Literata usa a versão variável com ajuste óptico, igual à que o Google servia, para o cartão do Versículo do Dia continuar idêntico. |
+| **Paleta oficial única** (v2.5): azul-marinho #192D50, dourado #A58A57, bege #F4F0E5, branco #FFFFFF | Regra obrigatória do usuário: todas as abas com a mesma identidade (títulos serifados, textos em fonte moderna, ícones de traço padronizados, cartões arredondados, bordas suaves, sombras leves, navegação flutuante com Criar no centro). As variáveis base (`--azul`, `--azul-texto`, `--ouro`, `--areia`) passaram a usar a paleta oficial, que as telas da v2.x já usavam. O cartão do Versículo do Dia guarda os tons anteriores (`--vdia-*`, regra obrigatória), conferido pixel a pixel. |
 | Conteúdo de IA é identificado e revisado antes de publicar | Devocionais e reflexões de IA nascem como rascunho na área editorial (invisível aos leitores). Publicar exige marcar “Revisei o conteúdo”; o leitor vê o aviso “redigido com apoio de IA e revisado”. |
 | Referências sempre validadas | Toda referência (versículo do dia, temas, personagens, galeria, planos, estudos com IA, devocionais) é conferida contra a contagem real de capítulos e versículos. |
 
@@ -73,7 +74,7 @@ app/
   js/ui.js  dados.js  biblia.js  app.js
   js/telas/   inicio  cartao  leitor  estudo-versiculo  pesquisa  fotos  arte-desenho  estudio  biblioteca  planos  devocionais  perfil  explorar (assistente, quiz, mural)  teologia (originais, doutrinas, Bereano)  jornada
 ferramentas/  converter_originais.py  preparar_fotos.py  converter_blivre.py  verificar_biblia.py  converter_usfm.py  converter_almeida1911.py  verificar_traducao.py  atualizar_grafia_1911.py  metadados/
-test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  jornada.test.js (7)  biblioteca.test.js (5)  e2e.js (183)  e2e-banco.js (22)  e2e-nuvem.js (12, Supabase falso)
+test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  jornada.test.js (7)  biblioteca.test.js (5)  e2e.js (189)  e2e-banco.js (22)  e2e-nuvem.js (12, Supabase falso)
 docs/         schema.sql (Supabase)
 ```
 
@@ -138,7 +139,8 @@ docs/         schema.sql (Supabase)
   - **Modo Bereano:** sem IA — verifica se a frase está escrita, busca passagens com as palavras principais, liga ao tema curado e propõe perguntas de exame; com IA — classifica (explícito, conclusão, debatido, sem base clara, contraria o texto), textos a favor e que limitam (conferidos), contexto, leituras, e sempre mostra a conferência feita pelo app abaixo.
   - **Exegese no guia:** estrutura do capítulo pelos subtítulos da Almeida 1911, palavras importantes no original, texto interlinear (avançado), doutrinas ligadas ao capítulo. Com IA (avançado): seção de exegese (contexto literário e canônico, estrutura, destinatários e intenção) e palavras com Strong validado contra a passagem.
   - Limites: sem IA no site não há sermões, respostas abertas nem exegese redigida; glosas e tradução palavra por palavra em inglês; ACF, KJV e NTLH continuam sem licença, por isso o comparador usa BLIVRE, Almeida 1911 e ONBV.
-- **Perfil:** nome, foto, estatísticas, tradução preferida, aparência, notificações (5 tipos com horário), sincronização, guardar a Bíblia sem internet, exportar dados, licenças, área editorial.
+- **Perfil (v2.5, `js/telas/perfil.js`):** redesenhado com os componentes do Início e da Biblioteca, sem identidade própria. Cabeçalho serifado com subtítulo; cartão de destaque azul-marinho (como o resumo da Biblioteca) com foto de borda dourada, nome, tradução em uso, situação da sincronização e “Editar perfil” (folha com nome e foto); **Minha jornada** (o mesmo resumo do Início, com “Painel completo”); **Minha caminhada** com seis atalhos no padrão Acesso rápido (planos ativos, versículos, devocionais, artes, coleções, histórico); **Preferências** em grupo de ajustes (tradução, aparência em chips Automático/Claro/Noturno, tamanho do texto com amostra “Aa” em Literata); **Notificações** com ícone, horário e interruptor; **Conta**; **Dados e armazenamento** (sincronização, Bíblia sem internet, exportar, apagar deste aparelho em vermelho); **Edição de conteúdo** (editores); **Sobre o Atos 2** com “Licenças e créditos” numa folha (antes ocupava metade da tela). Ícones: o conjunto de traço próprio do app, o mesmo de todas as abas (trocar por Lucide mudaria os ícones do cartão do Versículo do Dia).
+- **Perfil (até v2.4):** nome, foto, estatísticas, tradução preferida, aparência, notificações (5 tipos com horário), sincronização, guardar a Bíblia sem internet, exportar dados, licenças, área editorial.
 
 ## 5. Limitações conhecidas da prévia
 

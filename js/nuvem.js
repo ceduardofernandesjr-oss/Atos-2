@@ -166,5 +166,9 @@
     canEdit: function () { return !!perfil && (perfil.papel === 'editor' || perfil.papel === 'administrador'); }
   };
 
-  root.A2Nuvem = { configurado: configurado, iniciar: iniciar, conta: conta, ouvirConta: ouvirConta, Conta: Conta, banco: banco, usuario: usuario, mensagem: mensagem };
+  // Jornada da Sabedoria: funções do servidor (pontos são calculados lá) e leitura de tabelas públicas
+  async function rpc(nome, args) { await iniciar(); if (!sessao) throw new Error('Entre na sua conta para registrar seus pontos.'); return exec(cliente.rpc(nome, args || {})); }
+  async function tabela(nome, filtro) { await iniciar(); var q = cliente.from(nome).select('*'); if (filtro) Object.keys(filtro).forEach(function (k) { q = q.eq(k, filtro[k]); }); return exec(q); }
+
+  root.A2Nuvem = { rpc: rpc, tabela: tabela, configurado: configurado, iniciar: iniciar, conta: conta, ouvirConta: ouvirConta, Conta: Conta, banco: banco, usuario: usuario, mensagem: mensagem };
 })(window);

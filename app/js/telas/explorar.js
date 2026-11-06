@@ -45,7 +45,7 @@
   function hash(s) { var x = 2166136261; for (var i = 0; i < s.length; i++) { x ^= s.charCodeAt(i); x = Math.imul(x, 16777619); } return (x >>> 0).toString(36); }
 
   // ====================================================================== ASSISTENTE
-  var livrosCache = {};
+  var livrosCache = {}, estudoStrongs = {};
   async function livrosDe(v) { return livrosCache[v] || (livrosCache[v] = await Biblia.todosOsLivros(v)); }
 
   // Ferramentas que a IA usa para ler a Bíblia dentro do app (o texto vem sempre da tradução)
@@ -82,6 +82,36 @@
           });
           return { referencia: A2Ref.formatar(r.ref), referencias: out.slice(0, 40) };
         } },
+      { name: 'palavras_originais', description: 'Palavras do texto original (grego do Textus Receptus ou hebraico de Leningrado) de uma passagem de até 8 versículos: original, transliteração, número de Strong, morfologia em português e tradução palavra por palavra em inglês (STEPBible, CC BY).',
+        inputSchema: { type: 'object', properties: { referencia: { type: 'string' } }, required: ['referencia'] },
+        execute: async function (i) {
+          var r = Biblia.interpretar(String(i.referencia || ''));
+          if (!r.ok) throw new Error('Referência inválida.');
+          status('Lendo o texto original…');
+          var out = [], lista = A2Ref.versiculosDa(r.ref, Biblia.contagemSinc(Biblia.padrao())).slice(0, 8);
+          for (var k = 0; k < lista.length; k++) {
+            var ws = await Teologia.Orig.palavras(lista[k][0], lista[k][1], lista[k][2]);
+            ws.forEach(function (w) { estudoStrongs[w.strong] = 1; });
+            out.push(lista[k][1] + ':' + lista[k][2] + ' ' + ws.map(function (w) { return w.original + ' (' + w.translit + ', ' + w.strong + ', ' + w.morfologia + ', "' + w.traducao + '")'; }).join(' | '));
+          }
+          return { referencia: A2Ref.formatar(r.ref), palavras: out };
+        } },
+      { name: 'lexico', description: 'Entrada de léxico de uma palavra pelo número de Strong (ex.: G5485, H2617A): lema, transliteração, classe, sentido básico em inglês, explicação em português quando houver e número de ocorrências.',
+        inputSchema: { type: 'object', properties: { strong: { type: 'string' } }, required: ['strong'] },
+        execute: async function (i) {
+          var e = await Teologia.Orig.entrada(String(i.strong || '').trim());
+          if (!e) throw new Error('Strong não encontrado.');
+          return { strong: e.strong, lema: e.lema, translit: e.translit, classe: e.classe, sentido_ingles: e.glosa, explicacao_pt: e.termo || '', ocorrencias: e.total, exemplos: e.refs.slice(0, 15) };
+        } },
+      { name: 'doutrina', description: 'Tema doutrinário curado pelo app (definição, passagens conferidas, leituras das tradições cristãs, objeções e conclusão equilibrada). Informe o tema em palavras (ex.: "batismo", "dízimo", "milênio").',
+        inputSchema: { type: 'object', properties: { tema: { type: 'string' } }, required: ['tema'] },
+        execute: async function (i) {
+          var d = A2Doutrinas.procurar(String(i.tema || ''), A2Busca.normalizar)[0];
+          if (!d) return { encontrado: false, temas_disponiveis: A2Doutrinas.DOUTRINAS.map(function (x) { return x.nome; }) };
+          status('Consultando o tema “' + d.nome + '”…');
+          return { encontrado: true, nome: d.nome, definicao: d.definicao, passagens: d.p.map(function (x) { return x[0] + ' — ' + x[2]; }), contexto: d.contexto,
+            leituras: d.leituras.map(function (l) { return l.nome + ' (' + l.quem + '): ' + l.resumo + ' Textos: ' + l.textos.join(', '); }), objecoes: d.objecoes, conclusao: d.conclusao };
+        } },
       { name: 'buscar_texto', description: 'Pesquisa palavras no texto bíblico da tradução do usuário (sem acentos; aspas para expressão exata). Devolve até 25 versículos e o total encontrado.',
         inputSchema: { type: 'object', properties: { consulta: { type: 'string' } }, required: ['consulta'] },
         execute: async function (i) {
@@ -100,8 +130,17 @@
 
   var assist = { area: null, status: null };
 
+  var MODOS = [['estudar', 'Estudar', 'livro'], ['bereano', 'Modo Bereano', 'escudo'], ['doutrinas', 'Doutrinas', 'colecao'], ['original', 'Grego e hebraico', 'texto']];
+  function nivel() { return App.config().nivelEstudo || 'intermediario'; }
   function renderAssistente(tela) {
-    tela.appendChild(cabecalho('Assistente bíblico', App.temIA ? h('span.selo.ia', 'IA') : null));
+    tela.appendChild(cabecalho('Assistente Atos 2', App.temIA ? h('span.selo.ia', 'IA') : null));
+    var modo = App.estado.assistenteModo || 'estudar';
+    tela.appendChild(h('div.chips.modos-estudo', { role: 'tablist' }, MODOS.map(function (m) {
+      return h('button.chip', { role: 'tab', 'aria-selected': String(modo === m[0]), 'aria-pressed': String(modo === m[0]), on: { click: function () { App.estado.assistenteModo = m[0]; App.estado.doutrinaAberta = null; App.recarregar(); } } }, ico(m[2]), m[1]);
+    })));
+    if (modo === 'bereano') return renderBereano(tela);
+    if (modo === 'doutrinas') { var ad = h('div.assist-area'); tela.appendChild(ad); if (App.estado.doutrinaAberta) Teologia.abrirDoutrina(App.estado.doutrinaAberta, ad); else Teologia.listaDoutrinas(ad); return; }
+    if (modo === 'original') return renderOriginal(tela);
     var entrada = h('textarea.entrada#assist-q', { rows: 2, maxlength: 300, placeholder: 'Ex.: versículos sobre ansiedade · o que a Bíblia diz sobre perdão · Rm 8:28' });
     var bt = h('button.bt.pri', { on: { click: enviar } }, ico('brilho'), 'Perguntar');
     entrada.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); } });
@@ -114,9 +153,11 @@
       });
     }
     tela.appendChild(h('div.cartao.assist-caixa',
-      h('p.sub', 'Pesquise versículos por tema ou digite uma passagem para ver o contexto histórico, a cultura da época e o sentido do texto.'),
+      h('p.sub', 'Pesquise versículos por tema ou digite uma passagem (ex.: Rm 8:28) para estudar o contexto, o texto original e o sentido. Escolha a profundidade.'),
       h('label.sr', { for: 'assist-q' }, 'Pergunta ou passagem'), entrada,
-      h('div.linha-bts', bt),
+      h('div.linha-bts', bt, h('div.esp'), h('div.niveis', { role: 'group', 'aria-label': 'Profundidade' }, [['basico', 'Básico'], ['intermediario', 'Intermediário'], ['avancado', 'Avançado']].map(function (n) {
+        return h('button.chip.peq', { 'aria-pressed': String(nivel() === n[0]), title: 'Profundidade do estudo', on: { click: function () { App.salvarConfig({ nivelEstudo: n[0] }); App.recarregar(); } } }, n[1]);
+      }))),
       h('div.chips', ['Versículos sobre ansiedade', 'O que a Bíblia diz sobre perdão', 'Promessas de Deus para a família', 'Jo 3:1-16', 'Sl 23', 'At 2:42'].map(function (x) {
         return h('button.chip', { on: { click: function () { entrada.value = x; enviar(); } } }, x);
       }))));
@@ -130,7 +171,7 @@
       if (s) return;
       assist.guia = true;
       bt.replaceChildren(ico('busca'), 'Buscar');
-      UI.trocar(aviso, ico('livro'), h('span', 'Modo guia: aqui o assistente não usa IA. Ele encontra passagens pelos temas curados e pela busca no texto, e para cada passagem mostra o texto em outras traduções, a ficha do livro, o capítulo ao redor e as referências cruzadas da Almeida 1911. Confira tudo nas Escrituras (At 17:11).'));
+      UI.trocar(aviso, ico('livro'), h('span', 'Modo guia: aqui o assistente não usa IA. Ele encontra passagens pelos temas curados e pela busca no texto e, para cada passagem, reúne a ficha do livro, o capítulo e sua estrutura, outras traduções, as palavras no grego ou hebraico e as referências cruzadas da Almeida 1911. Confira tudo nas Escrituras (At 17:11).'));
     });
     historicoAssist(tela);
     var pedido = App.estado.assistentePedido; App.estado.assistentePedido = null;
@@ -190,7 +231,7 @@
   async function estudar(refStr, foco) {
     var r = Biblia.interpretar(refStr);
     if (!r.ok) { assist.status.textContent = r.erro; return; }
-    var ref = refCurta(r.ref), id = 'e' + hash(Biblia.padrao() + '|' + ref + '|' + (foco || ''));
+    var ref = refCurta(r.ref), id = 'e' + hash(Biblia.padrao() + '|' + ref + '|' + (foco || '') + '|' + nivel());
     var salvo = Dados.obter('assistente', id);
     if (salvo) { mostrarEstudo(salvo.ref, salvo.estudo, id, salvo.conversa || []); return; }
     var sample = await obterSample();
@@ -198,8 +239,9 @@
     UI.trocar(assist.area, h('div.cartao', h('b', A2Ref.formatar(r.ref)), await versosEl(r.ref, 30)), h('div.carregando', h('div.giro')));
     assist.status.textContent = 'Preparando o estudo…';
     try {
-      var j = await sample.json(A2Assistente.promptEstudo(A2Ref.formatar(r.ref), sigla(), foco), { tools: ferramentas(function (s) { assist.status.textContent = s; }), modelTier: 'complex' });
-      var v = A2Assistente.validarEstudo(j, function (s) { return Biblia.interpretar(s); });
+      estudoStrongs = {};
+      var j = await sample.json(A2Assistente.promptEstudo(A2Ref.formatar(r.ref), sigla(), foco, nivel()), { tools: ferramentas(function (s) { assist.status.textContent = s; }), modelTier: 'complex' });
+      var v = A2Assistente.validarEstudo(j, function (s) { return Biblia.interpretar(s); }, estudoStrongs);
       var estudo = Object.assign({}, v.estudo, { ligacoes: v.estudo.ligacoes.map(function (l) { return { ref: refCurta(l.ref), nota: l.nota }; }), descartadas: v.descartadas });
       guardar(id, { tipo: 'estudo', ref: ref, foco: foco || '', estudo: estudo, conversa: [] });
       App.registrar('estudo', { titulo: 'Assistente: ' + A2Ref.formatar(r.ref) });
@@ -250,7 +292,14 @@
       secao('Contexto histórico', par(e.contexto_historico)),
       secao('Cultura e costumes', par(e.cultura)),
       secao('O sentido no texto', par(e.sentido)),
-      secao('Palavras-chave', e.palavras && e.palavras.length ? h('dl.palavras', e.palavras.map(function (p) { return [h('dt', p.termo), h('dd', p.explicacao)]; })) : null),
+      e.exegese && (e.exegese.literario || e.exegese.estrutura) ? secao('Exegese', h('div',
+        e.exegese.literario ? h('p', h('b', 'Contexto literário: '), textoComRefs(e.exegese.literario)) : null,
+        e.exegese.estrutura ? h('p', h('b', 'Estrutura: '), textoComRefs(e.exegese.estrutura)) : null,
+        e.exegese.intencao ? h('p', h('b', 'Destinatários e intenção do autor: '), textoComRefs(e.exegese.intencao)) : null,
+        e.exegese.canonico ? h('p', h('b', 'No conjunto da Bíblia: '), textoComRefs(e.exegese.canonico)) : null)) : null,
+      secao('Palavras-chave', e.palavras && e.palavras.length ? h('dl.palavras', e.palavras.map(function (p) {
+        return [h('dt', p.strong ? h('button.link-ref', { on: { click: function () { Teologia.abrirPalavra(p.strong); } } }, p.termo) : p.termo), h('dd', p.explicacao)];
+      })) : null),
       secao('Passagens relacionadas', ligacoes),
       secao('Leituras entre cristãos', e.interpretacoes && e.interpretacoes.length ? h('div', h('p.sub', 'Cristãos que respeitam as Escrituras entendem este ponto de maneiras diferentes:'),
         e.interpretacoes.map(function (x) { return h('p', h('b', x.leitura + ': '), x.explicacao); })) : null),
@@ -347,13 +396,13 @@
       var sp = h('span' + (dentro ? '.alvo' : '')); sp.appendChild(h('sup', y.v)); sp.appendChild(UI.textoComItalico(y.t)); redorEl.appendChild(sp);
     });
     // referências cruzadas (Almeida 1911, grafia atualizada) e notas da tradução
-    var cruzadas = [], notas = [];
+    var cruzadas = [], notas = [], estrutura = [];
     try {
       await Biblia.indice('alm1911at');
       var l1911 = await Biblia.livro(ref.livro, 'alm1911at'), vistos = {};
       A2Ref.versiculosDa(ref, Biblia.contagemSinc('alm1911at')).slice(0, 20).forEach(function (x) {
         ((l1911.notas || {})[x[1] + ':' + x[2]] || []).forEach(function (n) {
-          if (n.tipo !== 'ref') return;
+            if (n.tipo !== 'ref') return;
           A2Assistente.refsDaNota1911(n.t, lv.abrev, x[1]).forEach(function (s) { var rr = Biblia.interpretar(s); if (rr.ok && !rr.soLivro && !vistos[s] && cruzadas.length < 12) { vistos[s] = 1; cruzadas.push(rr.ref); } });
         });
       });
@@ -361,7 +410,23 @@
       A2Ref.versiculosDa(ref, Biblia.contagemSinc(v)).slice(0, 20).forEach(function (x) {
         ((lAtual.notas || {})[x[1] + ':' + x[2]] || []).forEach(function (n) { if (n.tipo !== 'ref') notas.push({ v: x[2], t: n.t, k: n.k }); });
       });
+      // estrutura do capítulo: subtítulos da Almeida 1911 (grafia atualizada)
+      var cabs = l1911.cab || {};
+      Object.keys(cabs).forEach(function (k) { var cv = k.split(':'); if (+cv[0] === ref.cap) cabs[k].forEach(function (c) { estrutura.push({ v: +cv[1], t: c.t }); }); });
+      estrutura.sort(function (a, b) { return a.v - b.v; });
     } catch (e) { /* sem internet: seções opcionais ficam de fora */ }
+    var niv = nivel();
+    var termosEl = null, interEl = null;
+    if (niv !== 'basico') {
+      try {
+        var termos = await Teologia.termosDaPassagem(ref);
+        if (termos.length) termosEl = h('div.lista', termos.slice(0, 8).map(function (w) {
+          return h('button.item', { on: { click: function () { Teologia.abrirPalavra(w.strong, w); } } }, h('div.corpo', h('span.titulo', h('span.or-inline', w.original), ' · ', w.translit), h('span', A2Originais.termo(w.strong))));
+        }));
+      } catch (e) { /* originais indisponíveis offline */ }
+    }
+    if (niv === 'avancado') { interEl = h('div', h('div.carregando', h('div.giro'))); Teologia.interlinear(ref, interEl).catch(function (e) { UI.trocar(interEl, h('p.sub', e.message)); }); }
+    var doutrinas = A2Doutrinas.DOUTRINAS.filter(function (d) { return d.p.some(function (x) { var rr = Biblia.interpretar(x[0]); return rr.ok && rr.ref.livro === ref.livro && rr.ref.cap === ref.cap; }); });
     var listaCruz = cruzadas.length ? h('div.lista', cruzadas.map(function (rr) {
       var txt = h('span.texto-vers');
       Biblia.textoDe(rr).then(function (vs) { txt.textContent = vs.slice(0, 3).map(function (y) { return UI.plano(y.t); }).join(' ') + (vs.length > 3 ? ' …' : ''); });
@@ -375,17 +440,110 @@
     var obras = ['ndb', nt ? 'chc-nt' : 'chc-at', nt ? 'int-nt' : 'int-at', 'fee'].map(function (id) { return A2Assistente.OBRA_POR_ID[id]; });
 
     UI.trocar(assist.area,
-      h('div.estudo-topo', h('span.rotulo', 'Guia de estudo · ' + sigla()), h('h2', A2Ref.formatar(ref))),
+      h('div.estudo-topo', h('span.rotulo', 'Guia de estudo · ' + sigla() + ' · ' + { basico: 'básico', intermediario: 'intermediário', avancado: 'avançado' }[niv]), h('h2', A2Ref.formatar(ref))),
       h('div.cartao.trecho-cartao', await versosEl(ref, 30), h('div.linha-bts',
         h('button.bt.peq', { on: { click: function () { App.abrirBiblia(ref.livro, ref.cap, ref.v1); } } }, ico('livro'), 'Ler no capítulo'),
+        h('button.bt.peq', { on: { click: function () { Teologia.abrirInterlinear(ref); } } }, ico('texto'), 'No original'),
         h('button.bt.peq', { on: { click: async function () { App.compartilhar(Biblia.citacao(await Biblia.textoDe(ref), ref, sigla()), 'Compartilhar passagem'); } } }, ico('compartilhar'), 'Compartilhar'))),
       intro ? secao('Sobre o livro de ' + lv.nome, h('div', h('p', h('b', 'Autoria: '), intro.autoria), h('p', h('b', 'Época: '), intro.epoca), h('p', h('b', 'Tema: '), intro.tema), h('p.sub', 'Ficha redigida pela equipe do ATOS 2.'))) : null,
       secao('No capítulo', h('div', h('p.sub', 'Os versículos ao redor ajudam a entender o sentido: leia o que vem antes e depois.'), redorEl)),
-      secao('Em outras traduções', h('div', h('p.sub', 'Comparar traduções ajuda a perceber o sentido das palavras.'), outras)),
-      notas.length ? secao('Notas da tradução', h('div', notas.slice(0, 8).map(function (n) { return h('p', h('b', 'v. ' + n.v + (n.k ? ' “' + n.k + '”' : '') + ': '), n.t); }))) : null,
-      listaCruz ? secao('Referências cruzadas', h('div', h('p.sub', 'Indicadas pela edição Almeida de 1911: passagens que tratam do mesmo assunto.'), listaCruz)) : null,
+      niv !== 'basico' && estrutura.length ? secao('Estrutura do capítulo ' + ref.cap, h('div', h('p.sub', 'Subtítulos da edição Almeida de 1911, que dividem o capítulo em partes.'),
+        h('ol.estrutura', estrutura.map(function (x) { return h('li', h('button.link-ref', { on: { click: function () { App.abrirBiblia(ref.livro, ref.cap, x.v); } } }, 'v. ' + x.v), ' ', x.t); })))) : null,
+      niv !== 'basico' ? secao('Em outras traduções', h('div', h('p.sub', 'Comparar traduções ajuda a perceber o sentido das palavras.'), outras)) : null,
+      termosEl ? secao('Palavras importantes no original', h('div', h('p.sub', 'Palavras desta passagem com explicação em português. Toque para ver onde mais aparecem.'), termosEl)) : null,
+      interEl ? secao('Texto original', h('div', h('p.sub', 'Palavra por palavra (até 6 versículos). A linha de baixo é a tradução palavra por palavra em inglês da fonte.'), interEl, Teologia.creditoEl())) : null,
+      niv !== 'basico' && notas.length ? secao('Notas da tradução', h('div', notas.slice(0, 8).map(function (n) { return h('p', h('b', 'v. ' + n.v + (n.k ? ' “' + n.k + '”' : '') + ': '), n.t); }))) : null,
+      doutrinas.length ? secao('Doutrinas ligadas a este capítulo', h('div.chips', doutrinas.map(function (d) { return h('button.chip', { on: { click: function () { App.estado.assistenteModo = 'doutrinas'; App.estado.doutrinaAberta = d.id; App.recarregar(); } } }, d.nome); }))) : null,
+      niv !== 'basico' && listaCruz ? secao('Referências cruzadas', h('div', h('p.sub', 'Indicadas pela edição Almeida de 1911: passagens que tratam do mesmo assunto.'), listaCruz)) : null,
       ligados.length ? secao('Temas e personagens', h('div.chips', ligados.map(function (x) { return h('button.chip', { on: { click: x.acao } }, x.nome); }))) : null,
       secao('Para aprofundar', h('ul.obras', obras.map(function (x) { return h('li', h('i', x.titulo), ' — ', x.autor, ' (', x.editora, ')'); }))));
+  }
+
+  // ---------------------------------------------------------------- modo Bereano
+  function renderBereano(tela) {
+    var entrada = h('textarea.entrada#bereano-q', { rows: 3, maxlength: 400, placeholder: 'Escreva o ensino, a frase de uma pregação ou a afirmação que você quer examinar.' });
+    entrada.value = App.estado.bereanoTexto || '';
+    var bt = h('button.bt.pri', { on: { click: examinar } }, ico('escudo'), 'Examinar nas Escrituras');
+    var area = h('div.assist-area'), status = h('p.sub.assist-status', { role: 'status', 'aria-live': 'polite' });
+    tela.appendChild(h('div.cartao.assist-caixa',
+      h('p', h('b', 'Modo Bereano'), ' — “examinavam cada dia as Escrituras para ver se estas coisas eram assim” (At 17:11).'),
+      h('p.sub', 'Mostra se a afirmação está escrita, quais textos falam do assunto, o contexto, as leituras cristãs e o que é texto e o que é interpretação.'),
+      h('label.sr', { for: 'bereano-q' }, 'Afirmação'), entrada, h('div.linha-bts', bt),
+      h('div.chips', ['O dízimo é obrigatório para o cristão', 'Quem morre vai direto para o céu', 'Jesus é Deus', 'O cristão não pode perder a salvação', 'Todo cristão deve falar em línguas'].map(function (x) {
+        return h('button.chip', { on: { click: function () { entrada.value = x; examinar(); } } }, x);
+      }))));
+    tela.appendChild(status); tela.appendChild(area);
+    async function examinar() {
+      var q = entrada.value.trim(); if (!q) { entrada.focus(); return; }
+      App.estado.bereanoTexto = q;
+      if (A2Assistente.sinalDeCrise(q)) mostrarApoio();
+      var sample = await obterSample();
+      if (!sample) { status.textContent = ''; Teologia.bereanoGuia(q, area); return; }
+      bt.disabled = true; UI.trocar(area, h('div.carregando', h('div.giro'))); status.textContent = 'Examinando nas Escrituras…';
+      try {
+        var j = await sample.json(A2Assistente.promptBereano(q, sigla()), { tools: ferramentas(function (s) { status.textContent = s; }), modelTier: 'complex' });
+        var b = A2Assistente.validarBereano(j, function (s) { return Biblia.interpretar(s); });
+        status.textContent = b.descartadas.length ? b.descartadas.length + ' referência(s) sugerida(s) pela IA não existiam e foram descartadas.' : '';
+        var conferencia = h('div');
+        UI.trocar(area,
+          h('div.cartao.bereano-afirmacao', h('span.rotulo', 'Afirmação examinada'), h('p', h('b', '“' + (b.afirmacao || q) + '”')),
+            h('p.selo-bereano.' + b.classificacao, A2Assistente.CLASSES_BEREANO[b.classificacao])),
+          secao('Resposta', par(b.resposta)),
+          b.a_favor.length ? secao('Textos usados para apoiar', listaRefs(b.a_favor)) : null,
+          b.limites.length ? secao('Textos que equilibram ou limitam', listaRefs(b.limites)) : null,
+          secao('Contexto', par(b.contexto)),
+          b.leituras.length ? secao('Leituras entre cristãos', h('div', b.leituras.map(function (x) { return h('p', h('b', x.leitura + ': '), x.explicacao); }))) : null,
+          secao('O que está escrito e o que é interpretação', par(b.explicito)),
+          b.perguntas.length ? secao('Para continuar examinando', h('ul', b.perguntas.map(function (x) { return h('li', x); }))) : null,
+          h('div.aviso-ia', ico('brilho'), h('span', 'Análise gerada por IA com os textos lidos pelo app. As referências foram conferidas; a classificação é uma ajuda, não um veredito. Abaixo, a conferência feita pelo próprio app.')),
+          h('div.secao', h('h2', 'Conferência pelo app')), conferencia);
+        Teologia.bereanoGuia(q, conferencia);
+      } catch (e) { status.textContent = erroIA(e); Teologia.bereanoGuia(q, area); }
+      finally { bt.disabled = false; }
+    }
+    if (entrada.value) examinar();
+  }
+  function listaRefs(l) {
+    return h('div.lista', l.map(function (x) {
+      var t = h('span.texto-vers', '…');
+      Biblia.textoDe(x.ref).then(function (vs) { t.textContent = vs.slice(0, 4).map(function (y) { return UI.plano(y.t); }).join(' ') + (vs.length > 4 ? ' …' : ''); });
+      return h('button.item', { on: { click: function () { App.abrirBiblia(x.ref.livro, x.ref.cap, x.ref.v1); } } }, h('div.corpo', h('span.titulo', A2Ref.formatar(x.ref)), t, x.nota ? h('span.meta', x.nota) : null));
+    }));
+  }
+
+  // ---------------------------------------------------------------- grego e hebraico
+  function renderOriginal(tela) {
+    var entrada = h('input.entrada#orig-q', { type: 'search', placeholder: 'Palavra (amor, graça), passagem (Jo 3:16), Strong (G5485) ou termo grego/hebraico' });
+    var area = h('div.assist-area'), status = h('p.sub.assist-status', { role: 'status' });
+    async function buscar() {
+      var q = entrada.value.trim(); if (!q) return;
+      var r = Biblia.interpretar(q);
+      if (r.ok && !r.soLivro) {
+        var ref = r.ref.v1 == null ? Object.assign({}, r.ref, { v1: 1, v2: Math.min(6, Biblia.contagemSinc(Biblia.padrao())(r.ref.livro)[r.ref.cap - 1]), cap2: r.ref.cap }) : r.ref;
+        status.textContent = ''; UI.trocar(area, h('div.carregando', h('div.giro')));
+        var el = h('div'); 
+        try { await Teologia.interlinear(ref, el); UI.trocar(area, h('div.estudo-topo', h('span.rotulo', 'Texto original'), h('h2', A2Ref.formatar(ref))), await versosEl(ref, 6), el, Teologia.creditoEl()); }
+        catch (e) { UI.trocar(area, h('p', e.message)); }
+        return;
+      }
+      status.textContent = 'Procurando…';
+      try {
+        var res = await Teologia.procurarPalavra(q);
+        status.textContent = res.length ? '' : 'Nada encontrado. Tente uma palavra-chave (amor, fé, graça, paz, aliança), um Strong (G5485) ou uma passagem.';
+        UI.trocar(area, h('div.lista', res.map(function (x) {
+          return h('button.item', { on: { click: function () { Teologia.abrirPalavra(x.strong); } } }, h('div.corpo', h('span.titulo', h('span.or-inline', x.lema), ' · ', x.translit),
+            h('span', A2Originais.termo(x.strong) ? A2Originais.termo(x.strong).split('.')[0] + '.' : x.glosa + ' (inglês)'), h('span.meta', x.strong + ' · ' + x.total + ' ocorrências')));
+        })));
+      } catch (e) { status.textContent = e.message; }
+    }
+    entrada.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); buscar(); } });
+    var chaves = ['amor', 'graça', 'fé', 'paz', 'aliança', 'justiça', 'espírito', 'arrepender-se', 'santo', 'glória', 'coração', 'alma'];
+    tela.appendChild(h('div.cartao.assist-caixa',
+      h('p.sub', 'Veja as palavras do texto original: grego do Novo Testamento (Textus Receptus) e hebraico do Antigo (Códice de Leningrado), com transliteração, gramática em português e onde mais aparecem.'),
+      h('label.sr', { for: 'orig-q' }, 'Buscar'), entrada, h('div.linha-bts', h('button.bt.pri', { on: { click: buscar } }, ico('busca'), 'Buscar')),
+      h('div.chips', chaves.map(function (c) { return h('button.chip', { on: { click: function () { entrada.value = c; buscar(); } } }, c); }))));
+    tela.appendChild(status); tela.appendChild(area);
+    tela.appendChild(h('p.sub', { style: { marginTop: '12px' } }, 'Dica: na Bíblia, selecione um versículo e toque em “Original”.'));
   }
 
   Telas.assistente = { render: renderAssistente, estudar: function (ref, foco) { App.estado.assistentePedido = { ref: ref, foco: foco || '' }; if (App.estado.aba === 'assistente') App.recarregar(); else App.ir('assistente'); } };

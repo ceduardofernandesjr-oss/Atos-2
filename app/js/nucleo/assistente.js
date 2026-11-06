@@ -118,12 +118,51 @@
     '"interpretacoes": [{"leitura": string, "explicacao": string}] (somente se houver divergência real entre cristãos; senão []), ' +
     '"aplicacao": string (até 80 palavras), "perguntas": [string] (2 a 3 perguntas para reflexão), "obras": [id] (0 a 3 ids da lista)}';
 
-  function promptEstudo(refTexto, sigla, pedido) {
+  var NIVEIS = {
+    basico: 'Nível BÁSICO: linguagem simples para iniciantes, frases curtas; use cerca de metade dos limites de palavras; deixe "exegese" vazio.',
+    intermediario: 'Nível INTERMEDIÁRIO: contexto e referências, linguagem acessível.',
+    avancado: 'Nível AVANÇADO: exegese. Use palavras_originais para a passagem e preencha "exegese" (contexto literário, contexto canônico, estrutura do trecho, destinatários e intenção do autor). Em "palavras", inclua 2 a 4 termos do texto original com o número de Strong exatamente como a ferramenta devolveu.'
+  };
+  function promptEstudo(refTexto, sigla, pedido, nivel) {
     return REGRAS + '\n\nObras que você pode indicar (use só os ids):\n' + listaObras() +
       '\n\nTarefa: preparar um estudo sobre ' + refTexto + ' (tradução ' + sigla + ').' +
       (pedido ? '\nFoco pedido pela pessoa: ' + pedido : '') +
-      '\nAntes de escrever, use ler_passagem para a passagem e para o capítulo inteiro, introducao_livro para o livro e, se útil, referencias_cruzadas.' +
-      '\nResponda somente em JSON, no formato: ' + FORMATO_ESTUDO;
+      '\n' + (NIVEIS[nivel] || NIVEIS.intermediario) +
+      '\nAntes de escrever, use ler_passagem para a passagem e para o capítulo inteiro, introducao_livro para o livro e, se útil, referencias_cruzadas, palavras_originais e doutrina.' +
+      '\nPalavras gregas ou hebraicas: cite somente as que vierem da ferramenta palavras_originais, com o Strong dela; não invente significados.' +
+      '\nResponda somente em JSON, no formato: ' + FORMATO_ESTUDO.replace('"palavras": [{"termo": string, "explicacao": string}] (0 a 3 termos importantes; não invente palavras hebraicas ou gregas: inclua somente as que você conhece com segurança)',
+        '"palavras": [{"termo": string, "strong": string ou "", "explicacao": string}] (0 a 4 termos; com strong só se veio de palavras_originais)').replace(', "obras": [id]', ', "exegese": {"contexto_literario": string, "contexto_canonico": string, "estrutura": string, "destinatarios_e_intencao": string} (vazio fora do nível avançado), "obras": [id]');
+  }
+
+  // Modo Bereano
+  var CLASSES_BEREANO = {
+    explicita: 'Está explícito no texto bíblico',
+    conclusao: 'É uma conclusão tirada de vários textos',
+    debatida: 'Cristãos fiéis à Escritura leem de formas diferentes',
+    sem_base: 'Não encontramos base bíblica clara',
+    contraria: 'Contradiz o que o texto bíblico afirma'
+  };
+  function promptBereano(afirmacao, sigla) {
+    return REGRAS + '\n\nModo Bereano (At 17:11): examine a afirmação abaixo à luz das Escrituras, sem tomar partido de denominação.' +
+      '\nAfirmação: “' + afirmacao + '”. Tradução: ' + sigla + '.' +
+      '\nUse buscar_texto (várias buscas, com sinônimos), ler_passagem para ler cada texto no seu capítulo e doutrina para o tema curado do app.' +
+      '\nClassifique com um destes valores: ' + Object.keys(CLASSES_BEREANO).map(function (k) { return k + ' (' + CLASSES_BEREANO[k] + ')'; }).join('; ') + '.' +
+      ' Use "contraria" e "sem_base" somente quando estiver claro; em caso de dúvida, prefira "debatida" ou "conclusao".' +
+      '\nResponda somente em JSON: {"afirmacao": string (reescrita de forma neutra), "classificacao": string, "resposta": string (até 80 palavras), ' +
+      '"a_favor": [{"ref": "Livro cap:vers", "nota": string}] (textos usados para apoiar; 0 a 5), "limites": [{"ref": "Livro cap:vers", "nota": string}] (textos que equilibram, limitam ou contrariam; 0 a 5), ' +
+      '"contexto": string (até 120 palavras: o que os principais textos significam no seu contexto), "leituras": [{"leitura": string, "explicacao": string}] (somente se houver divergência real), ' +
+      '"explicito_x_interpretacao": string (até 60 palavras: o que está escrito e o que é conclusão), "perguntas": [string] (2 a 3)}';
+  }
+  function validarBereano(j, interpretar) {
+    j = j && typeof j === 'object' ? j : {};
+    var descartadas = [];
+    function refs(l) { return (Array.isArray(l) ? l : []).map(function (x) { var s = txt(x && x.ref, 40), r = interpretar(s); if (!r.ok || r.soLivro) { descartadas.push(s); return null; } return { ref: r.ref, nota: txt(x.nota, 220) }; }).filter(Boolean).slice(0, 5); }
+    var c = String(j.classificacao || '').toLowerCase().trim();
+    var out = { afirmacao: txt(j.afirmacao, 300), classificacao: CLASSES_BEREANO[c] ? c : 'conclusao', resposta: txt(j.resposta, 700), a_favor: refs(j.a_favor), limites: refs(j.limites),
+      contexto: txt(j.contexto, 1100), leituras: (Array.isArray(j.leituras) ? j.leituras : []).map(function (x) { return x && x.leitura ? { leitura: txt(x.leitura, 80), explicacao: txt(x.explicacao, 400) } : null; }).filter(Boolean).slice(0, 4),
+      explicito: txt(j.explicito_x_interpretacao, 500), perguntas: (Array.isArray(j.perguntas) ? j.perguntas : []).map(function (x) { return txt(x, 200); }).filter(Boolean).slice(0, 3), descartadas: descartadas };
+    if (!out.resposta && !out.contexto) throw new Error('A resposta veio vazia. Tente de novo.');
+    return out;
   }
 
   var FORMATO_PESQUISA = '{"resumo": string (até 60 palavras: o que a Bíblia ensina sobre o assunto, sem citar texto por extenso), ' +
@@ -150,7 +189,7 @@
    * Valida um estudo devolvido pela IA. interpretar(ref) → {ok, ref}. Referências inválidas são descartadas.
    * Retorna { estudo, descartadas }.
    */
-  function validarEstudo(j, interpretar) {
+  function validarEstudo(j, interpretar, strongsValidos) {
     j = j && typeof j === 'object' ? j : {};
     var descartadas = [];
     var ligacoes = (Array.isArray(j.ligacoes) ? j.ligacoes : []).map(function (l) {
@@ -163,7 +202,13 @@
     var estudo = {
       titulo: txt(j.titulo, 90), resumo: txt(j.resumo, 600), contexto_historico: txt(j.contexto_historico, 1100), cultura: txt(j.cultura, 1100),
       sentido: txt(j.sentido, 1400),
-      palavras: (Array.isArray(j.palavras) ? j.palavras : []).map(function (p) { return p && p.termo ? { termo: txt(p.termo, 40), explicacao: txt(p.explicacao, 300) } : null; }).filter(Boolean).slice(0, 3),
+      palavras: (Array.isArray(j.palavras) ? j.palavras : []).map(function (p) {
+        if (!p || !p.termo) return null;
+        var st = /^[GH]\d{4}[A-Za-z]?$/.test(String(p.strong || '').trim()) ? String(p.strong).trim() : '';
+        if (st && strongsValidos && !strongsValidos[st]) st = '';               // Strong que não está na passagem: descartado
+        return { termo: txt(p.termo, 40), strong: st, explicacao: txt(p.explicacao, 300) };
+      }).filter(Boolean).slice(0, 4),
+      exegese: j.exegese && typeof j.exegese === 'object' ? { literario: txt(j.exegese.contexto_literario, 700), canonico: txt(j.exegese.contexto_canonico, 700), estrutura: txt(j.exegese.estrutura, 700), intencao: txt(j.exegese.destinatarios_e_intencao, 700) } : null,
       ligacoes: ligacoes,
       interpretacoes: (Array.isArray(j.interpretacoes) ? j.interpretacoes : []).map(function (p) { return p && p.leitura ? { leitura: txt(p.leitura, 80), explicacao: txt(p.explicacao, 400) } : null; }).filter(Boolean).slice(0, 4),
       aplicacao: txt(j.aplicacao, 700),
@@ -243,7 +288,7 @@
     });
   }
 
-  var API = { INTRODUCOES: INTRODUCOES, OBRAS: OBRAS, OBRA_POR_ID: OBRA_POR_ID, REGRAS: REGRAS, promptEstudo: promptEstudo, promptPesquisa: promptPesquisa,
+  var API = { INTRODUCOES: INTRODUCOES, OBRAS: OBRAS, OBRA_POR_ID: OBRA_POR_ID, REGRAS: REGRAS, promptEstudo: promptEstudo, promptPesquisa: promptPesquisa, promptBereano: promptBereano, validarBereano: validarBereano, CLASSES_BEREANO: CLASSES_BEREANO,
     promptPergunta: promptPergunta, validarEstudo: validarEstudo, validarPesquisa: validarPesquisa, referenciasNoTexto: referenciasNoTexto, sinalDeCrise: sinalDeCrise, txt: txt, refsDaNota1911: refsDaNota1911, termosDaPergunta: termosDaPergunta, temasDaPergunta: temasDaPergunta };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.A2Assistente = API;

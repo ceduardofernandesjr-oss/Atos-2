@@ -248,6 +248,45 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   checar(guia.includes('Sobre o livro de João') && guia.includes('No capítulo') && guia.includes('Em outras traduções') && guia.includes('Referências cruzadas') && guia.includes('1 João 4:9'), 'Guia: passagem com ficha do livro, capítulo, outras traduções e referências cruzadas');
   checar(await p.locator('.outra-trad').count() >= 2 && await p.locator('.trecho .alvo').count() === 1, 'Guia: outras traduções e versículo destacado no capítulo');
   await p.screenshot({ path: '/tmp/shots/27-guia.png', fullPage: true });
+  // ---- estudo teológico sem IA: níveis, original, doutrinas, Bereano
+  checar(await p.locator('.modos-estudo .chip').count() === 4, 'Assistente: modos Estudar, Bereano, Doutrinas, Grego e hebraico');
+  await p.click('.niveis .chip:has-text("Avançado")'); await p.waitForSelector('#assist-q');
+  await p.fill('#assist-q', 'Jo 3:16'); await p.click('.assist-caixa .bt.pri');
+  await p.waitForSelector('.inter-pal', { timeout: 20000 }); await p.waitForTimeout(800);
+  var av = await p.textContent('.assist-area');
+  checar(av.includes('Estrutura do capítulo 3') && av.includes('Palavras importantes no original') && av.includes('Texto original') && av.includes('avançado'), 'Guia avançado: estrutura, palavras-chave e texto original');
+  checar((await p.textContent('.interlinear')).includes('ἠγάπησεν') && av.includes('STEP Bible'), 'Guia avançado: grego de Jo 3:16 com crédito');
+  await p.screenshot({ path: '/tmp/shots/40-guia-avancado.png', fullPage: true });
+  await p.click('.inter-pal:has-text("ἠγάπησεν")'); await p.waitForSelector('.palavra-topo', { timeout: 10000 }); await p.waitForTimeout(1200);
+  var pal = await p.textContent('.folha');
+  checar(pal.includes('ἀγαπάω') && pal.includes('Strong G0025') && pal.includes('verbo, aoristo') && /Onde aparece \(\d+ vezes\)/.test(pal), 'Palavra original: lema, Strong, gramática em português e ocorrências');
+  checar(await p.locator('.folha .lista .item').count() >= 12 && !(await p.textContent('.folha .lista .item .texto-vers')).startsWith('…'), 'Palavra original: ocorrências com o texto em português');
+  await p.screenshot({ path: '/tmp/shots/41-palavra.png' });
+  await p.keyboard.press('Escape'); await p.click('.niveis .chip:has-text("Intermediário")'); await p.waitForSelector('#assist-q');
+  await p.click('.modos-estudo .chip:has-text("Doutrinas")'); await p.waitForSelector('.assist-area .item');
+  checar(await p.locator('.assist-area .item').count() >= 19, 'Doutrinas: lista com os temas');
+  await p.click('.assist-area .item:has-text("Dízimos e ofertas")'); await p.waitForSelector('.conclusao'); await p.waitForTimeout(800);
+  var dz = await p.textContent('.assist-area');
+  checar(dz.includes('Como os cristãos leem') && dz.includes('Objeções e dificuldades') && dz.includes('Explícito no texto') && !(await p.textContent('.assist-area .lista .item .texto-vers')).startsWith('…'), 'Doutrina: passagens com texto, leituras, objeções e conclusão equilibrada');
+  await p.screenshot({ path: '/tmp/shots/42-doutrina.png', fullPage: true });
+  await p.click('.modos-estudo .chip:has-text("Bereano")'); await p.waitForSelector('#bereano-q');
+  await p.fill('#bereano-q', 'O dízimo é obrigatório para o cristão'); await p.click('.assist-caixa .bt.pri');
+  await p.waitForSelector('ol.passos-bereanos', { timeout: 20000 });
+  var br = await p.textContent('.assist-area');
+  checar(br.includes('Está escrito com essas palavras?') && br.includes('Dízimos e ofertas') && br.includes('Perguntas para examinar'), 'Bereano (sem IA): frase exata, passagens, tema curado e perguntas');
+  await p.screenshot({ path: '/tmp/shots/43-bereano.png', fullPage: true });
+  await p.click('.modos-estudo .chip:has-text("Grego e hebraico")'); await p.waitForSelector('#orig-q');
+  await p.fill('#orig-q', 'graça'); await p.press('#orig-q', 'Enter'); await p.waitForSelector('.assist-area .item', { timeout: 15000 });
+  checar((await p.textContent('.assist-area')).includes('χάρις'), 'Original: busca por palavra em português');
+  await p.fill('#orig-q', 'Gn 1:1'); await p.press('#orig-q', 'Enter'); await p.waitForSelector('.inter-vers.rtl', { timeout: 15000 });
+  checar((await p.textContent('.interlinear')).includes('בָּרָא'), 'Original: hebraico de Gn 1:1 da direita para a esquerda');
+  await p.screenshot({ path: '/tmp/shots/44-hebraico.png' });
+  await p.evaluate(() => { App.estado.assistenteModo = 'estudar'; App.salvarConfig({ nivelEstudo: 'intermediario' }); });
+  await p.evaluate(() => App.abrirBiblia('ROM', 5, 1)); await p.waitForSelector('.v[data-v="1"]');
+  await p.click('.v[data-v="1"]'); await p.click('.barra-sel button:has-text("Original")');
+  await p.waitForSelector('.folha .inter-pal', { timeout: 15000 });
+  checar((await p.textContent('.folha')).includes('ικαιωθέντες'), 'Bíblia: “Original” mostra o grego da seleção');
+  await p.keyboard.press('Escape'); await p.evaluate(() => App.ir('assistente')); await p.waitForSelector('#assist-q');
   // IA simulada: usa as ferramentas do app e devolve uma referência e uma obra inventadas
   await p.evaluate(() => {
     window.__chamadas = [];
@@ -257,6 +296,11 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
     };
     mock.json = async function (input, opts) {
       const ferr = Object.fromEntries(opts.tools.map(x => [x.name, x]));
+      if (/Modo Bereano/.test(input)) {
+        const d = await ferr.doutrina.execute({ tema: 'dízimo' }); window.__chamadas.push('doutrina:' + d.nome);
+        return { afirmacao: 'O dízimo é obrigatório para o cristão.', classificacao: 'debatida', resposta: 'Resposta simulada.', a_favor: [{ ref: 'Ml 3:10', nota: 'trazei os dízimos' }, { ref: 'Ml 9:99', nota: 'inventada' }],
+          limites: [{ ref: '2Co 9:7', nota: 'dar com alegria' }], contexto: 'Contexto simulado.', leituras: [], explicito_x_interpretacao: 'Texto e interpretação.', perguntas: ['?'] };
+      }
       if (/encontrar passagens/.test(input)) {
         const b = await ferr.buscar_texto.execute({ consulta: 'ansiosos' }); window.__chamadas.push('busca:' + b.total);
         return { resumo: 'Deus convida a lançar sobre ele a ansiedade (Fp 4:6).', versiculos: [{ ref: 'Fp 4:6-7', motivo: 'oração em vez de ansiedade' }, { ref: '1 Pe 5:7', motivo: 'Deus cuida' }, { ref: 'Mt 6:99', motivo: 'inventado' }], sugestoes: ['paz de Deus'] };
@@ -292,6 +336,12 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.screenshot({ path: '/tmp/shots/21-assistente-pesquisa.png', fullPage: true });
   await p.evaluate(() => App.recarregar()); await p.waitForSelector('#assist-q');
   checar(await p.locator('.tela .lista .item:has-text("Estudo")').count() >= 1, 'Assistente: estudos recentes guardados');
+  await p.click('.modos-estudo .chip:has-text("Bereano")'); await p.waitForSelector('#bereano-q');
+  await p.fill('#bereano-q', 'O dízimo é obrigatório para o cristão'); await p.click('.assist-caixa .bt.pri');
+  await p.waitForSelector('.selo-bereano', { timeout: 15000 }); await p.waitForSelector('ol.passos-bereanos', { timeout: 20000 });
+  var bia = await p.textContent('.tela');
+  checar(bia.includes('Cristãos fiéis à Escritura leem de formas diferentes') && bia.includes('Conferência pelo app') && (await p.textContent('.assist-status')).includes('1 referência') && (await p.evaluate(() => window.__chamadas)).includes('doutrina:Dízimos e ofertas'), 'Bereano com IA: classificação, referência inventada descartada, tema curado e conferência do app');
+  await p.click('.modos-estudo .chip:has-text("Estudar")'); await p.waitForSelector('#assist-q');
   await p.fill('#assist-q', 'às vezes penso em me matar'); await p.click('.assist-caixa .bt.pri'); await p.waitForTimeout(400);
   checar((await p.textContent('#camadas')).includes('188'), 'Assistente: acolhimento com CVV diante de sinal de crise');
   await p.keyboard.press('Escape'); await p.waitForTimeout(800);

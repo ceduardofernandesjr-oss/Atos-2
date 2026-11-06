@@ -428,3 +428,39 @@ ol.teses li.tese p { margin: 4px 0 6px; font-family: var(--f-leitura); line-heig
 .quiz-feedback .cartao .trecho { margin: 4px 0 2px; }
 .quiz-feedback .linha-bts { margin-top: 10px; }
 .quiz > .linha-bts:last-child { margin: 24px 0 12px; padding-top: 16px; border-top: 1px solid var(--linha); }
+
+/* ---------------------------------------------------------------- estudo teológico (v1.9) */
+.modos-estudo { margin-bottom: 12px; }
+.modos-estudo .chip { display: inline-flex; align-items: center; gap: 6px; }
+.modos-estudo .chip .ico { width: 16px; height: 16px; }
+.niveis { display: flex; gap: 4px; flex-wrap: wrap; }
+.chip.peq { min-height: 30px; padding: 0 10px; font-size: 12.5px; }
+.linha-bts .esp { flex: 1; }
+.interlinear { display: grid; gap: 12px; }
+.inter-vers { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.inter-vers.rtl { direction: rtl; }
+.inter-num { direction: ltr; font: 700 11.5px var(--f-ui); color: var(--ouro); padding: 6px 2px; }
+.inter-pal { position: relative; display: grid; justify-items: center; gap: 1px; min-width: 52px; padding: 6px 8px; border: 1px solid var(--linha); border-radius: 10px; background: var(--papel); color: var(--tinta); }
+.inter-pal .or { font: 500 20px/1.3 'SBL Greek', 'Gentium Plus', 'Times New Roman', 'Noto Serif', serif; }
+.inter-vers.rtl .inter-pal .or { font-family: 'SBL Hebrew', 'Ezra SIL', 'Noto Serif Hebrew', 'Times New Roman', serif; font-size: 22px; }
+.inter-pal .tl { font-size: 11.5px; color: var(--tinta-2); font-style: italic; direction: ltr; }
+.inter-pal .gl { font-size: 11.5px; color: var(--azul-texto); direction: ltr; max-width: 120px; text-align: center; }
+.marca-termo { position: absolute; top: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--ouro); }
+.palavra-topo { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.palavra-topo .or { font: 600 34px/1.2 'SBL Greek', 'Gentium Plus', 'Times New Roman', serif; color: var(--azul-texto); }
+.palavra-topo.rtl .or { font-family: 'SBL Hebrew', 'Ezra SIL', 'Noto Serif Hebrew', 'Times New Roman', serif; }
+.palavra-topo .tl { font-style: italic; color: var(--tinta-2); font-size: 16px; }
+.or-inline { font-family: 'SBL Greek', 'Gentium Plus', 'Times New Roman', serif; font-size: 1.12em; }
+.termo-pt { border-left: 4px solid var(--ouro); }
+.credito-orig { margin-top: 12px; font-size: 11.5px; }
+.leitura { margin-top: 8px; }
+.leitura p { margin: 4px 0; }
+.conclusao { border-left: 4px solid var(--azul); background: var(--areia); }
+.conclusao p { margin: 0 0 6px; line-height: 1.6; }
+ol.estrutura, ol.passos-bereanos { margin: 6px 0 0 20px; line-height: 1.7; }
+.bereano-afirmacao p { margin: 6px 0 0; font-family: var(--f-leitura); font-size: 17px; }
+.selo-bereano { display: inline-block; margin-top: 10px !important; padding: 4px 12px; border-radius: 999px; font: 700 12.5px var(--f-ui) !important; background: var(--areia-2); color: var(--tinta); }
+.selo-bereano.explicita { background: color-mix(in srgb, var(--ok) 18%, var(--papel)); color: var(--ok); }
+.selo-bereano.debatida, .selo-bereano.conclusao { background: color-mix(in srgb, var(--ouro) 18%, var(--papel)); color: var(--tinta); }
+.selo-bereano.sem_base, .selo-bereano.contraria { background: color-mix(in srgb, var(--perigo) 14%, var(--papel)); color: var(--perigo); }
+.chips.modos-estudo { flex-wrap: wrap; overflow: visible; }

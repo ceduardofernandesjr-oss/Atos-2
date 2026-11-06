@@ -13,4 +13,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node --test test/nucleo.test.js test/traducoes.test.js test/quiz.test.js
+      - run: node --test test/nucleo.test.js test/traducoes.test.js test/quiz.test.js test/teologia.test.js

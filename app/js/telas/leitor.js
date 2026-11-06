@@ -217,6 +217,10 @@
           var s = A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1] }, true);
           limparSel(); Telas.criar.comVersiculo(s);
         }),
+        acao('texto', 'Original', function () {
+          var s = contigua() ? { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1], cap2: atual.cap } : { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[0], cap2: atual.cap };
+          limparSel(); Teologia.abrirInterlinear(s);
+        }),
         acao('brilho', 'Entender', function () {
           var s = contigua() ? A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1] }, true) : A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[0] }, true);
           limparSel(); Telas.assistente.estudar(s);

@@ -57,7 +57,9 @@ SEM_TEXTO = {("ACT", 28, 29): "O texto deste versículo não consta nos arquivos
 
 # Avisos sobre prováveis erros de digitação da fonte: o texto NÃO é alterado, só recebe uma nota.
 AVISOS = {("GEN", 19, 26): ("sai", "Nos arquivos-fonte da Bíblia Livre consta “estátua de sai”, provável erro de digitação; "
-                                   "as edições de Almeida trazem “estátua de sal”. O texto foi mantido como está na fonte.")}
+                                   "as edições de Almeida trazem “estátua de sal”. O texto foi mantido como está na fonte."),
+          ("GEN", 14, 20): ("mão.", "Nos arquivos-fonte da Bíblia Livre falta o final deste versículo, presente no hebraico e nas outras traduções: "
+                                    "“E deu-lhe o dízimo de tudo” (Almeida 1911). O texto foi mantido como está na fonte.")}
 
 
 MARCADORES_TR = {"tr", "trnc"}

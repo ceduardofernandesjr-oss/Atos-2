@@ -34,7 +34,7 @@
     var avatar = h('button.avatar-inicio', { 'aria-label': 'Abrir o perfil', on: { click: function () { App.ir('perfil'); } } },
       perfil.foto ? h('img', { src: perfil.foto, alt: '' }) : h('span', (perfil.nome || 'A').charAt(0).toUpperCase()));
     tela.appendChild(h('header.cab.cab-inicio', h('div.marca-peq', { html: UI.logo(36) + '<b>ATOS 2</b>' }), h('div.esp'),
-      h('button.bt-ico', { 'aria-label': 'Pesquisar na Bíblia', on: { click: function () { Telas.pesquisa.abrir(); } } }, ico('busca')), sino, avatar));
+      App.botaoTema(), h('button.bt-ico', { 'aria-label': 'Pesquisar na Bíblia', on: { click: function () { Telas.pesquisa.abrir(); } } }, ico('busca')), sino, avatar));
     var seq = sequencia();
     tela.appendChild(h('section.saudacao',
       h('span.sobre', capital(new Date().toLocaleDateString('pt-BR', { weekday: 'long' })) + ' · ' + UI.dataLonga(hoje)),

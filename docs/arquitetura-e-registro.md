@@ -1,7 +1,7 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 06/11/2026 (v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
+Última atualização: 06/11/2026 (v2.6.1 — botão de modo noturno no Início e no leitor; v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
 Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões
@@ -76,7 +76,7 @@ app/
   js/ui.js  dados.js  biblia.js  app.js
   js/telas/   inicio  cartao  leitor  estudo-versiculo  pesquisa  fotos  arte-desenho  estudio  biblioteca  acervo (Livros e Artigos + leitor #obra)  planos  devocionais  perfil  explorar (assistente, quiz, mural)  teologia (originais, doutrinas, Bereano)  jornada
 ferramentas/  converter_acervo.py  converter_originais.py  preparar_fotos.py  converter_blivre.py  verificar_biblia.py  converter_usfm.py  converter_almeida1911.py  verificar_traducao.py  atualizar_grafia_1911.py  metadados/
-test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  jornada.test.js (7)  biblioteca.test.js (6)  acervo.test.js (7)  e2e.js (217)  e2e-banco.js (34)  e2e-nuvem.js (12, Supabase falso)
+test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  jornada.test.js (7)  biblioteca.test.js (6)  acervo.test.js (7)  e2e.js (221)  e2e-banco.js (34)  e2e-nuvem.js (12, Supabase falso)
 docs/         schema.sql (Supabase)  acervo-procedencia.md (cadastro de procedência e licença do acervo)
 ```
 
@@ -113,6 +113,7 @@ docs/         schema.sql (Supabase)  acervo-procedencia.md (cadastro de procedê
   - **Referências:** referências cruzadas das notas da Almeida 1911 (até 15, com o texto na tradução escolhida, toque abre a passagem) e o versículo nas outras traduções ativas.
   - **Interpretação:** aviso de neutralidade, notas da tradução dos versículos selecionados, doutrinas que usam o texto (ou o capítulo), temas e personagens ligados, cinco perguntas de estudo indutivo e o Modo Bereano.
   - **Estudar com o Assistente:** botão fixo no rodapé do painel que envia o trecho ao Assistente Bíblico (`Telas.assistente.estudar`). As antigas ações “Original” e “Entender” viraram a aba Palavras e esse botão. Resultados das abas ficam em cache por aba + tradução + referência.
+- **Modo noturno (v2.6.1):** botão lua/sol (`App.botaoTema`) no cabeçalho do Início e do leitor da Bíblia; alterna entre claro e noturno a partir do tema que está na tela (inclusive quando o automático segue o aparelho) e grava a escolha na mesma configuração do Perfil › Aparência. O cartão do Versículo do Dia continua idêntico. No leitor, nomes de livro longos aparecem abreviados em telas estreitas (ex.: “1Ts 5”) para o cabeçalho caber.
 - **Bíblia:** livros/capítulos, ir para referência, seleção de versículos, destaques (5 cores), favoritos, anotações, copiar, compartilhar (WhatsApp/cópia), comparar traduções, criar arte, notas dos tradutores, títulos dos salmos, itálicos, marcar capítulo lido, tamanho/fonte/tema, leitura em voz alta (voz do aparelho, velocidade, continua de onde parou).
 - **Pesquisa:** palavras inteiras sem acento, variações, “expressão exata”, referência, escopo (AT/NT/Evangelhos/Atos e cartas), 14 temas e 32 personagens curados.
 - **Planos:** 8 planos (Bíblia 365, NT 90, Evangelhos 30, Salmos 30, Provérbios 31, Conhecendo Jesus, Fundamentos da fé, Atos 28); cronograma equilibrado por versículos; iniciar, pausar (dias de pausa não contam atraso), retomar, marcar, atraso, término previsto, lembrete, leitura guiada com “Concluir dia”; vários ao mesmo tempo.

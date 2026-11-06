@@ -342,6 +342,13 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.click('#pref-tema .chip[data-tema="escuro"]'); await p.waitForTimeout(200);
   checar(await p.getAttribute('html', 'data-tema') === 'escuro', 'Perfil: modo noturno');
   checar(await p.getAttribute('#pref-tema .chip[data-tema="escuro"]', 'aria-pressed') === 'true', 'Perfil: aparência em chips com seleção');
+  await p.click('#pref-tema .chip[data-tema="claro"]'); await p.evaluate(() => App.ir('inicio')); await p.waitForSelector('.cab-inicio .bt-tema');
+  await p.click('.cab-inicio .bt-tema'); checar(await p.getAttribute('html', 'data-tema') === 'escuro' && await p.getAttribute('.cab-inicio .bt-tema', 'aria-pressed') === 'true', 'Início: botão de modo noturno liga o tema escuro');
+  await p.click('.cab-inicio .bt-tema'); checar(await p.getAttribute('html', 'data-tema') === 'claro', 'Início: o mesmo botão volta ao modo claro');
+  await p.evaluate(() => App.abrirBiblia('1TH', 5, 1)); await p.waitForSelector('.leitor-cab .bt-tema');
+  checar(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Leitor: cabeçalho com botão de tema cabe na tela (1 Tessalonicenses)');
+  await p.click('.leitor-cab .bt-tema'); checar(await p.getAttribute('html', 'data-tema') === 'escuro', 'Leitor: botão de modo noturno no cabeçalho');
+  await p.click('.leitor-cab .bt-tema'); await p.evaluate(() => App.ir('perfil')); await p.waitForSelector('#pref-tema');
   checar(await p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--vdia-azul').trim() !== ''), 'Paleta: tons do Versículo do Dia guardados');
   await p.screenshot({ path: '/tmp/shots/7-perfil-escuro.png', fullPage: true });
   await p.click('a[data-aba="biblia"]'); await p.waitForTimeout(500);

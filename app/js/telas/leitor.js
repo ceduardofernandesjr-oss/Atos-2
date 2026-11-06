@@ -17,11 +17,12 @@
     var nomeLivro = A2Ref.POR_ID[atual.livro].nome;
     var sigla = Biblia.versao(versaoAtual()).sigla;
     tela.appendChild(h('header.leitor-cab',
-      h('button.seletor-cap', { 'aria-label': 'Escolher livro e capítulo', on: { click: escolherLivro } }, nomeLivro + ' ' + atual.cap, ico('baixo')),
+      h('button.seletor-cap', { 'aria-label': 'Escolher livro e capítulo (' + nomeLivro + ' ' + atual.cap + ')', on: { click: escolherLivro } }, h('span.sc-livro', nomeLivro.length > 11 ? h('span', h('span.sc-longo', nomeLivro), h('span.sc-curto', A2Ref.POR_ID[atual.livro].abrev)) : nomeLivro), ' ', h('span.sc-cap', String(atual.cap)), ico('baixo')),
       h('button.trad', { 'aria-label': 'Tradução: ' + Biblia.versao(versaoAtual()).nome, on: { click: escolherTraducao } }, sigla),
       h('div', { style: { flex: 1 } }),
       h('button.bt-ico', { 'aria-label': 'Pesquisar', on: { click: function () { Telas.pesquisa.abrir(); } } }, ico('busca')),
       h('button.bt-ico', { 'aria-label': 'Ouvir capítulo', on: { click: function () { var a = Dados.obter('leitura', 'audio'); iniciarAudio(a && a.livro === atual.livro && a.cap === atual.cap && a.v > 1 ? a.v : 1); } } }, ico('ouvir')),
+      App.botaoTema(),
       h('button.bt-ico', { 'aria-label': 'Aparência da leitura', on: { click: ajustesLeitura } }, ico('texto'))));
     if (App.estado.plano) tela.appendChild(faixaPlano());
     conteudoEl = h('article.texto-biblico', { 'aria-live': 'polite' }, h('div.carregando', h('div.giro'), 'Carregando…'));

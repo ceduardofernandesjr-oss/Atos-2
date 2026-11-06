@@ -73,6 +73,30 @@
     r.style.setProperty('--tam-leitura', c.fonteTam + 'px');
   }
   App.aplicarAparencia = aplicarAparencia;
+  // Botão de acesso rápido ao modo noturno (lua/sol): alterna entre claro e noturno a partir do que está na tela
+  function temaEscuroAtivo() {
+    var t = document.documentElement.getAttribute('data-tema');
+    if (t) return t === 'escuro';
+    return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+  App.botaoTema = function () {
+    var bt = UI.h('button.bt-ico.bt-tema', { type: 'button' });
+    function desenhar() {
+      var escuro = temaEscuroAtivo();
+      bt.setAttribute('aria-pressed', String(escuro));
+      bt.setAttribute('aria-label', escuro ? 'Desativar modo noturno' : 'Ativar modo noturno');
+      bt.title = escuro ? 'Modo claro' : 'Modo noturno';
+      bt.replaceChildren(UI.icone(escuro ? 'sol' : 'lua'));
+    }
+    bt.addEventListener('click', function () {
+      var escuro = !temaEscuroAtivo();
+      App.salvarConfig({ tema: escuro ? 'escuro' : 'claro' });
+      desenhar();
+      UI.aviso(escuro ? 'Modo noturno ativado.' : 'Modo claro ativado.');
+    });
+    desenhar();
+    return bt;
+  };
 
   // ---------------------------------------------------------------- navegação
   function abaAtual() { var a = location.hash.replace('#', ''); return ABAS.indexOf(a) >= 0 ? a : 'inicio'; }

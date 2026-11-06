@@ -478,10 +478,23 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.screenshot({ path: '/tmp/shots/44-hebraico.png' });
   await p.evaluate(() => { App.estado.assistenteModo = 'estudar'; App.salvarConfig({ nivelEstudo: 'intermediario' }); });
   await p.evaluate(() => App.abrirBiblia('ROM', 5, 1)); await p.waitForSelector('.v[data-v="1"]');
-  await p.click('.v[data-v="1"]'); await p.click('.barra-sel button:has-text("Original")');
-  await p.waitForSelector('.folha .inter-pal', { timeout: 15000 });
-  checar((await p.textContent('.folha')).includes('ικαιωθέντες'), 'Bíblia: “Original” mostra o grego da seleção');
-  await p.keyboard.press('Escape'); await p.evaluate(() => App.ir('assistente')); await p.waitForSelector('#assist-q');
+  await p.click('.v[data-v="1"]'); await p.waitForSelector('.painel-estudo');
+  checar(await p.evaluate(() => document.body.classList.contains('selecionando') && getComputedStyle(document.querySelector('.abas')).pointerEvents === 'none'), 'Leitor: seleção esconde a navegação flutuante');
+  checar((await p.textContent('.painel-estudo .acoes')).includes('Favoritar') && (await p.textContent('.painel-estudo .acoes')).includes('Criar arte'), 'Leitor: ações favoritar/anotar/destacar/criar arte');
+  await p.click('.painel-estudo .acoes button:has-text("Destacar")');
+  checar(await p.locator('.painel-estudo .cores-inline .cor-bolinha').count() > 0, 'Leitor: “Destacar” mostra cores no próprio painel');
+  await p.click('.ev-aba[data-aba="palavras"]'); await p.waitForSelector('.painel-estudo .inter-pal', { timeout: 15000 });
+  checar((await p.textContent('.painel-estudo')).includes('ικαιωθέντες'), 'Estudo do versículo: “Palavras” mostra o grego da seleção');
+  checar(await p.getAttribute('.painel-estudo', 'data-estado') === 'aberto', 'Estudo do versículo: abrir aba expande o painel');
+  await p.click('.ev-aba[data-aba="contexto"]'); await p.waitForSelector('.painel-estudo .ev-area .alvo', { timeout: 10000 });
+  checar((await p.textContent('.painel-estudo .ev-area')).length > 80, 'Estudo do versículo: “Contexto” mostra versos ao redor');
+  await p.click('.ev-aba[data-aba="referencias"]'); await p.waitForTimeout(800);
+  checar(await p.locator('.painel-estudo .ev-area').count() === 1, 'Estudo do versículo: “Referências” renderiza');
+  await p.click('.ev-aba[data-aba="interpretacao"]'); await p.waitForSelector('.painel-estudo .ev-aviso', { timeout: 10000 });
+  checar(true, 'Estudo do versículo: “Interpretação” com aviso de neutralidade');
+  await p.click('.painel-estudo .topo .bt-ico'); await p.waitForTimeout(200);
+  checar(await p.locator('.painel-estudo').count() === 0 && !(await p.evaluate(() => document.body.classList.contains('selecionando'))), 'Estudo do versículo: fechar limpa a seleção');
+  await p.evaluate(() => App.ir('assistente')); await p.waitForSelector('#assist-q');
   // IA simulada: usa as ferramentas do app e devolve uma referência e uma obra inventadas
   await p.evaluate(() => {
     window.__chamadas = [];
@@ -542,9 +555,9 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.keyboard.press('Escape'); await p.waitForTimeout(800);
   // Entender a partir da Bíblia
   await p.evaluate(() => App.abrirBiblia('ROM', 8, 28)); await p.waitForSelector('.v[data-v="28"]');
-  await p.click('.v[data-v="28"]'); await p.click('.barra-sel button:has-text("Entender")');
+  await p.click('.v[data-v="28"]'); await p.waitForSelector('.ev-assistente'); await p.click('.ev-assistente');
   await p.waitForSelector('.estudo-topo', { timeout: 10000 });
-  checar((await p.textContent('.estudo-topo')).includes('Romanos 8:28'), 'Bíblia: “Entender” abre o estudo da seleção');
+  checar((await p.textContent('.estudo-topo')).includes('Romanos 8:28'), 'Estudo do versículo: enviar ao Assistente Bíblico');
 
   // Quiz
   await p.evaluate(() => App.ir('quiz')); await p.waitForSelector('.quiz-desafio');

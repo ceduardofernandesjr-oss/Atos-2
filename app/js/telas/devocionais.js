@@ -57,7 +57,6 @@
   function abrir(id) {
     var d = (Dados.conteudo.devocionais || []).filter(function (x) { return x.id === id; })[0] || (editor() ? (Dados.conteudo.rascunhos || []).filter(function (x) { return x.id === id; })[0] : null);
     if (!d) { UI.aviso('Devocional não encontrado. Ele pode ter sido despublicado.', true); return; }
-    if (d.publicado && !Dados.obter('devLidos', d.id)) { Dados.salvar('devLidos', d.id, { em: new Date().toISOString() }); App.registrar('devocional', { titulo: d.titulo, id: d.id }); }
     UI.folha('Devocional', function (api) {
       var art = h('article.devo.form');
       art.appendChild(h('div', h('span.rotulo', (d.categoria || '') + ' · ' + UI.dataLonga(d.data || UI.hoje())), h('h1', d.titulo)));
@@ -76,6 +75,16 @@
         if (salvo) Dados.excluir('devSalvos', d.id); else Dados.salvar('devSalvos', d.id, { titulo: d.titulo, categoria: d.categoria, data: d.data });
         salvo = !salvo; bSalvar.replaceChildren(ico(salvo ? 'coracaoCheio' : 'coracao'), salvo ? 'Salvo' : 'Salvar'); UI.aviso(salvo ? 'Devocional salvo.' : 'Removido dos salvos.');
       } } }, ico(salvo ? 'coracaoCheio' : 'coracao'), salvo ? 'Salvo' : 'Salvar');
+      var concluido = !!Dados.obter('devLidos', d.id);
+      var bConcluir = h('button.bt' + (concluido ? '' : '.pri') + '#devo-concluir', { 'aria-pressed': String(concluido), on: { click: function () {
+        if (concluido) { Dados.excluir('devLidos', d.id); App.removerDoHistorico(function (x) { return x.tipo === 'devocional' && x.id === d.id; }); }
+        else { Dados.salvar('devLidos', d.id, { em: new Date().toISOString(), titulo: d.titulo }); App.registrar('devocional', { titulo: d.titulo, id: d.id }); }
+        concluido = !concluido;
+        bConcluir.className = 'bt' + (concluido ? '' : ' pri'); bConcluir.setAttribute('aria-pressed', String(concluido));
+        bConcluir.replaceChildren(ico('ok'), concluido ? 'Devocional concluído' : 'Concluir devocional');
+        UI.aviso(concluido ? 'Devocional concluído. Ele entra na sua jornada.' : 'Marcação desfeita.');
+      } } }, ico('ok'), concluido ? 'Devocional concluído' : 'Concluir devocional');
+      if (d.publicado) art.appendChild(h('div.concluir-devo', bConcluir, h('small', 'Conclua depois de ler e meditar. Só devocionais concluídos contam na sua jornada.')));
       art.appendChild(h('div.linha-bts', { style: { marginTop: '18px' } }, d.publicado ? bSalvar : null,
         h('button.bt', { on: { click: function () { App.compartilhar(d.titulo + '\n\nPassagem: ' + d.passagem + '\n\n' + (d.reflexao || '').slice(0, 600) + ((d.reflexao || '').length > 600 ? '…' : '') + (d.pergunta ? '\n\nPara pensar: ' + d.pergunta : '') + '\n\n— ATOS 2', 'Compartilhar devocional'); } } }, ico('compartilhar'), 'Compartilhar'),
         h('button.bt', { on: { click: function () { api.fechar(); Telas.criar.comVersiculo(d.versiculoArte || d.passagem); } } }, ico('imagem'), 'Criar arte'),

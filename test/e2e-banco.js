@@ -119,6 +119,9 @@ async function abrir(browser, cfg) {
   checar(dev.includes('apoio de inteligência artificial') && dev.includes('revisado'), 'Leitor vê o aviso de IA revisado');
   checar(dev.includes('E perseveravam na doutrina dos apóstolos'), 'Passagem vem do texto bíblico');
   checar(await c.evaluate(async () => { try { await Dados.gravarConteudo('devocionais', 'x', { titulo: 'invasão' }); return false; } catch (e) { return true; } }), 'Leitor não consegue publicar');
+  checar(await c.evaluate(() => Dados.todos('devLidos').length) === 0, 'Abrir o devocional não o marca como concluído');
+  await c.click('#devo-concluir'); await c.waitForTimeout(200);
+  checar(await c.evaluate(() => Dados.todos('devLidos').length) === 1 && (await c.textContent('#devo-concluir')).includes('concluído'), 'Concluir devocional entra na jornada');
   await c.keyboard.press('Escape');
   await c.click('a[data-aba="inicio"]'); await c.waitForTimeout(500);
   checar((await c.textContent('.devo-card')).includes('Perseverar juntos'), 'Início mostra o devocional do dia');

@@ -299,7 +299,7 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
 
   // Perfil e tema noturno
   await p.click('a[data-aba="perfil"]'); await p.waitForTimeout(300);
-  checar((await p.textContent('.numeros')).includes('capítulos lidos'), 'Perfil: estatísticas');
+  checar((await p.textContent('.jornada2')).includes('Capítulos lidos') && !!(await p.$('#ver-jornada')), 'Perfil: estatísticas de Minha jornada');
   await p.selectOption('#pref-tema', 'escuro'); await p.waitForTimeout(200);
   checar(await p.getAttribute('html', 'data-tema') === 'escuro', 'Perfil: modo noturno');
   await p.screenshot({ path: '/tmp/shots/7-perfil-escuro.png', fullPage: true });
@@ -363,7 +363,32 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   checar(await p.locator('.explorar .atalho').count() === 3, 'Início: seção Explorar com assistente, quiz e mural');
   checar(await p.locator('.saudacao h1').count() === 1 && await p.locator('.continue .cont-card').count() === 2, 'Início: saudação e Continue (leitura e plano com progresso)');
   checar(await p.locator('.devo-card').count() === 1 && await p.locator('.estudio-card canvas').count() === 1, 'Início: devocional e estúdio com prévia do versículo de hoje');
-  checar(await p.locator('.descubra-card img').count() === 7 && await p.locator('.jornada .semana .dia').count() === 7, 'Início: Descubra mais com imagens e Sua jornada');
+  checar(await p.locator('.descubra-card img').count() === 7 && await p.locator('.jornada2 .kpis .kpi').count() === 6 && await p.locator('.jornada2 .grafico .coluna').count() === 7, 'Início: Descubra mais com imagens e resumo de Minha jornada');
+  // Minha jornada: só conta o que foi concluído
+  const lidosAntes = await p.evaluate(() => Object.keys((Dados.obter('leitura', 'capitulos') || {}).lidos || {}).length);
+  checar(lidosAntes >= 1 && +(await p.textContent('#kpi-capitulos b')).replace(/\D/g, '') === lidosAntes, 'Jornada: capítulos lidos vêm das marcações reais');
+  await p.evaluate(() => App.abrirBiblia('PHP', 4)); await p.waitForSelector('button:has-text("Marcar capítulo como lido")'); await p.waitForTimeout(300);
+  await p.evaluate(() => App.ir('jornada')); await p.waitForSelector('#p-capitulos');
+  const capsJ = async () => +(await p.textContent('#p-capitulos b')).replace(/\D/g, '');
+  const c0 = await capsJ();
+  checar(c0 === lidosAntes, 'Jornada: abrir um capítulo não conta como lido');
+  await p.evaluate(() => App.abrirBiblia('PHP', 4)); await p.click('button:has-text("Marcar capítulo como lido")'); await p.waitForTimeout(200);
+  await p.click('button:has-text("Capítulo lido")'); await p.waitForTimeout(200);              // desmarca
+  await p.click('button:has-text("Marcar capítulo como lido")'); await p.waitForTimeout(200);   // marca de novo
+  await p.evaluate(() => App.ir('jornada')); await p.waitForSelector('#p-capitulos');
+  checar(await capsJ() === c0 + 1, 'Jornada: marcar, desmarcar e marcar de novo conta uma vez');
+  checar(await p.evaluate(() => A2Jornada.eventos({ historico: Dados.todos('historico'), lidos: Dados.obter('leitura', 'capitulos').lidos }).filter(e => e.chave === 'PHP.4').length) === 1, 'Jornada: sem registro duplicado');
+  checar(await p.locator('.j-periodos .chip').count() === 4 && await p.locator('.j-tempo .j-item').count() >= 1, 'Jornada: filtros de período e histórico de atividades');
+  await p.click('.j-periodos .chip:has-text("90 dias")'); await p.waitForSelector('.grafico .coluna');
+  checar(await p.locator('.grafico .coluna').count() >= 13, 'Jornada: evolução por semana em 90 dias');
+  await p.click('.j-periodos .chip:has-text("Todo o período")'); await p.click('.chip:has-text("Todas as atividades")'); await p.waitForTimeout(200);
+  checar(await p.locator('.legenda span').count() === 5 && !!(await p.$('#j-proxima')), 'Jornada: todas as atividades e próxima leitura');
+  await p.screenshot({ path: '/tmp/shots/4f-jornada.png', fullPage: true });
+  await p.click('.j-tempo .j-item:has-text("Filipenses 4")'); await p.waitForTimeout(500);
+  checar((await p.textContent('.seletor-cap')).includes('Filipenses 4'), 'Jornada: item do histórico abre o capítulo');
+  await p.evaluate(() => App.ir('perfil')); await p.waitForSelector('#ver-jornada');
+  checar(await p.locator('.jornada2 .kpis .kpi').count() === 6, 'Perfil: resumo de Minha jornada e acesso ao painel');
+  await p.evaluate(() => App.ir('inicio')); await p.waitForSelector('.explorar .atalho');
   checar(await p.locator('.vdia .acoes-ico .bt-ico').count() === 4 && (await p.textContent('.vdia')).includes('Anteriores'), 'Início: cartão do Versículo do Dia preservado');
   await p.click('.descubra-card:has-text("Tema da semana")'); await p.waitForSelector('.folha .lista .item'); await p.keyboard.press('Escape'); await p.waitForTimeout(200);
   checar(true, 'Descubra mais: tema da semana abre as passagens');

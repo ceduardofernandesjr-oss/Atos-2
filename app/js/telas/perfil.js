@@ -3,15 +3,6 @@
   'use strict';
   var h = UI.h, ico = UI.icone;
 
-  function sequencia() {
-    var dias = {};
-    Dados.todos('historico').forEach(function (m) { (m.itens || []).forEach(function (x) { if (x.tipo === 'leitura' || x.tipo === 'devocional' || x.tipo === 'plano') dias[x.em.slice(0, 10)] = 1; }); });
-    var n = 0, d = UI.hoje();
-    if (!dias[d]) d = A2Planos.addDias(d, -1);
-    while (dias[d]) { n++; d = A2Planos.addDias(d, -1); }
-    return n;
-  }
-
   function render(tela) {
     var p = App.perfil(), cfg = App.config(), est = Dados.estado;
     var lidos = Object.keys((Dados.obter('leitura', 'capitulos') || {}).lidos || {}).length;
@@ -29,14 +20,11 @@
           h('label.bt.peq', { for: 'foto-perfil' }, ico('imagem'), 'Foto'), arq,
           p.foto ? h('button.bt.peq.fant', { on: { click: function () { var q = App.perfil(); delete q.foto; Dados.salvar('perfil', 'eu', q); App.recarregar(); } } }, 'Remover foto') : null))));
 
-    // números
+    // Minha jornada (painel completo em #jornada)
     var ativos = Dados.todos('planos');
-    tela.appendChild(h('div.numeros', { style: { marginTop: '10px' } },
-      num(lidos + '', 'capítulos lidos de 1.189 (' + UI.pct(lidos / 1189 * 100) + ')'),
-      num(sequencia() + '', 'dias seguidos com leitura'),
-      num(Dados.todos('favoritos').length + '', 'versículos favoritos'),
-      num(Dados.todos('artes').length + '', 'artes criadas')));
-    tela.appendChild(h('div.barra', { style: { marginTop: '10px', height: '8px' }, role: 'progressbar', 'aria-label': 'Progresso na Bíblia', 'aria-valuenow': lidos, 'aria-valuemax': 1189 }, h('i', { style: { width: (lidos / 1189 * 100) + '%' } })));
+    tela.appendChild(h('div.secao', h('h2', 'Minha jornada'), h('div.esp'), h('button.link-secao', { on: { click: function () { App.ir('jornada'); } } }, 'Painel completo', ico('direita'))));
+    tela.appendChild(Telas.jornada.cartaoResumo());
+    tela.appendChild(h('button.bt.pri#ver-jornada', { style: { marginTop: '10px', width: '100%', justifyContent: 'center' }, on: { click: function () { App.ir('jornada'); } } }, ico('planos'), 'Ver minha jornada: períodos, evolução, planos e histórico'));
 
     // atalhos pessoais
     tela.appendChild(h('div.secao', h('h2', 'Minha caminhada')));

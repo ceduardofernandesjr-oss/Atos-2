@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.7.3';
+  var VERSAO_APP = '2.7.4';
   var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
@@ -141,18 +141,30 @@
       ];
       var i = 0, nome = h('input.entrada#bv-nome', { type: 'text', placeholder: 'Como podemos chamar você?', maxlength: 40, autocomplete: 'given-name' });
       var raiz = h('div.onboarding', { role: 'dialog', 'aria-label': 'Boas-vindas' });
+      // entrar com o Google já nas boas-vindas (só aparece com o provedor ativo no Supabase)
+      var googleMsg = h('small.bv-google-msg', { role: 'status' });
+      var google = h('div.bv-google', { hidden: true },
+        h('button.bt.bv-google-bt#bv-google', { on: { click: async function (ev) {
+          var bt = ev.currentTarget; bt.disabled = true; googleMsg.textContent = 'Abrindo o Google…';
+          if (nome.value.trim()) Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { nome: nome.value.trim() }));
+          App.salvarConfig({ boasVindas: true });
+          try { await A2Nuvem.Conta.entrarComGoogle(); } catch (e) { bt.disabled = false; googleMsg.textContent = A2Nuvem.mensagem(e); }
+        } } }, h('span.conta-google-g', { 'aria-hidden': 'true' }, 'G'), 'Continuar com o Google'),
+        h('small', 'Seus favoritos, planos e pontos ficam guardados na sua conta, em qualquer aparelho.'), googleMsg);
+      if (root.A2Nuvem && A2Nuvem.configurado() && A2Nuvem.Conta && A2Nuvem.Conta.provedores && !/claude|claudeusercontent/.test(location.hostname))
+        A2Nuvem.Conta.provedores().then(function (p) { if (p.google) { google.hidden = false; if (i === passos.length - 1) desenhar(); } });
       function desenhar() {
         var s = passos[i], ult = i === passos.length - 1;
         raiz.replaceChildren(
           h('div.slide',
             s.ico ? h('div', { html: s.ico }) : h('div', { html: UI.icone(s.icoNome).innerHTML.replace('<svg', '<svg class="grande"') }),
             h('h2', s.t), h('p', s.p),
-            ult ? h('label.campo', { for: 'bv-nome', style: { width: '100%', textAlign: 'left' } }, h('span', { style: { color: '#E2C894' } }, 'Seu nome (opcional)'), nome) : null),
+            ult ? google : null,
+            ult ? h('label.campo', { for: 'bv-nome', style: { width: '100%', textAlign: 'left' } }, h('span', { style: { color: '#E2C894' } }, google.hidden ? 'Seu nome (opcional)' : 'Ou só o seu nome (opcional)'), nome) : null),
           h('div', h('div.pontos', passos.map(function (_, k) { return h('i' + (k === i ? '.on' : '')); })),
             h('div.linha-bts', { style: { justifyContent: 'center' } },
               i > 0 ? h('button.bt', { on: { click: function () { i--; desenhar(); } } }, 'Voltar') : h('button.bt', { on: { click: concluir } }, 'Pular'),
               h('button.bt.ouro', { on: { click: function () { if (ult) concluir(); else { i++; desenhar(); } } } }, ult ? 'Começar' : 'Continuar'))));
-        if (ult) setTimeout(function () { nome.focus(); }, 50);
       }
       function concluir() {
         if (nome.value.trim()) Dados.salvar('perfil', 'eu', Object.assign({}, App.perfil(), { nome: nome.value.trim() }));

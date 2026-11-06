@@ -26,7 +26,7 @@ language plpgsql security definer set search_path = public as $$
 begin
   insert into public.perfis (id, nome, papel)
   values (new.id,
-          nullif(new.raw_user_meta_data->>'nome', ''),
+          left(coalesce(nullif(new.raw_user_meta_data->>'nome', ''), nullif(new.raw_user_meta_data->>'full_name', ''), nullif(new.raw_user_meta_data->>'name', '')), 40),  -- nome do cadastro ou do Google
           coalesce((select c.papel from public.convites_papel c where lower(c.email) = lower(new.email)), 'leitor'));
   return new;
 end $$;

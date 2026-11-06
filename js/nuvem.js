@@ -89,8 +89,8 @@
     provedores: function () {
       if (provedoresCache) return provedoresCache;
       provedoresCache = fetch(CFG.supabaseUrl + '/auth/v1/settings', { headers: { apikey: CFG.supabaseChave } })
-        .then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { return (j && j.external) || {}; })
-        .catch(function () { provedoresCache = null; return {}; });
+        .then(function (r) { if (!r.ok) throw new Error('settings ' + r.status); return r.json(); }).then(function (j) { return (j && j.external) || {}; })
+        .catch(function () { provedoresCache = null; return { indisponivel: true }; });
       return provedoresCache;
     },
     recuperar: async function (email) { await iniciar(); return exec(cliente.auth.resetPasswordForEmail(email, { redirectTo: enderecoApp() })); },

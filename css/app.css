@@ -2,15 +2,15 @@
    Layout: coluna única de leitura (máx. 720px) com barra inferior de 5 abas; no computador a coluna fica centralizada. */
 :root {
   --papel: #FFFFFF;
-  --areia: #F6F1E7;
+  --areia: #F4F0E5;
   --areia-2: #ECE3D2;
   --linha: #E2D8C5;
   --tinta: #1A2133;
   --tinta-2: #5A6173;
-  --azul: #14284B;
+  --azul: #192D50;
   --azul-2: #2B4A7D;
-  --azul-texto: #14284B;
-  --ouro: #A9834C;
+  --azul-texto: #192D50;
+  --ouro: #A58A57;
   --ouro-claro: #E9DBBC;
   --sobre-azul: #F7F2E8;
   --perigo: #A33A2C;
@@ -23,13 +23,15 @@
   --tam-leitura: 19px;
   --raio: 16px;
   --abas-h: 64px;
+  /* v2.5: paleta oficial (#192D50, #A58A57, #F4F0E5, #FFFFFF). O cartão Versículo do Dia guarda os tons anteriores para continuar idêntico. */
+  --vdia-azul: #14284B; --vdia-azul-texto: #14284B; --vdia-ouro: #A9834C; --vdia-areia: #F6F1E7;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-tema="claro"]) {
     --papel: #0E1422; --areia: #141C2E; --areia-2: #1B2540; --linha: #27324E;
     --tinta: #ECE6DA; --tinta-2: #A6ADBD; --azul: #1E3766; --azul-2: #2E4E86; --azul-texto: #AFC4EA;
-    --ouro: #D3B27A; --ouro-claro: #4A3D25; --sobre-azul: #F2EBDD; --perigo: #E58C7E; --ok: #8CCBA9;
+    --ouro: #D3B27A; --ouro-claro: #4A3D25; --vdia-azul: #1E3766; --vdia-azul-texto: #AFC4EA; --vdia-ouro: #D3B27A; --vdia-areia: #141C2E; --sobre-azul: #F2EBDD; --perigo: #E58C7E; --ok: #8CCBA9;
     --sombra: 0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
     --d-amarelo: #5B4E1E; --d-verde: #2C4A2E; --d-azul: #22395C; --d-rosa: #5A2B35; --d-lilas: #3D3160;
     color-scheme: dark;
@@ -38,7 +40,7 @@
 :root[data-theme="dark"]:not([data-tema="claro"]), :root[data-tema="escuro"] {
   --papel: #0E1422; --areia: #141C2E; --areia-2: #1B2540; --linha: #27324E;
   --tinta: #ECE6DA; --tinta-2: #A6ADBD; --azul: #1E3766; --azul-2: #2E4E86; --azul-texto: #AFC4EA;
-  --ouro: #D3B27A; --ouro-claro: #4A3D25; --sobre-azul: #F2EBDD; --perigo: #E58C7E; --ok: #8CCBA9;
+  --ouro: #D3B27A; --ouro-claro: #4A3D25; --vdia-azul: #1E3766; --vdia-azul-texto: #AFC4EA; --vdia-ouro: #D3B27A; --vdia-areia: #141C2E; --sobre-azul: #F2EBDD; --perigo: #E58C7E; --ok: #8CCBA9;
   --sombra: 0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
   --d-amarelo: #5B4E1E; --d-verde: #2C4A2E; --d-azul: #22395C; --d-rosa: #5A2B35; --d-lilas: #3D3160;
   color-scheme: dark;
@@ -1047,3 +1049,68 @@ body.selecionando .tela { padding-bottom: 300px; }
 /* controles do leitor com acabamento da nova identidade (o texto não muda) */
 .leitor-cab .seletor-cap { border-radius: 999px; }
 .leitor-cab .trad { border-radius: 999px; background: #192D50; color: #E2C894; border-color: #192D50; }
+
+/* ---------- v2.5 — paleta unificada; o cartão Versículo do Dia mantém exatamente os tons anteriores ---------- */
+.vdia { --azul: var(--vdia-azul); --azul-texto: var(--vdia-azul-texto); --ouro: var(--vdia-ouro); --areia: var(--vdia-areia); }
+
+/* ---------- Perfil v2.5 — mesma identidade do Início, Biblioteca e Criar ---------- */
+.perfil-hero { display: grid; gap: 14px; padding: 18px 16px 16px; border-radius: 22px; color: #F4F0E5;
+  background: radial-gradient(120% 90% at 100% 0%, rgba(165, 138, 87, .35), transparent 55%), linear-gradient(160deg, #1E3660, #192D50 60%, #101E38); box-shadow: var(--sombra); }
+.perfil-id { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.perfil-foto { flex: none; display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: #22396A; border: 2px solid #A58A57; box-shadow: 0 0 0 4px rgba(165, 138, 87, .16); }
+.perfil-foto img { width: 100%; height: 100%; object-fit: cover; }
+.perfil-foto span { font: 700 30px var(--f-display); color: #E9D3A1; font-variant-numeric: lining-nums; }
+.perfil-nome { display: grid; gap: 2px; min-width: 0; }
+.perfil-nome .sobre { font: 700 11px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: #CDB27C; }
+.perfil-nome b { font: 700 26px/1.1 var(--f-display); color: #FFFFFF; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.perfil-nome small { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(244, 240, 229, .8); min-width: 0; }
+.perfil-nome small .ico { width: 15px; height: 15px; color: #E2C894; flex: none; }
+.perfil-rodape { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid rgba(233, 214, 170, .2); }
+.perfil-sinc { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px 0 9px; border-radius: 999px; background: rgba(255, 255, 255, .08); font: 600 12px var(--f-ui); color: #F4F0E5; }
+.perfil-sinc .ico { width: 15px; height: 15px; color: #E2C894; }
+.perfil-sinc.ok .ico { color: #9FD2B4; }
+.perfil-sinc.alerta .ico { color: #F0B2A6; }
+.perfil-editar { margin-left: auto; min-height: 36px; padding: 0 14px; border-radius: 12px; background: transparent; color: #F4F0E5; border-color: rgba(255, 255, 255, .3); font-size: 13.5px; }
+.perfil-editar:hover { background: rgba(255, 255, 255, .08); }
+.perfil-editar .ico { width: 16px; height: 16px; }
+.caminhada { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 560px) { .caminhada { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.grupo-ajustes { padding: 4px 16px; border-radius: 18px; box-shadow: 0 6px 16px rgba(25, 45, 80, .05); }
+.grupo-ajustes > * + * { border-top: 1px solid var(--linha); }
+.ajuste { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; width: 100%; padding: 13px 0; border: 0; background: none; color: var(--tinta); text-align: left; }
+.ajuste.empilhado { grid-template-columns: auto minmax(0, 1fr); row-gap: 10px; }
+.ajuste.empilhado > :nth-child(n+3) { grid-column: 1 / -1; }
+.ajuste-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: color-mix(in srgb, #A58A57 16%, var(--papel)); flex: none; }
+.ajuste-ico .ico { width: 19px; height: 19px; color: #A58A57; }
+.ajuste-txt { display: grid; gap: 1px; min-width: 0; }
+.ajuste-txt b { font: 600 15px var(--f-ui); color: var(--tinta); }
+.ajuste-txt small { font-size: 12.5px; line-height: 1.35; color: var(--tinta-2); }
+.ajuste-link { cursor: pointer; }
+.ajuste-link > .ico:last-child { width: 18px; height: 18px; color: var(--tinta-2); }
+.ajuste-link:hover .ajuste-txt b { color: var(--azul-texto); }
+.ajuste-link.perigo .ajuste-txt b { color: var(--perigo); }
+.ajuste-link.perigo .ajuste-ico { background: color-mix(in srgb, var(--perigo) 12%, var(--papel)); }
+.ajuste-link.perigo .ajuste-ico .ico { color: var(--perigo); }
+.ajuste.notif .ajuste-txt { gap: 4px; }
+.hora-linha { display: inline-flex; align-items: center; gap: 6px; }
+.hora-linha .ico { width: 15px; height: 15px; color: var(--tinta-2); }
+.hora-linha .entrada.hora { width: auto; min-height: 30px; padding: 0 8px; border-radius: 9px; font-size: 13px; color: var(--tinta-2); }
+.hora-linha .entrada.hora:disabled { opacity: .6; }
+.ajuste-nota { padding: 12px 0 14px; }
+.ajuste-nota .sub { margin: 0 0 8px; }
+.ajuste-nota .bt { margin: 0; }
+.seg-perfil { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg-perfil .chip { flex: 1 1 0; min-width: 0; justify-content: center; }
+.seg-perfil .chip[aria-pressed="true"] { background: #192D50; border-color: #192D50; color: #FFFFFF; }
+.tam-linha { display: flex; align-items: center; gap: 12px; }
+.tam-linha input { flex: 1; min-width: 0; accent-color: #192D50; }
+.amostra-tam { display: grid; place-items: center; width: 52px; height: 40px; font-family: var(--f-leitura); color: var(--azul-texto); line-height: 1; flex: none; }
+.tam-v { min-width: 44px; text-align: right; font: 700 13px var(--f-ui); color: var(--tinta-2); }
+.conta-bts { padding: 4px 0 16px; }
+.conta-perfil .ajuste .selo { align-self: start; }
+.sobre-marca { display: grid; gap: 6px; padding: 16px 0 14px; }
+.sobre-marca .lema { margin: 0; font: italic 500 18px var(--f-display); color: var(--azul-texto); }
+.sobre-marca .sub { margin: 0; }
+.licencas .rotulo { margin-top: 6px; }
+.editar-perfil .editar-foto { display: flex; align-items: center; gap: 14px; }
+.editar-perfil .perfil-foto { width: 64px; height: 64px; }

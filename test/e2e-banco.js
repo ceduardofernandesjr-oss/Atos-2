@@ -121,7 +121,7 @@ async function abrir(browser, cfg) {
   checar(await c.evaluate(async () => { try { await Dados.gravarConteudo('devocionais', 'x', { titulo: 'invasão' }); return false; } catch (e) { return true; } }), 'Leitor não consegue publicar');
   await c.keyboard.press('Escape');
   await c.click('a[data-aba="inicio"]'); await c.waitForTimeout(500);
-  checar((await c.textContent('.grade')).includes('Perseverar juntos'), 'Início mostra o devocional do dia');
+  checar((await c.textContent('.devo-card')).includes('Perseverar juntos'), 'Início mostra o devocional do dia');
 
   // Estudo montado com IA: referências conferidas
   await a.keyboard.press('Escape');

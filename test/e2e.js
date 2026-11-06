@@ -361,6 +361,12 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   // ---------------------------------------------------------------- Explorar
   await p.evaluate(() => App.ir('inicio')); await p.waitForSelector('.explorar .atalho');
   checar(await p.locator('.explorar .atalho').count() === 3, 'Início: seção Explorar com assistente, quiz e mural');
+  checar(await p.locator('.saudacao h1').count() === 1 && await p.locator('.continue .cont-card').count() === 2, 'Início: saudação e Continue (leitura e plano com progresso)');
+  checar(await p.locator('.devo-card').count() === 1 && await p.locator('.estudio-card canvas').count() === 1, 'Início: devocional e estúdio com prévia do versículo de hoje');
+  checar(await p.locator('.descubra-card img').count() === 7 && await p.locator('.jornada .semana .dia').count() === 7, 'Início: Descubra mais com imagens e Sua jornada');
+  checar(await p.locator('.vdia .acoes-ico .bt-ico').count() === 4 && (await p.textContent('.vdia')).includes('Anteriores'), 'Início: cartão do Versículo do Dia preservado');
+  await p.click('.descubra-card:has-text("Tema da semana")'); await p.waitForSelector('.folha .lista .item'); await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  checar(true, 'Descubra mais: tema da semana abre as passagens');
   await p.click('.explorar .atalho:has-text("Assistente")'); await p.waitForSelector('#assist-q');
   await p.waitForTimeout(400);
   checar((await p.textContent('.aviso-ia')).includes('Modo guia') && (await p.textContent('.assist-caixa .bt.pri')).includes('Buscar'), 'Assistente: sem IA, entra no modo guia');

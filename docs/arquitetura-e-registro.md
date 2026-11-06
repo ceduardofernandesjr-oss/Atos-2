@@ -1,7 +1,7 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 06/11/2026 (v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
+Última atualização: 06/11/2026 (v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
 Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões
@@ -73,7 +73,7 @@ app/
   js/ui.js  dados.js  biblia.js  app.js
   js/telas/   inicio  cartao  leitor  pesquisa  fotos  arte-desenho  estudio  biblioteca  planos  devocionais  perfil  explorar (assistente, quiz, mural)  teologia (originais, doutrinas, Bereano)
 ferramentas/  converter_originais.py  preparar_fotos.py  converter_blivre.py  verificar_biblia.py  converter_usfm.py  converter_almeida1911.py  verificar_traducao.py  atualizar_grafia_1911.py  metadados/
-test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  e2e.js (146)  e2e-banco.js (20)  e2e-nuvem.js (12, Supabase falso)
+test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  estudio.test.js (11)  e2e.js (151)  e2e-banco.js (20)  e2e-nuvem.js (12, Supabase falso)
 docs/         schema.sql (Supabase)
 ```
 
@@ -98,7 +98,8 @@ docs/         schema.sql (Supabase)
 
 ## 4. Funcionalidades da v1
 
-- **Início:** versículo do dia (ciclo de 371 passagens sem repetição; histórico dos anteriores), reflexão editorial, favoritar, compartilhar como imagem no mesmo visual do cartão (`js/telas/cartao.js`: Cartão com altura do texto, Feed 4:5, Stories e Quadrado; itálicos preservados; marca ATOS 2 no rodapé) ou só o texto, criar arte; atalhos de última leitura, plano, devocional e estúdio; lembretes.
+- **Início (v2.1):** reorganizado mantendo o cartão do Versículo do Dia idêntico (componente, CSS `.vdia` e função `montarVersiculoDia` sem nenhuma alteração; regra obrigatória do usuário). Cabeçalho com pesquisa, lembretes e avatar do perfil; saudação com data, sequência de dias e o lema; lembretes em faixa; **Continue** com cartões de última leitura (capítulos lidos do livro) e do plano (anel de progresso, dia atual, situação: em dia, atraso, lido hoje, concluído); **Devocional de hoje** (categoria, passagem, lido); **Estúdio de artes** com prévia real do versículo de hoje num modelo do estúdio e atalho direto para os modelos; **Explorar** com Assistente, Quiz (situação do desafio do dia) e Mural, mais atalhos para Modo Bereano, Doutrinas e Grego e hebraico; **Descubra mais** com cartões com foto (curiosidade do dia, tema da semana, personagem, 95 Teses, originais, inspirações, Números da Bíblia); **Sua jornada** (dias seguidos, últimos 7 dias, Bíblia lida, favoritos, artes, pontos no quiz, devocionais). A pesquisa passou a abrir direto um tema ou personagem (`Telas.pesquisa.abrir('', { tema })`). Navegação flutuante: fundo suave na aba ativa.
+- **Início (até v2.0):** versículo do dia (ciclo de 371 passagens sem repetição; histórico dos anteriores), reflexão editorial, favoritar, compartilhar como imagem no mesmo visual do cartão (`js/telas/cartao.js`: Cartão com altura do texto, Feed 4:5, Stories e Quadrado; itálicos preservados; marca ATOS 2 no rodapé) ou só o texto, criar arte; atalhos de última leitura, plano, devocional e estúdio; lembretes.
 - **Bíblia:** livros/capítulos, ir para referência, seleção de versículos, destaques (5 cores), favoritos, anotações, copiar, compartilhar (WhatsApp/cópia), comparar traduções, criar arte, notas dos tradutores, títulos dos salmos, itálicos, marcar capítulo lido, tamanho/fonte/tema, leitura em voz alta (voz do aparelho, velocidade, continua de onde parou).
 - **Pesquisa:** palavras inteiras sem acento, variações, “expressão exata”, referência, escopo (AT/NT/Evangelhos/Atos e cartas), 14 temas e 32 personagens curados.
 - **Planos:** 8 planos (Bíblia 365, NT 90, Evangelhos 30, Salmos 30, Provérbios 31, Conhecendo Jesus, Fundamentos da fé, Atos 28); cronograma equilibrado por versículos; iniciar, pausar (dias de pausa não contam atraso), retomar, marcar, atraso, término previsto, lembrete, leitura guiada com “Concluir dia”; vários ao mesmo tempo.

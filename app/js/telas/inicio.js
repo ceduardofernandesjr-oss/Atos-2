@@ -26,60 +26,194 @@
   function saudacao() { var hr = new Date().getHours(); return hr < 5 ? 'Boa noite' : hr < 12 ? 'Bom dia' : hr < 18 ? 'Boa tarde' : 'Boa noite'; }
 
   function render(tela) {
-    var perfil = App.perfil(), hoje = UI.hoje(), lembretes = App.lembretesPendentes();
-    var sino = h('button.bt-ico', { 'aria-label': 'Lembretes (' + lembretes.length + ')', on: { click: abrirLembretes } }, ico('sino'),
-      lembretes.length ? h('span', { style: { position: 'absolute', marginLeft: '18px', marginTop: '-16px', width: '9px', height: '9px', borderRadius: '50%', background: 'var(--ouro)' } }) : null);
-    tela.appendChild(h('header.cab', h('div.marca-peq', { html: UI.logo(36) + '<b>ATOS 2</b>' }), h('div.esp'),
-      h('button.bt-ico', { 'aria-label': 'Pesquisar na Bíblia', on: { click: function () { Telas.pesquisa.abrir(); } } }, ico('busca')), sino));
-    tela.appendChild(h('div', { style: { margin: '4px 0 16px' } },
-      h('h1', { style: { font: '700 28px/1.15 var(--f-display)', color: 'var(--azul-texto)' } }, saudacao() + (perfil.nome ? ', ' + perfil.nome.split(' ')[0] : '') + '.'),
-      h('p.sub', capital(new Date().toLocaleDateString('pt-BR', { weekday: 'long' })) + ', ' + UI.dataLonga(hoje))));
+    var perfil = App.perfil(), hoje = UI.hoje(), lembretes = App.lembretesPendentes(), diaN = A2Conteudo.diaNumero(hoje);
 
-    // Versículo do dia
+    // ---------------------------------------------------------------- cabeçalho e saudação
+    var sino = h('button.bt-ico.sino-inicio', { 'aria-label': 'Lembretes (' + lembretes.length + ')', on: { click: abrirLembretes } }, ico('sino'),
+      lembretes.length ? h('span.ponto-aviso', { 'aria-hidden': 'true' }) : null);
+    var avatar = h('button.avatar-inicio', { 'aria-label': 'Abrir o perfil', on: { click: function () { App.ir('perfil'); } } },
+      perfil.foto ? h('img', { src: perfil.foto, alt: '' }) : h('span', (perfil.nome || 'A').charAt(0).toUpperCase()));
+    tela.appendChild(h('header.cab.cab-inicio', h('div.marca-peq', { html: UI.logo(36) + '<b>ATOS 2</b>' }), h('div.esp'),
+      h('button.bt-ico', { 'aria-label': 'Pesquisar na Bíblia', on: { click: function () { Telas.pesquisa.abrir(); } } }, ico('busca')), sino, avatar));
+    var seq = sequencia();
+    tela.appendChild(h('section.saudacao',
+      h('span.sobre', capital(new Date().toLocaleDateString('pt-BR', { weekday: 'long' })) + ' · ' + UI.dataLonga(hoje)),
+      h('h1', saudacao() + (perfil.nome ? ', ' + perfil.nome.split(' ')[0] : '') + '.'),
+      h('p', seq > 1 ? h('span.selo-seq', ico('chama'), seq + ' dias seguidos') : null, h('span.lema', 'De volta à doutrina dos apóstolos.'))));
+
+    // ---------------------------------------------------------------- Versículo do dia (componente preservado)
     var cartao = h('section.vdia', { 'aria-label': 'Versículo do dia' }, h('span.rotulo', 'Versículo do dia'), h('div.carregando', { style: { padding: '24px' } }, h('div.giro')));
     tela.appendChild(cartao);
     montarVersiculoDia(cartao, hoje);
 
-    // Atalhos
-    tela.appendChild(h('div.secao', h('h2', 'Continue')));
-    var grade = h('div.grade.g2');
-    tela.appendChild(grade);
-    var ult = Dados.obter('leitura', 'ultima');
-    grade.appendChild(atalho('livro', 'Última leitura', ult ? A2Ref.formatar({ livro: ult.livro, cap: ult.cap }) + ' · continuar de onde parou' : 'Comece por João 1, ou escolha um livro',
-      function () { if (ult) App.abrirBiblia(ult.livro, ult.cap, ult.v); else App.abrirBiblia('JHN', 1); }));
-    var plano = planoEmDestaque();
-    grade.appendChild(atalho('planos', plano ? plano.def.nome : 'Plano de leitura',
-      plano ? (plano.r.concluido ? 'Plano concluído.' : 'Dia ' + (plano.r.proximo + 1) + ': ' + A2Planos.rotuloLeitura(plano.cron[plano.r.proximo], A2Ref.formatar)) : 'Escolha entre 8 planos e acompanhe o progresso',
-      function () { if (plano) { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(plano.def.id); }, 50); } else { App.estado.secaoBiblioteca = 'planos'; App.ir('biblioteca'); } },
-      plano ? plano.r.percentual : null));
-    var dev = Telas.devocionais.doDia();
-    grade.appendChild(atalho('luz', 'Devocional', dev ? dev.titulo : 'O devocional de hoje ainda não foi publicado', function () {
-      location.hash = 'biblioteca'; setTimeout(function () { if (dev) Telas.devocionais.abrir(dev.id); else { App.estado.secaoBiblioteca = 'devocionais'; App.recarregar(); } }, 50);
-    }));
-    grade.appendChild(atalho('pincel', 'Estúdio de artes', 'Transforme um versículo em imagem para compartilhar', function () { App.ir('criar'); }));
+    if (lembretes.length) tela.appendChild(h('div.lembretes-hoje', lembretes.map(function (l) {
+      return h('button.lembrete-chip', { on: { click: function () { App.abrirLembrete(l); } } }, ico('sino'), h('span', l.texto), ico('direita'));
+    })));
 
-    // Explorar
-    tela.appendChild(h('div.secao', h('h2', 'Explorar')));
+    // ---------------------------------------------------------------- Continue: última leitura e plano
+    tela.appendChild(secao('Continue'));
+    var cont = h('div.continue');
+    tela.appendChild(cont);
+    cont.appendChild(cardLeitura());
+    cont.appendChild(cardPlano());
+
+    // ---------------------------------------------------------------- Devocional
+    tela.appendChild(secao('Devocional de hoje', 'Arquivo', function () { App.estado.secaoBiblioteca = 'devocionais'; App.estado.abaDevo = 'arquivo'; App.ir('biblioteca'); }));
+    tela.appendChild(cardDevocional());
+
+    // ---------------------------------------------------------------- Estúdio de artes
+    tela.appendChild(cardEstudio(hoje));
+
+    // ---------------------------------------------------------------- Explorar (acessos rápidos)
+    tela.appendChild(secao('Explorar'));
+    var q = estatQuiz(), desafio = q.desafios[hoje];
     tela.appendChild(h('div.grade.g3.explorar',
-      atalho('brilho', 'Assistente bíblico', 'Pesquise e entenda o contexto de uma passagem', function () { App.ir('assistente'); }),
-      atalho('estrela', 'Quiz bíblico', 'Perguntas e respostas conferidas na Bíblia', function () { App.ir('quiz'); }),
-      atalho('colecao', 'Mural', 'Curiosidades e as 95 Teses de Lutero', function () { App.ir('mural'); })));
-
-    if (lembretes.length) {
-      tela.appendChild(h('div.secao', h('h2', 'Lembretes de hoje')));
-      tela.appendChild(h('div.lista', lembretes.map(function (l) {
-        return h('button.item', { on: { click: function () { App.abrirLembrete(l); } } }, ico('sino'), h('div.corpo', h('span', l.texto)), ico('direita'));
+      atalho('brilho', 'Assistente bíblico', 'Estude uma passagem e o contexto', function () { App.ir('assistente'); }),
+      atalho('estrela', 'Quiz bíblico', desafio ? 'Desafio de hoje: ' + desafio.acertos + ' de 5' : 'Desafio do dia: 5 perguntas', function () { App.ir('quiz'); }, null, desafio ? 'feito' : 'novo'),
+      atalho('colecao', 'Mural', 'Curiosidades e as 95 Teses', function () { App.estado.muralAba = 'curiosidades'; App.ir('mural'); })));
+    tela.appendChild(h('div.chips.atalhos-estudo', { 'aria-label': 'Atalhos do assistente' },
+      [['bereano', 'Modo Bereano', 'escudo'], ['doutrinas', 'Doutrinas', 'colecao'], ['original', 'Grego e hebraico', 'texto']].map(function (m) {
+        return h('button.chip', { on: { click: function () { App.estado.assistenteModo = m[0]; App.estado.doutrinaAberta = null; App.ir('assistente'); } } }, ico(m[2]), m[1]);
       })));
-    }
+
+    // ---------------------------------------------------------------- Descubra mais
+    tela.appendChild(secao('Descubra mais'));
+    tela.appendChild(descubra(diaN));
+
+    // ---------------------------------------------------------------- Sua jornada
+    tela.appendChild(secao('Sua jornada', 'Ver perfil', function () { App.ir('perfil'); }));
+    tela.appendChild(cardJornada(hoje, seq, q));
 
     App.aoMudar(function (c) { if (c === 'planos' || c === 'leitura' || c === '*') App.atualizar(); });
     App.aoSair(Dados.ouvirConteudo(function (nome) { if (App.estado.aba === 'inicio' && (nome === 'reflexoes' || nome === 'devocionais')) App.atualizar(); }));
   }
   function capital(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function secao(titulo, link, acao) {
+    return h('div.secao', h('h2', titulo), h('div.esp'), link ? h('button.link-secao', { on: { click: acao } }, link, ico('direita')) : null);
+  }
 
-  function atalho(icone, titulo, texto, acao, progresso) {
-    return h('button.atalho', { on: { click: acao } }, ico(icone), h('b', titulo), h('small', texto),
+  function atalho(icone, titulo, texto, acao, progresso, selo) {
+    return h('button.atalho', { on: { click: acao } }, h('span.atalho-ico', ico(icone), selo === 'feito' ? h('i.marca-ok', { 'aria-label': 'feito' }, '✓') : selo === 'novo' ? h('i.marca-novo', { 'aria-hidden': 'true' }) : null),
+      h('b', titulo), h('small', texto),
       progresso != null ? h('div.barra', { role: 'progressbar', 'aria-valuenow': Math.round(progresso), 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('i', { style: { width: progresso + '%' } })) : null);
+  }
+  function anel(pct, rotulo) {
+    var r = 22, c = 2 * Math.PI * r, v = Math.max(0, Math.min(100, pct || 0));
+    var el = h('div.anel', { role: 'progressbar', 'aria-valuenow': Math.round(v), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-label': rotulo });
+    el.innerHTML = '<svg viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="' + r + '" class="anel-fundo"/><circle cx="27" cy="27" r="' + r + '" class="anel-valor" stroke-dasharray="' + c.toFixed(2) + '" stroke-dashoffset="' + (c * (1 - v / 100)).toFixed(2) + '"/></svg><span>' + Math.round(v) + '%</span>';
+    return el;
+  }
+
+  function cardLeitura() {
+    var ult = Dados.obter('leitura', 'ultima'), lidos = (Dados.obter('leitura', 'capitulos') || {}).lidos || {};
+    var livro = ult ? ult.livro : 'JHN', cap = ult ? ult.cap : 1, info = A2Ref.LIVROS.filter(function (l) { return l.id === livro; })[0] || { nome: 'João' };
+    var total = (Biblia.contagemSinc()(livro) || []).length || 1, feitos = 0;
+    for (var i = 1; i <= total; i++) if (lidos[livro + '.' + i]) feitos++;
+    var pct = feitos / total * 100;
+    return h('button.cont-card.leitura', { on: { click: function () { App.abrirBiblia(livro, cap, ult ? ult.v : null); } } },
+      h('div.cont-topo', h('span.cont-ico', ico('livro')), h('span.cont-rotulo', ult ? 'Última leitura' : 'Comece a ler')),
+      h('b.cont-titulo', info.nome), h('span.cont-sub', ult ? 'Capítulo ' + cap + (ult.v ? ', versículo ' + ult.v : '') : 'O Evangelho de João, capítulo 1'),
+      h('div.cont-prog', h('div.barra', { role: 'progressbar', 'aria-label': 'Capítulos lidos de ' + info.nome, 'aria-valuenow': feitos, 'aria-valuemin': 0, 'aria-valuemax': total }, h('i', { style: { width: pct + '%' } })),
+        h('small', feitos + ' de ' + total + ' capítulos')),
+      h('span.cont-acao', ult ? 'Continuar' : 'Começar', ico('direita')));
+  }
+  function cardPlano() {
+    var plano = planoEmDestaque();
+    if (!plano) return h('button.cont-card.plano.vazio', { on: { click: function () { App.estado.secaoBiblioteca = 'planos'; App.ir('biblioteca'); } } },
+      h('div.cont-topo', h('span.cont-ico', ico('planos')), h('span.cont-rotulo', 'Plano de leitura')),
+      h('b.cont-titulo', 'Escolha um plano'), h('span.cont-sub', '8 planos, de 28 a 365 dias, com progresso e lembretes'),
+      h('span.cont-acao', 'Ver planos', ico('direita')));
+    var r = plano.r, status = r.concluido ? 'Concluído' : r.lidoHoje ? 'Leitura de hoje feita' : r.atrasados ? r.atrasados + (r.atrasados > 1 ? ' dias' : ' dia') + ' em atraso' : 'Em dia';
+    return h('button.cont-card.plano', { on: { click: function () { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(plano.def.id); }, 50); } } },
+      h('div.cont-topo', h('span.cont-ico', ico('planos')), h('span.cont-rotulo', 'Seu plano'), anel(r.percentual, 'Progresso do plano de leitura')),
+      h('b.cont-titulo', plano.def.nome),
+      h('span.cont-sub', r.concluido ? 'Você concluiu os ' + r.total + ' dias.' : 'Dia ' + (r.proximo + 1) + ' de ' + r.total + ': ' + A2Planos.rotuloLeitura(plano.cron[r.proximo], A2Ref.formatar)),
+      h('span.selo' + (r.concluido || r.lidoHoje ? '.ok' : r.atrasados ? '.alerta' : '.ouro'), status),
+      h('span.cont-acao', r.concluido ? 'Ver plano' : 'Ler agora', ico('direita')));
+  }
+  function cardDevocional() {
+    var dev = Telas.devocionais.doDia();
+    function abrirDev() { location.hash = 'biblioteca'; setTimeout(function () { if (dev) Telas.devocionais.abrir(dev.id); else { App.estado.secaoBiblioteca = 'devocionais'; App.recarregar(); } }, 50); }
+    if (!dev) return h('button.devo-card.vazio', { on: { click: abrirDev } }, h('span.devo-ico', ico('luz')),
+      h('div.devo-corpo', h('b', 'O devocional de hoje ainda não foi publicado'), h('small', 'Enquanto isso, leia os devocionais anteriores.')), ico('direita'));
+    var lido = !!Dados.obter('devLidos', dev.id), ref = Biblia.interpretar(dev.passagem || '');
+    return h('button.devo-card', { on: { click: abrirDev } }, h('span.devo-ico', ico('luz')),
+      h('div.devo-corpo', h('span.devo-cat', (dev.categoria || 'Devocional') + (dev.data && dev.data !== UI.hoje() ? ' · ' + UI.dataCurta(dev.data) : '')),
+        h('b', dev.titulo), ref.ok ? h('small', ico('livro'), ' ' + A2Ref.formatar(ref.ref)) : null),
+      lido ? h('span.selo.ok', 'Lido') : h('span.devo-ler', 'Ler'));
+  }
+  function cardEstudio(hoje) {
+    var ref = A2Conteudo.versiculoDoDia(hoje), artes = Dados.todos('artes'), rasc = artes.filter(function (a) { return a.estado === 'rascunho'; }).length;
+    var cv = h('canvas.estudio-mini', { 'aria-hidden': 'true' });
+    var card = h('section.estudio-card', { 'aria-label': 'Estúdio de artes' },
+      h('div.estudio-texto',
+        h('span.sobre', 'Estúdio de artes'),
+        h('h3', 'O versículo de hoje vira arte'),
+        h('p', artes.length ? artes.length + (artes.length > 1 ? ' artes criadas' : ' arte criada') + (rasc ? ' · ' + rasc + (rasc > 1 ? ' rascunhos' : ' rascunho') : '') : '64 modelos, fontes, cores e elementos para personalizar.'),
+        h('div.linha-bts', h('button.bt.ouro.peq#inicio-criar-arte', { on: { click: function () { Telas.criar.comVersiculo(ref); } } }, ico('pincel'), 'Criar arte'),
+          h('button.bt.claro.peq', { on: { click: function () { App.ir('criar'); } } }, artes.length ? 'Minhas artes' : 'Abrir estúdio'))),
+      h('button.estudio-previa', { 'aria-label': 'Criar arte com o versículo de hoje', on: { click: function () { Telas.criar.comVersiculo(ref); } } }, cv));
+    // prévia real: o versículo de hoje num modelo do estúdio
+    setTimeout(function () {
+      if (!cv.isConnected || !root.A2Desenho) return;
+      var base = A2Arte.normalizar({ formato: 'feed', conteudo: { tipo: 'versiculo', ref: ref, versao: App.config().traducao || Biblia.padrao() } });
+      var modelos = ['pai-lago', 'ceu-pier', 'nat-floresta', 'dev-cruz', 'esc-aurora', 'pai-fiorde', 'cla-outono'];
+      A2Desenho.desenhar(cv, A2Arte.aplicarModelo(base, A2Modelos.POR_ID[modelos[A2Conteudo.diaNumero(hoje) % modelos.length]]), 300).catch(function () {});
+    }, 60);
+    return card;
+  }
+
+  function descubra(diaN) {
+    var cur = A2Mural.CURIOSIDADES[((diaN % A2Mural.CURIOSIDADES.length) + A2Mural.CURIOSIDADES.length) % A2Mural.CURIOSIDADES.length];
+    var semana = Math.floor(diaN / 7), tema = A2Conteudo.TEMAS[((semana % A2Conteudo.TEMAS.length) + A2Conteudo.TEMAS.length) % A2Conteudo.TEMAS.length];
+    var pers = A2Conteudo.PERSONAGENS[((diaN % A2Conteudo.PERSONAGENS.length) + A2Conteudo.PERSONAGENS.length) % A2Conteudo.PERSONAGENS.length];
+    var itens = [
+      { foto: 'mapa-mundi', sobre: 'Curiosidade do dia', titulo: cur.titulo, acao: function () { App.estado.muralAba = 'curiosidades'; App.ir('mural'); } },
+      { foto: 'lago-amanhecer', sobre: 'Tema da semana', titulo: tema.nome + ': o que a Bíblia diz', acao: function () { Telas.pesquisa.abrir('', { tema: tema.id }); } },
+      { foto: 'caminho-estreito', sobre: 'Personagem', titulo: 'A história de ' + pers.nome.split(',')[0], acao: function () { Telas.pesquisa.abrir('', { personagem: pers.nome }); } },
+      { foto: 'vela', sobre: 'Reforma', titulo: 'As 95 Teses de Lutero', acao: function () { App.estado.muralAba = 'teses'; App.ir('mural'); } },
+      { foto: 'folha', sobre: 'Originais', titulo: 'Palavras em grego e hebraico', acao: function () { App.estado.assistenteModo = 'original'; App.ir('assistente'); } },
+      { foto: 'aurora-boreal', sobre: 'Inspirações', titulo: 'Papéis de parede e artes prontas', acao: function () { Telas.criar.abrirInspiracoes(); } },
+      { foto: 'fiorde', sobre: 'Números da Bíblia', titulo: 'Livros, capítulos e o versículo do meio', acao: function () { App.estado.muralAba = 'numeros'; App.ir('mural'); } }
+    ];
+    return h('div.descubra', { role: 'list' }, itens.map(function (it) {
+      return h('button.descubra-card', { role: 'listitem', on: { click: it.acao } },
+        h('img', { src: 'fundos/fotos/' + it.foto + '-mini.jpg', alt: '', loading: 'lazy', width: 180, height: 320 }),
+        h('span.descubra-sobre', it.sobre), h('b', it.titulo));
+    }));
+  }
+
+  function sequencia() {
+    var dias = diasAtivos(), n = 0, d = UI.hoje();
+    if (!dias[d]) d = A2Planos.addDias(d, -1);
+    while (dias[d]) { n++; d = A2Planos.addDias(d, -1); }
+    return n;
+  }
+  function diasAtivos() {
+    var dias = {};
+    Dados.todos('historico').forEach(function (m) { (m.itens || []).forEach(function (x) { if (x.tipo === 'leitura' || x.tipo === 'devocional' || x.tipo === 'plano') dias[x.em.slice(0, 10)] = 1; }); });
+    return dias;
+  }
+  function estatQuiz() { return Object.assign({ jogos: 0, pontos: 0, desafios: {} }, Dados.obter('quiz', 'estatisticas') || {}); }
+  function cardJornada(hoje, seq, q) {
+    var dias = diasAtivos(), lidos = Object.keys((Dados.obter('leitura', 'capitulos') || {}).lidos || {}).length;
+    var semana = h('div.semana', { 'aria-label': 'Atividade dos últimos 7 dias' });
+    for (var i = 6; i >= 0; i--) {
+      var d = A2Planos.addDias(hoje, -i), feito = !!dias[d], nome = new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+      semana.appendChild(h('div.dia' + (feito ? '.feito' : '') + (i === 0 ? '.hoje' : ''), { title: UI.dataCurta(d) + (feito ? ': com leitura' : ': sem leitura') },
+        h('span.bolinha', feito ? '✓' : ''), h('small', nome.charAt(0).toUpperCase() + nome.slice(1, 3))));
+    }
+    function num(valor, rotulo, icone) { return h('div.jornada-num', ico(icone), h('b', valor), h('small', rotulo)); }
+    return h('section.jornada',
+      h('div.jornada-topo', h('div.jornada-seq', h('b', String(seq)), h('span', seq === 1 ? 'dia seguido' : 'dias seguidos')), semana),
+      h('div.jornada-bible', h('div.jornada-bible-txt', h('span', 'Bíblia lida'), h('b', UI.pct(lidos / 1189 * 100))),
+        h('div.barra', { role: 'progressbar', 'aria-label': 'Capítulos lidos da Bíblia', 'aria-valuenow': lidos, 'aria-valuemin': 0, 'aria-valuemax': 1189 }, h('i', { style: { width: (lidos / 1189 * 100) + '%' } })),
+        h('small', lidos + ' de 1.189 capítulos')),
+      h('div.jornada-nums',
+        num(String(Dados.todos('favoritos').length), 'favoritos', 'coracao'),
+        num(String(Dados.todos('artes').length), 'artes', 'pincel'),
+        num(String(q.pontos || 0), 'pontos no quiz', 'estrela'),
+        num(String(Dados.todos('devLidos').length), 'devocionais', 'luz')));
   }
 
   function planoEmDestaque() {

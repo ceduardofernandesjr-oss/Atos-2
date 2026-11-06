@@ -50,7 +50,7 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   // comparar
   await p.click('.v[data-v="16"]'); await p.click('.barra-sel button:has-text("Comparar")');
   await p.waitForSelector('.folha .cartao');
-  checar((await p.textContent('.folha')).includes('Aguardando licença'), 'Comparar: traduções pendentes sinalizadas');
+  checar(!(await p.textContent('.folha')).includes('Aguardando licença') && await p.locator('.folha .cartao').count() === 4, 'Comparar: só as 4 traduções licenciadas');
   await p.keyboard.press('Escape'); await p.click('.barra-sel .bt-ico');
   await p.screenshot({ path: '/tmp/shots/2-biblia.png' });
   // ir para referência

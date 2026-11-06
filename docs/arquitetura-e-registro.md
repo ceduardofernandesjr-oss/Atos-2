@@ -1,14 +1,14 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 06/11/2026 (v2.6.1 — botão de modo noturno no Início e no leitor; v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
+Última atualização: 06/11/2026 (v2.6.2 — versões sem licença retiradas do app; v2.6.1 — botão de modo noturno no Início e no leitor; v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
 Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões
 
 | Decisão | Motivo |
 |---|---|
-| Texto bíblico da **Bíblia Livre (BLIVRE)**, edição Textus Receptus, arquivos-fonte de 12/01/2025 | ACF, KJA e NTLH têm direitos reservados (SBTB; Abba Press/SBIA; SBB). A BLIVRE é completa, de base Almeida (1819) e tem licença CC BY 3.0 BR. ACF/KJA/NTLH aparecem como “licença pendente” e entram por importação quando autorizadas. |
+| Texto bíblico da **Bíblia Livre (BLIVRE)**, edição Textus Receptus, arquivos-fonte de 12/01/2025 | ACF, KJA e NTLH têm direitos reservados (SBTB; Abba Press/SBIA; SBB). A BLIVRE é completa, de base Almeida (1819) e tem licença CC BY 3.0 BR. Desde a v2.6.2 (pedido do usuário) versões sem licença não aparecem no app; ACF/KJA/NTLH entram por importação quando autorizadas. |
 | Bíblia em arquivos estáticos (um JSON por livro) | 4 MB, carregados sob demanda e guardados no aparelho para leitura sem internet. O banco guarda só dados do usuário. |
 | App em JavaScript sem framework, motores puros testados em Node | Mesmo padrão do ACS Digital: regra de negócio em funções puras (referências, planos, busca, arte, sincronização). |
 | **Local primeiro**, sincronização plugável | (v1.8) Projeto Supabase `atos2` (sa-east-1, id `cxzmijbcoxbicsfchkac`) criado depois de pausar o `acs-digital` a pedido do usuário em 05/11/2026 (restaurável por 90 dias). Antes: Supabase sem vaga (limite de 2 projetos gratuitos). Os dados vão primeiro ao IndexedDB; na prévia sincronizam com o banco do claude.ai por usuário; na produção, o mesmo contrato vai para o Supabase (`schema.sql`). |
@@ -154,7 +154,7 @@ docs/         schema.sql (Supabase)  acervo-procedencia.md (cadastro de procedê
 
 ## 5. Limitações conhecidas da prévia
 
-- Quatro edições ativas (BLIVRE, ALM1911, ALM1911AT, ONBV); ACF, KJA e NTLH aparecem como pendentes de licença.
+- Quatro edições no app (BLIVRE, ALM1911, ALM1911AT, ONBV). Versões sem licença (ACF, KJA, NTLH e outras) não aparecem; a BLT (Bíblia Livre Para Todos, NT, CC BY-SA 4.0) pode entrar com o arquivo USFM do eBible.org.
 - Áudio por voz sintética do aparelho; narração licenciada fica para depois.
 - Notificações do sistema e instalação como app só na versão publicada (GitHub Pages); na prévia os lembretes aparecem dentro do app.
 - Login próprio só na versão publicada; na prévia a conta é a do claude.ai. E-mails de confirmação usam o envio padrão do Supabase (limite baixo por hora; textos em inglês até personalizar os modelos).

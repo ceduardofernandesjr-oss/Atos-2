@@ -6,7 +6,7 @@
 (function (root) {
   'use strict';
 
-  // Traduções. Só entram no app textos completos e licenciados; as demais aparecem com a situação.
+  // Traduções. Só entram no app textos completos e licenciados (versões sem licença não aparecem).
   var VERSOES = [
     { id: 'blivre', sigla: 'BLIVRE', nome: 'Bíblia Livre', ativa: true,
       descricao: 'Revisão atual da Almeida (1819), Textus Receptus. Linguagem formal e literal. Licença aberta.' },
@@ -15,13 +15,7 @@
     { id: 'alm1911at', sigla: 'ALM1911AT', nome: 'Almeida 1911, ortografia atualizada', ativa: true,
       descricao: 'O mesmo texto da edição de 1911, com a grafia de hoje (Cristo, batizado, Egito, ele). Palavras e pontuação de 1911 mantidas.' },
     { id: 'onbv', sigla: 'ONBV', nome: 'Biblica® Open Nova Bíblia Viva', ativa: true,
-      descricao: 'Português atual e simples, com foco no sentido (tradução dinâmica). Boa para leitura devocional. Licença aberta da Biblica.' },
-    { id: 'acf', sigla: 'ACF', nome: 'Almeida Corrigida Fiel', ativa: false,
-      situacao: 'Aguardando autorização da Sociedade Bíblica Trinitariana do Brasil, detentora dos direitos. O app já está pronto para importar o texto oficial quando a licença for concedida.' },
-    { id: 'kja', sigla: 'KJA', nome: 'King James Atualizada', ativa: false,
-      situacao: 'Edição a confirmar (King James Atualizada, Abba Press e Sociedade Bíblica Ibero-Americana, 2001, ou outra). Depende de autorização do detentor dos direitos.' },
-    { id: 'ntlh', sigla: 'NTLH', nome: 'Nova Tradução na Linguagem de Hoje', ativa: false,
-      situacao: 'Aguardando autorização da Sociedade Bíblica do Brasil, detentora dos direitos.' }
+      descricao: 'Português atual e simples, com foco no sentido (tradução dinâmica). Boa para leitura devocional. Licença aberta da Biblica.' }
   ];
   var indices = {}, livros = {}, pedidos = {};
 

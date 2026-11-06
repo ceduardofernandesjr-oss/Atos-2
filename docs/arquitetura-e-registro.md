@@ -1,8 +1,8 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 05/11/2026 (v1.8 — banco Supabase, contas, assistente em modo guia; preparação do GitHub Pages)
-Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; publicação por GitHub Actions a partir da pasta `app/`)
+Última atualização: 06/11/2026 (v1.9 — estudo teológico: grego e hebraico, doutrinas e controvérsias, modo Bereano, níveis de profundidade)
+Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões
 
@@ -26,6 +26,7 @@ Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositór
   - Mt 14:22 (“seus”), Mc 10:46 (“mendigando”), Lc 4:8 (“escrito:”) — palavras do TR perdidas por erros de grafia nos marcadores.
 - Correções de marcação (nenhuma palavra alterada): Mc 5:19 sem marcador de versículo; Lc 14:4 e Sl 144:14 notas mal fechadas; Jo 16:14 itálico aberto duas vezes; Lc 21:1, Lc 7:28 fechamentos sem barra; chaves soltas em Mc 14:70 e Rm 16:20.
 - **At 28:29** não tem texto nos arquivos-fonte atuais da BLIVRE (TR). Não foi preenchido com outra revisão, para não misturar edições: aparece com aviso.
+- **Gn 14:20** está incompleto na fonte: falta “E deu-lhe o dízimo de tudo” (presente no hebraico, na Almeida 1911 e na ONBV). Texto mantido; aviso (!) no leitor (v1.9, encontrado pela verificação das doutrinas). Vale avisar os mantenedores da BLIVRE, junto com Gn 19:26.
 - **Gn 19:26** traz “estátua de sai” na fonte (provável erro de digitação de “sal”). O texto não foi alterado; o leitor mostra um aviso (!) — tabela `AVISOS` em `converter_blivre.py` (v1.7, encontrado pela verificação do quiz).
 - Verificação (`ferramentas/verificar_biblia.py`): 66 livros, 1.189 capítulos, 31.102 versículos; versificação idêntica à KJV em todos os capítulos; ida e volta palavra por palavra sem divergência.
 - Crédito exigido pela licença aparece em Perfil › Sobre e no seletor de traduções; artes e citações levam a sigla da tradução usada.
@@ -65,11 +66,12 @@ Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositór
 app/
   index.html, css/app.css, manifest.webmanifest, sw.js, icones/, fundos/fotos/ (25 fotos × celular, computador, miniatura)
   biblia/{blivre,alm1911,alm1911at,onbv}/indice.json + <LIVRO>.json   caps[c][v]; {} = itálico; notas {t,o,tipo}; titulos; cab (cabeçalhos)
-  js/nucleo/  referencias.js  conteudo.js  planos.js  busca.js  arte.js  sinc.js  quiz.js  mural.js  assistente.js   (puros, testados)
+  js/nucleo/  referencias.js  conteudo.js  planos.js  busca.js  arte.js  sinc.js  quiz.js  mural.js  assistente.js  originais.js  doutrinas.js   (puros, testados)
+  originais/  <LIVRO>.json (palavras por versículo), lexico-g.json, lexico-h.json, morfologia.json   (≈ 29 MB, carregados sob demanda)
   js/ui.js  dados.js  biblia.js  app.js
-  js/telas/   inicio  cartao  leitor  pesquisa  fotos  estudio  biblioteca  planos  devocionais  perfil  explorar (assistente, quiz, mural)
-ferramentas/  preparar_fotos.py  converter_blivre.py  verificar_biblia.py  converter_usfm.py  converter_almeida1911.py  verificar_traducao.py  atualizar_grafia_1911.py  metadados/
-test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  e2e.js (90)  e2e-banco.js (20)  e2e-nuvem.js (12, Supabase falso)
+  js/telas/   inicio  cartao  leitor  pesquisa  fotos  estudio  biblioteca  planos  devocionais  perfil  explorar (assistente, quiz, mural)  teologia (originais, doutrinas, Bereano)
+ferramentas/  converter_originais.py  preparar_fotos.py  converter_blivre.py  verificar_biblia.py  converter_usfm.py  converter_almeida1911.py  verificar_traducao.py  atualizar_grafia_1911.py  metadados/
+test/         nucleo.test.js (16)  traducoes.test.js (7)  quiz.test.js (8)  teologia.test.js (3)  e2e.js (102)  e2e-banco.js (20)  e2e-nuvem.js (12, Supabase falso)
 docs/         schema.sql (Supabase)
 ```
 
@@ -107,6 +109,12 @@ docs/         schema.sql (Supabase)
 - **Assistente bíblico (v1.7, `#assistente`; também “Entender” na seleção de versículos):** pesquisa por tema (passagens com motivo, sugestões) e estudo de passagem (resumo, contexto histórico, cultura e costumes, sentido no texto, palavras-chave, passagens relacionadas, leituras divergentes entre cristãos, aplicação, perguntas, ficha do livro, obras para aprofundar) e perguntas de continuação. Segurança: a IA (capacidade `sample`) só lê a Bíblia pelas ferramentas do app — `ler_passagem`, `buscar_texto`, `introducao_livro` (66 fichas próprias, com cautela onde há debate) e `referencias_cruzadas` (notas da ALM1911); não escreve o texto bíblico (sempre o da tradução); referências inventadas são descartadas e informadas; obras só de lista fixa de 10 (Vida Nova, Vida, Mundo Cristão, Josefo, Eusébio), apresentadas como sugestão de leitura, nunca como citação; regras contra inventar datas, nomes e citações; neutralidade em temas em que cristãos divergem; sinal de crise abre acolhimento com CVV 188 e SAMU 192. Estudos ficam guardados (abrem sem nova chamada), podem ir para Biblioteca › Estudos e ser compartilhados.
 - **Quiz bíblico (v1.7, `#quiz`):** 118 perguntas em 5 temas (Antigo Testamento, Evangelhos, Atos e cartas, Quem disse?, Números da Bíblia) e 3 níveis; cada resposta tem referência e palavras-chave conferidas no texto da BLIVRE pelo teste (`quiz.test.js`), e as citações nas perguntas seguem a redação da BLIVRE. Desafio do dia (5 perguntas, iguais para todos), rodada livre de 10 com filtros (prefere perguntas não vistas), versículo mostrado após cada resposta, pontuação com bônus de nível e sequência, resultado compartilhável, estatísticas.
 - **Mural de curiosidades (v1.7, `#mural`):** 12 curiosidades históricas com fontes conferidas na web em 05/11/2026 (Almeida 1681/1748–1753/1819, capítulos e versículos, Septuaginta, Vulgata, Gutenberg, Qumran, Wartburg, Worms, o debate sobre a afixação das teses, Bereia, Antioquia), curiosidade do dia; **95 Teses** em tradução própria do latim de 1517 (domínio público) conferida com a tradução inglesa de 1915 (domínio público), com contexto histórico, 10 grupos temáticos, busca, glossário, passagens aludidas e compartilhamento; **Números da Bíblia** calculados da tradução escolhida (livros, capítulos, versículos, maior/menor capítulo, capítulo e versículos do meio — Sl 117 e Sl 103:1-2 na BLIVRE —, versículo mais longo e mais curtos, contador de palavras).
+- **Estudo teológico (v1.9; sugestão do usuário, etapa 2 “inteligência teológica”):** o assistente passou a se chamar “Assistente Atos 2” e tem quatro modos — Estudar, Modo Bereano, Doutrinas, Grego e hebraico — e três níveis (básico, intermediário, avançado). Tudo funciona sem IA; na prévia do claude.ai, a IA usa os mesmos dados por ferramentas.
+  - **Grego e hebraico:** dados do STEPBible (Tyndale House; CC BY 4.0) convertidos por `ferramentas/converter_originais.py`: grego só com as palavras do Textus Receptus (base da BLIVRE/Almeida), hebraico de Leningrado (Qere), sem acentos de cantilação, Unicode NFC. 441 mil palavras, 66 livros; só 10 versículos sem dados (Js 21:36-37, Jo 7:53, Rm 16:25-27, 2Co 13:13-14, Fp 1:16-17, por diferenças de edição/versificação). Morfologia traduzida para o português (4.222 códigos). Léxicos breves com sentido básico em inglês e ocorrências (até 150 por palavra). 86 palavras-chave com explicação em português redigida pelo ATOS 2 (`A2Originais.TERMOS`), conferidas contra o lema do léxico. Interlinear (seleção na Bíblia › “Original”), ficha da palavra com ocorrências e texto em português, busca por palavra em português, Strong, lema ou transliteração.
+  - **Doutrinas e controvérsias** (`A2Doutrinas`): 19 temas (Trindade, batismo nas águas e com o Espírito, dons, salvação, predestinação e livre-arbítrio, justificação, fé e obras, santificação, arrependimento, dízimos, sábado, lei e graça, segunda vinda, milênio, arrebatamento, juízo final, céu e inferno, estado dos mortos), cada um com definição, passagens com palavra conferida na BLIVRE, contexto, leituras das tradições com textos, objeções e conclusão que começa por “Explícito no texto”.
+  - **Modo Bereano:** sem IA — verifica se a frase está escrita, busca passagens com as palavras principais, liga ao tema curado e propõe perguntas de exame; com IA — classifica (explícito, conclusão, debatido, sem base clara, contraria o texto), textos a favor e que limitam (conferidos), contexto, leituras, e sempre mostra a conferência feita pelo app abaixo.
+  - **Exegese no guia:** estrutura do capítulo pelos subtítulos da Almeida 1911, palavras importantes no original, texto interlinear (avançado), doutrinas ligadas ao capítulo. Com IA (avançado): seção de exegese (contexto literário e canônico, estrutura, destinatários e intenção) e palavras com Strong validado contra a passagem.
+  - Limites: sem IA no site não há sermões, respostas abertas nem exegese redigida; glosas e tradução palavra por palavra em inglês; ACF, KJV e NTLH continuam sem licença, por isso o comparador usa BLIVRE, Almeida 1911 e ONBV.
 - **Perfil:** nome, foto, estatísticas, tradução preferida, aparência, notificações (5 tipos com horário), sincronização, guardar a Bíblia sem internet, exportar dados, licenças, área editorial.
 
 ## 5. Limitações conhecidas da prévia
@@ -123,5 +131,6 @@ docs/         schema.sql (Supabase)
 2. No Supabase: Authentication › URL Configuration — Site URL e Redirect URL = endereço do GitHub Pages; informar o e-mail do administrador (`convites_papel`).
 3. Pedir autorização à SBTB (ACF), SBB (NTLH) e ao detentor da edição King James escolhida; ao receber os arquivos USFM, usar `converter_usfm.py` e ativar a tradução.
 4. Revisar e publicar os 12 devocionais iniciais; definir o calendário editorial.
-5. Revisar as 95 Teses traduzidas e as fichas dos livros do assistente (redação própria).
-6. Área de estudos doutrinários por tema (batismo, salvação, arrependimento, Espírito Santo, igreja primitiva, perseverança).
+5. Revisar as 95 Teses traduzidas, as fichas dos livros, as 86 explicações de palavras e os 19 temas de doutrina (redação própria).
+6. Etapas 1 e 3 da sugestão do assistente (histórico de conversas completo, sermões, devocionais, exportar PDF) — dependem de IA no site para a parte gerada.
+7. Área de estudos doutrinários por tema (batismo, salvação, arrependimento, Espírito Santo, igreja primitiva, perseverança).

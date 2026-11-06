@@ -270,7 +270,10 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.waitForSelector('.criar-hero');
 
   // Biblioteca
-  await p.click('a[data-aba="biblioteca"]'); await p.waitForTimeout(300);
+  await p.click('a[data-aba="biblioteca"]'); await p.waitForSelector('.bib-resumo');
+  checar((await p.textContent('.bib-num[data-num="favoritos"] b')) === '2' && (await p.textContent('.cab-bib')).includes('Seus conteúdos organizados'), 'Biblioteca: cabeçalho e resumo com números reais');
+  checar(await p.locator('.acesso-card').count() === 4 && await p.locator('.cats-bib .chip').count() === 10, 'Biblioteca: acesso rápido e 10 categorias');
+  await p.click('.acesso-card[data-acesso="favoritos"]'); await p.waitForTimeout(300);
   checar((await p.textContent('.tela')).includes('2 versículos'), 'Biblioteca: 2 favoritos');
   await p.click('.chip:has-text("Planos")'); await p.click('.capa-plano:has-text("Atos dos Apóstolos")');
   await p.click('.folha button:has-text("Iniciar plano")'); await p.waitForTimeout(200);
@@ -295,6 +298,42 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   checar((await p.textContent('.tela')).includes('Batismo em Atos'), 'Estudo salvo');
   await p.click('.chip:has-text("Histórico")'); await p.waitForTimeout(200);
   checar(await p.locator('.tela .item').count() > 3, 'Histórico registrado');
+  // Biblioteca: recentes, coleções com vários tipos, pesquisa, ações e estados vazios
+  await p.click('.cats-bib .chip[data-cat="todos"]'); await p.waitForSelector('.bib-lista .bib-item');
+  checar(await p.locator('.bib-lista .bib-item').count() >= 4 && (await p.textContent('.bib-lista')).includes('Batismo em Atos'), 'Biblioteca: adicionados recentemente (versículos, anotação e estudo)');
+  await p.click('#nova-colecao'); await p.click('.folha .chip:has-text("Pregações")'); await p.fill('#col-desc', 'Esboços e textos-base');
+  await p.click('.icone-col[aria-label="Ícone chama"]'); await p.click('#col-salvar'); await p.waitForSelector('#col-adicionar');
+  await p.click('#col-adicionar'); await p.waitForSelector('.lista-sel input');
+  await p.click('.lista-sel .sel-item:has-text("Batismo em Atos")'); await p.click('.lista-sel .sel-item >> nth=0'); await p.waitForTimeout(200);
+  await p.click('#col-concluir'); await p.waitForTimeout(300);
+  checar(await p.locator('.col-folha .bib-item').count() === 2 && (await p.textContent('.col-cab')).includes('2 itens'), 'Coleção com versículo e estudo');
+  await p.click('.col-folha .bib-item[data-tipo="estudo"] button[aria-label="Tirar da coleção"]'); await p.waitForTimeout(200);
+  checar(await p.locator('.col-folha .bib-item').count() === 1, 'Coleção: remover conteúdo');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  checar(await p.evaluate(() => { const c = Dados.todos('colecoes').find(x => x.nome === 'Pregações'); return c && c.icone === 'chama' && c.descricao === 'Esboços e textos-base'; }), 'Coleção salva com nome, descrição e ícone');
+  await p.click('.bib-item[data-tipo="estudo"] .bib-menu'); await p.click('.folha .item:has-text("Adicionar a uma coleção")');
+  await p.click('.folha label.chave:has-text("Pregações")'); await p.waitForTimeout(200); await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  checar(await p.evaluate(() => Dados.todos('colecoes').find(x => x.nome === 'Pregações').itens.some(i => i.tipo === 'estudo')), 'Menu do conteúdo: adicionar a uma coleção');
+  await p.fill('#bib-busca', 'Jo 1:14'); await p.waitForSelector('.busca-total'); await p.waitForTimeout(300);
+  checar((await p.textContent('.bib-area')).includes('Anotação'), 'Pesquisa por referência encontra a anotação');
+  await p.fill('#bib-busca', 'pregações'); await p.waitForTimeout(800);
+  checar(await p.locator('.bib-area .col-card').count() === 1 && await p.locator('.bib-area .bib-item').count() >= 1, 'Pesquisa por nome de coleção');
+  await p.fill('#bib-busca', 'verbo'); await p.waitForTimeout(800);
+  checar((await p.textContent('.bib-area')).includes('João 1:14') || (await p.textContent('.bib-area')).includes('Anotação'), 'Pesquisa por palavra');
+  await p.click('.busca-filtros .chip:has-text("Estudos")'); await p.waitForTimeout(500);
+  checar(await p.locator('.bib-area .bib-item[data-tipo="nota"]').count() === 0, 'Pesquisa: filtro por categoria');
+  await p.fill('#bib-busca', ''); await p.waitForTimeout(400);
+  await p.click('.cats-bib .chip[data-cat="artes"]'); await p.waitForTimeout(300);
+  const nArtes = await p.evaluate(() => Dados.todos('artes').length);
+  checar(nArtes ? await p.locator('.arte-bib').count() === nArtes : !!(await p.$('.vazio-bib')), 'Biblioteca: categoria Artes');
+  if (nArtes) { await p.click('.arte-bib-abrir >> nth=0'); await p.waitForSelector('.editor-arte'); checar(true, 'Biblioteca: abrir arte no estúdio'); await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.click('a[data-aba="biblioteca"]'); }
+  await p.click('.cats-bib .chip[data-cat="destaques"]'); await p.waitForTimeout(200);
+  checar(await p.locator('.vazio-bib, .lista .item').count() >= 1, 'Biblioteca: destaques preservados');
+  await p.evaluate(() => { App.estado.colecao = 'todas'; }); await p.click('.cats-bib .chip[data-cat="favoritos"]'); await p.waitForTimeout(300);
+  await p.click('.bib-item[data-tipo="versiculo"] .bib-menu >> nth=0'); await p.click('.folha .item:has-text("Remover dos favoritos")');
+  await p.click('.folha button:has-text("Cancelar")').catch(() => {}); await p.waitForTimeout(300);
+  checar(await p.evaluate(() => Dados.todos('favoritos').length) === 2, 'Excluir pede confirmação (cancelado)');
+  await p.click('.cats-bib .chip[data-cat="todos"]'); await p.waitForTimeout(300);
   await p.screenshot({ path: '/tmp/shots/6-biblioteca.png' });
 
   // Perfil e tema noturno

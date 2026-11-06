@@ -1389,10 +1389,17 @@
     E.voltar = null; E.etapa = 'modelo';
     App.ir('criar');
   }
+  function abrirArtePorId(id) {
+    var a = Dados.obter('artes', id); if (!a) { UI.aviso('Arte não encontrada.', true); return; }
+    if (tSalvar) salvarAgora();
+    E.spec = A2Arte.migrar(a.spec); E.id = id; E.sel = 'versiculo'; E.hist = null; E.status = 'salvo'; E.zoom = 1; E.voltar = null;
+    E.painel = 'texto'; E.painelAberto = true; E.sub = {}; E.etapa = 'editor';
+    if (App.estado.aba === 'criar') App.recarregar(); else App.ir('criar');
+  }
   function abrirInspiracoes() { E.etapa = 'galeria'; if (App.estado.aba === 'criar') App.recarregar(); else App.ir('criar'); }
   // Compatível com a v1: desenha qualquer arte (v1 ou v2) num canvas
   function desenharArte(canvas, spec, largura) { return A2Desenho.desenhar(canvas, spec, largura); }
 
-  root.Telas.criar = { render: render, comVersiculo: comVersiculo, abrirInspiracoes: abrirInspiracoes, desenharArte: desenharArte, salvarImagem: salvarImagem, compartilharImagem: compartilharImagem,
+  root.Telas.criar = { render: render, comVersiculo: comVersiculo, abrirInspiracoes: abrirInspiracoes, abrirArte: abrirArtePorId, baixarArte: baixarArte, compartilharArte: compartilharArte, desenharArte: desenharArte, salvarImagem: salvarImagem, compartilharImagem: compartilharImagem,
     _estado: function () { return E; } };
 })(window);

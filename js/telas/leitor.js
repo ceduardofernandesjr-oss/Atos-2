@@ -30,7 +30,7 @@
     tela.appendChild(conteudoEl);
     carregar();
     App.aoMudar(function (col) { if (col === 'destaques' || col === 'favoritos' || col === 'notas') redesenharMarcas(); });
-    App.aoSair(function () { if (barraEl) barraEl.remove(); barraEl = null; pararAudio(); });
+    App.aoSair(function () { if (barraEl) barraEl.remove(); barraEl = null; fecharPainel(); document.body.classList.remove('selecionando'); pararAudio(); });
     document.addEventListener('keydown', teclas);
     App.aoSair(function () { document.removeEventListener('keydown', teclas); });
   }
@@ -207,37 +207,69 @@
   function citacaoSel() { return '“' + textoSelecao() + '”\n— ' + refSelecao() + ' (' + Biblia.versao(versaoAtual()).sigla + ')'; }
   function contigua() { var vs = selecionados(); return vs.length && vs[vs.length - 1] - vs[0] === vs.length - 1; }
 
+  // Painel "Estudo do versículo": ações rápidas + abas de estudo (contexto, palavras, referências, interpretação)
+  var painel = { aberto: false, aba: null, cores: false };
+  function refEstudo() {
+    var vs = selecionados();
+    return contigua() ? { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1], cap2: atual.cap } : { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[0], cap2: atual.cap };
+  }
+  function fecharPainel() { painel.aberto = false; painel.aba = null; painel.cores = false; }
   function mostrarBarra() {
-    if (!sel.size) { if (barraEl) barraEl.remove(); barraEl = null; return; }
-    if (!barraEl) { barraEl = h('div.barra-sel', { role: 'toolbar', 'aria-label': 'Ações dos versículos selecionados' }); document.body.appendChild(barraEl); }
+    if (!sel.size) {
+      if (barraEl) barraEl.remove(); barraEl = null; fecharPainel(); document.body.classList.remove('selecionando'); return;
+    }
+    document.body.classList.add('selecionando');
+    if (!barraEl) { barraEl = h('section.barra-sel.painel-estudo', { role: 'dialog', 'aria-label': 'Ações e estudo dos versículos selecionados' }); document.body.appendChild(barraEl); }
     var vs = selecionados(), todosFav = vs.every(function (n) { return App.ehFavorito(chaveV(n)); });
-    barraEl.replaceChildren(
-      h('div.topo', h('span', refSelecao()), h('div', { style: { flex: 1 } }), h('button.bt-ico', { 'aria-label': 'Limpar seleção', on: { click: limparSel } }, ico('fechar'))),
-      h('div.acoes',
-        acao('marcador', 'Destacar', destacar),
+    var corAtual = (Dados.obter('destaques', chaveV(vs[0])) || {}).cor, ref = refEstudo();
+    barraEl.dataset.estado = painel.aberto ? 'aberto' : 'compacto';
+    function acao(i, r, fn, ativo) { return h('button' + (ativo ? '.ativo' : ''), { type: 'button', 'aria-pressed': ativo == null ? null : String(!!ativo), on: { click: fn } }, h('span.acao-ico', ico(i)), h('span', r)); }
+    var cores = painel.cores ? h('div.cores-inline', { role: 'group', 'aria-label': 'Cor do destaque' }, CORES.map(function (c) {
+      return h('button.cor-bolinha', { type: 'button', 'aria-label': c[1], 'aria-pressed': String(corAtual === c[0]), style: { background: 'var(--d-' + c[0] + ')' },
+        on: { click: function () { vs.forEach(function (n) { Dados.salvar('destaques', chaveV(n), { cor: c[0], ref: chaveV(n), criadoEm: new Date().toISOString() }); }); UI.aviso('Destacado em ' + c[1].toLowerCase() + '.'); limparSel(); } } });
+    }), corAtual ? h('button.bt.peq', { type: 'button', on: { click: function () { vs.forEach(function (n) { Dados.excluir('destaques', chaveV(n)); }); UI.aviso('Destaque removido.'); limparSel(); } } }, ico('lixo'), 'Remover') : null) : null;
+    var conteudo = h('div.ev-area', { role: 'tabpanel' });
+    barraEl.replaceChildren.apply(barraEl, [
+      h('button.ev-alca', { type: 'button', 'aria-label': painel.aberto ? 'Recolher o estudo' : 'Abrir o estudo do versículo', on: { click: function () { painel.aberto = !painel.aberto; if (painel.aberto && !painel.aba) painel.aba = 'contexto'; mostrarBarra(); } } }, h('i')),
+      h('div.topo', h('div.ev-ref', h('span', refSelecao()), h('small', Biblia.versao(versaoAtual()).sigla + (contigua() || vs.length === 1 ? '' : ' · estudo do v. ' + vs[0]))), h('div', { style: { flex: 1 } }),
+        h('button.bt-ico', { type: 'button', 'aria-label': 'Limpar seleção', on: { click: limparSel } }, ico('fechar'))),
+      h('div.acoes', { role: 'toolbar', 'aria-label': 'Ações' },
         acao(todosFav ? 'coracaoCheio' : 'coracao', todosFav ? 'Desfavoritar' : 'Favoritar', function () {
           vs.forEach(function (n) { var k = chaveV(n); if (todosFav) Dados.excluir('favoritos', k); else if (!App.ehFavorito(k)) Dados.salvar('favoritos', k, { ref: k, colecoes: [], criadoEm: new Date().toISOString() }); });
           UI.aviso(todosFav ? 'Removido dos favoritos.' : 'Salvo nos favoritos.'); limparSel();
-        }),
+        }, todosFav),
         acao('nota', 'Anotar', function () { var refs = vs.map(chaveV); limparSel(); Telas.biblioteca.editarNota({ refs: refs, texto: '' }); }),
-        acao('copiar', 'Copiar', function () { UI.copiar(citacaoSel()); limparSel(); }),
-        acao('compartilhar', 'Compartilhar', function () { App.compartilhar(citacaoSel(), 'Compartilhar versículos'); }),
-        acao('comparar', 'Comparar', comparar),
+        acao('marcador', 'Destacar', function () { painel.cores = !painel.cores; mostrarBarra(); }, painel.cores),
         acao('imagem', 'Criar arte', function () {
           if (!contigua()) { UI.aviso('Para a arte, selecione versículos seguidos.', true); return; }
           var s = A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1] }, true);
           limparSel(); Telas.criar.comVersiculo(s);
         }),
-        acao('texto', 'Original', function () {
-          var s = contigua() ? { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1], cap2: atual.cap } : { livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[0], cap2: atual.cap };
-          limparSel(); Teologia.abrirInterlinear(s);
-        }),
-        acao('brilho', 'Entender', function () {
-          var s = contigua() ? A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[vs.length - 1] }, true) : A2Ref.formatar({ livro: atual.livro, cap: atual.cap, v1: vs[0], v2: vs[0] }, true);
-          limparSel(); Telas.assistente.estudar(s);
-        }),
-        acao('ouvir', 'Ouvir daqui', function () { var n = vs[0]; limparSel(); iniciarAudio(n); })));
-    function acao(i, r, fn) { return h('button', { on: { click: fn } }, ico(i), r); }
+        acao('copiar', 'Copiar', function () { UI.copiar(citacaoSel()); limparSel(); }),
+        acao('compartilhar', 'Compartilhar', function () { App.compartilhar(citacaoSel(), 'Compartilhar versículos'); }),
+        acao('comparar', 'Comparar', comparar),
+        acao('ouvir', 'Ouvir daqui', function () { var n = vs[0]; limparSel(); iniciarAudio(n); })),
+      cores,
+      h('div.ev-cab', h('b', 'Estudo do versículo'), h('div', { style: { flex: 1 } }),
+        painel.aberto ? h('button.bt-ico.peq', { type: 'button', 'aria-label': 'Recolher o estudo', on: { click: function () { painel.aberto = false; mostrarBarra(); } } }, ico('baixo')) : null),
+      h('div.ev-abas', { role: 'tablist', 'aria-label': 'Estudo do versículo' }, EstudoVersiculo.ABAS.map(function (a) {
+        var on = painel.aberto && painel.aba === a[0];
+        return h('button.ev-aba' + (on ? '.ativa' : ''), { type: 'button', role: 'tab', 'aria-selected': String(on), 'data-aba': a[0], on: { click: function () {
+          painel.aberto = true; painel.aba = a[0]; mostrarBarra(); rolarParaSelecao();
+        } } }, ico(a[2]), h('span', a[1]));
+      })),
+      painel.aberto ? conteudo : null,
+      h('button.bt.pri.ev-assistente', { type: 'button', on: { click: function () {
+        var s = A2Ref.formatar({ livro: ref.livro, cap: ref.cap, v1: ref.v1, v2: ref.v2 }, true);
+        limparSel(); Telas.assistente.estudar(s);
+      } } }, ico('brilho'), 'Estudar com o Assistente')].filter(Boolean));
+    if (painel.aberto) EstudoVersiculo.mostrar(painel.aba || 'contexto', ref, conteudo, { fechar: limparSel });
+  }
+  // Mantém a passagem selecionada visível acima do painel aberto
+  function rolarParaSelecao() {
+    var primeiro = conteudoEl && conteudoEl.querySelector('.v.sel');
+    if (!primeiro) return;
+    setTimeout(function () { var r = primeiro.getBoundingClientRect(); if (r.top < 70 || r.top > window.innerHeight * 0.22) window.scrollBy({ top: r.top - 80, behavior: 'smooth' }); }, 60);
   }
 
   function destacar() {

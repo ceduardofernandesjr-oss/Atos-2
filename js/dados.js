@@ -20,7 +20,7 @@
   var estado = { modo: 'iniciando', tipo: null, conta: null, recuperarSenha: false, pendentes: 0, erro: null, usuario: null, dono: false, podeEditar: false, sincronizadoEm: null };
   var db = null, user = null, uidUsuario = null;
   var fila = new Map(), gravando = false, temporizador = null;
-  var conteudo = { devocionais: [], rascunhos: [], reflexoes: [], galeria: [] }, ouvintesConteudo = [];
+  var conteudo = { devocionais: [], rascunhos: [], reflexoes: [], galeria: [], acervo: [], acervoRevisao: [] }, ouvintesConteudo = [];
 
   // ---------------------------------------------------------------- IndexedDB
   function abrirIdb() {
@@ -206,14 +206,16 @@
   window.addEventListener('online', function () { if (estado.tipo === 'nuvem' && (estado.modo === 'offline' || (estado.modo === 'local' && estado.conta))) reconectar(); });
 
   // ---------------------------------------------------------------- conteúdo editorial compartilhado
-  var CAMINHOS = { devocionais: 'pub/conteudo/devocionais', reflexoes: 'pub/conteudo/reflexoes', galeria: 'pub/conteudo/galeria', rascunhos: 'editorial/rascunhos/devocionais' };
+  var CAMINHOS = { devocionais: 'pub/conteudo/devocionais', reflexoes: 'pub/conteudo/reflexoes', galeria: 'pub/conteudo/galeria', rascunhos: 'editorial/rascunhos/devocionais',
+    acervo: 'pub/conteudo/acervo', acervoRevisao: 'editorial/rascunhos/acervo' };
+  var SO_EDICAO = { rascunhos: 1, acervoRevisao: 1 };
   var cancelarConteudo = [];
   async function assinarConteudo() {
     var banco = bancoConteudo || db;
     if (!banco) return;
     cancelarConteudo.splice(0).forEach(function (f) { try { if (typeof f === 'function') f(); } catch (e) {} });
     Object.keys(CAMINHOS).forEach(function (nome) {
-      if (nome === 'rascunhos' && !estado.dono && !estado.podeEditar) return;
+      if (SO_EDICAO[nome] && !estado.dono && !estado.podeEditar) return;
       try {
         cancelarConteudo.push(banco.collection(CAMINHOS[nome]).onSnapshot(function (snap) {
           conteudo[nome] = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });

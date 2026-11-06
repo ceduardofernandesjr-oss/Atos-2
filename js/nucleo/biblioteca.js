@@ -14,9 +14,13 @@
     estudo: { nome: 'Estudo', plural: 'Estudos', icone: 'nota' },
     nota: { nome: 'Anotação', plural: 'Anotações', icone: 'editar' },
     devocional: { nome: 'Devocional', plural: 'Devocionais', icone: 'luz' },
-    arte: { nome: 'Arte', plural: 'Artes', icone: 'pincel' }
+    arte: { nome: 'Arte', plural: 'Artes', icone: 'pincel' },
+    obra: { nome: 'Livro ou artigo', plural: 'Livros e artigos', icone: 'livro' }
   };
-  var COLECIONAVEIS = ['versiculo', 'estudo', 'nota', 'devocional'];
+  var COLECIONAVEIS = ['versiculo', 'estudo', 'nota', 'devocional', 'obra'];
+  // Favoritos de livros e artigos ficam na mesma coleção "favoritos", com tipo "obra" (id "obra-<publicação>")
+  function ehFavObra(f) { return !!f && (f.tipo === 'obra' || /^obra-/.test(String(f.id || ''))); }
+  function favVersiculos(favs) { return (favs || []).filter(function (f) { return !ehFavObra(f); }); }
   var ICONES_COLECAO = ['colecao', 'coracao', 'livro', 'luz', 'chama', 'estrela', 'sol', 'escudo', 'nota', 'cruz', 'brilho', 'planos'];
   var SUGESTOES = ['Fé', 'Salvação', 'Oração', 'Espírito Santo', 'Promessas de Deus', 'Estudos pessoais', 'Pregações'];
 
@@ -25,16 +29,25 @@
   function chaveItem(tipo, id) { return tipo + ':' + id; }
   function primeiraLinha(s, n) { var t = String(s || '').trim().split('\n')[0]; return t.length > (n || 60) ? t.slice(0, n || 60).trim() + '…' : t; }
 
-  // d: { favoritos, notas, estudos, devSalvos, artes, devocionais (publicados, para a passagem), rotulo(chave), rotuloRefs(chaves), chavesDe(refTexto) }
+  // d: { favoritos, notas, estudos, devSalvos, artes, devocionais (publicados, para a passagem), rotulo(chave), rotuloRefs(chaves), chavesDe(refTexto),
+  //      obra(id) → publicação do acervo (para favoritos e anotações de livros e artigos) }
   function itens(d) {
     d = d || {};
     var rot = d.rotulo || function (k) { return k; }, out = [];
     (d.favoritos || []).forEach(function (f) {
+      if (ehFavObra(f)) {
+        var idObra = f.obra || String(f.id).replace(/^obra-/, ''), p = d.obra ? d.obra(idObra) : null;
+        if (!p) return;                       // publicação retirada do acervo: some sem quebrar nada
+        out.push({ tipo: 'obra', id: idObra, titulo: p.titulo, sub: p.autor || '', texto: p.descricao || '', chaves: [], data: dataDe(f), favorito: true, obra: p, bruto: f });
+        return;
+      }
       out.push({ tipo: 'versiculo', id: f.id, titulo: rot(f.id), chaves: [f.id], data: dataDe(f), colecoes: f.colecoes || [], bruto: f });
     });
     (d.notas || []).forEach(function (n) {
-      var refs = n.refs || [], tit = n.titulo || (refs.length && d.rotuloRefs ? d.rotuloRefs(refs) : '') || primeiraLinha(n.texto) || 'Anotação';
-      out.push({ tipo: 'nota', id: n.id, titulo: tit, sub: refs.length && n.titulo && d.rotuloRefs ? d.rotuloRefs(refs) : '', texto: n.texto || '', chaves: refs.slice(),
+      var refs = n.refs || [], obra = n.obra && d.obra ? d.obra(n.obra.id) : null;
+      var tit = n.titulo || (refs.length && d.rotuloRefs ? d.rotuloRefs(refs) : '') || (obra ? 'Anotação em ' + obra.titulo : '') || primeiraLinha(n.texto) || 'Anotação';
+      var sub = refs.length && n.titulo && d.rotuloRefs ? d.rotuloRefs(refs) : obra && n.titulo ? obra.titulo : '';
+      out.push({ tipo: 'nota', id: n.id, titulo: tit, sub: sub, texto: n.texto || '', chaves: refs.slice(),
         data: n.atualizadoEm || dataDe(n), criadoEm: n.criadoEm || '', bruto: n });
     });
     (d.estudos || []).forEach(function (e) {
@@ -56,7 +69,7 @@
   }
 
   function contagens(d) {
-    return { versiculos: (d.favoritos || []).length, estudos: (d.estudos || []).length, devocionais: (d.devSalvos || []).length,
+    return { versiculos: favVersiculos(d.favoritos).length, obras: (d.favoritos || []).length - favVersiculos(d.favoritos).length, estudos: (d.estudos || []).length, devocionais: (d.devSalvos || []).length,
       notas: (d.notas || []).length, colecoes: (d.colecoes || []).length, artes: (d.artes || []).length, destaques: (d.destaques || []).length };
   }
 
@@ -113,7 +126,7 @@
   // ---------------------------------------------------------------- coleções
   function membros(col, favoritos) {
     var out = [], vistos = {};
-    (favoritos || []).forEach(function (f) { if ((f.colecoes || []).indexOf(col.id) >= 0) { var k = chaveItem('versiculo', f.id); if (!vistos[k]) { vistos[k] = 1; out.push({ tipo: 'versiculo', id: f.id }); } } });
+    favVersiculos(favoritos).forEach(function (f) { if ((f.colecoes || []).indexOf(col.id) >= 0) { var k = chaveItem('versiculo', f.id); if (!vistos[k]) { vistos[k] = 1; out.push({ tipo: 'versiculo', id: f.id }); } } });
     (col.itens || []).forEach(function (m) {
       if (!m || COLECIONAVEIS.indexOf(m.tipo) < 0 || m.tipo === 'versiculo') return;
       var k = chaveItem(m.tipo, m.id); if (!vistos[k]) { vistos[k] = 1; out.push({ tipo: m.tipo, id: m.id, em: m.em }); }
@@ -151,13 +164,14 @@
     linhas.push('');
     resolvidos.forEach(function (it) {
       if (it.tipo === 'versiculo') linhas.push('• ' + it.titulo + (sigla ? ' (' + sigla + ')' : '') + (textos && textos[it.id] ? ' — “' + textos[it.id] + '”' : ''));
+      else if (it.tipo === 'obra') linhas.push('• ' + it.titulo + (it.obra && it.obra.autor ? ' — ' + it.obra.autor : '') + (it.obra && it.obra.fonte && it.obra.fonte.url ? ' (' + it.obra.fonte.url + ')' : ''));
       else linhas.push('• ' + TIPOS[it.tipo].nome + ': ' + it.titulo + (it.ref ? ' (' + it.ref + ')' : ''));
     });
     linhas.push('', '— Biblioteca do ATOS 2');
     return linhas.join('\n');
   }
 
-  var API = { TIPOS: TIPOS, COLECIONAVEIS: COLECIONAVEIS, ICONES_COLECAO: ICONES_COLECAO, SUGESTOES: SUGESTOES, norm: norm, chaveItem: chaveItem,
+  var API = { TIPOS: TIPOS, COLECIONAVEIS: COLECIONAVEIS, ehFavObra: ehFavObra, favVersiculos: favVersiculos, ICONES_COLECAO: ICONES_COLECAO, SUGESTOES: SUGESTOES, norm: norm, chaveItem: chaveItem,
     itens: itens, contagens: contagens, ordenar: ordenar, naRef: naRef, pesquisar: pesquisar,
     membros: membros, resolver: resolver, contem: contem, comItem: comItem, semItem: semItem, validarColecao: validarColecao, textoColecao: textoColecao };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

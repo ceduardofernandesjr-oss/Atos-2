@@ -37,7 +37,7 @@
     return {
       capitulos: Object.keys(lidos()).length, diasLeitura: tudo.diasLeitura, estudos: tudo.estudos,
       planosConcluidos: planos().filter(function (p) { return p.r.concluido; }).length,
-      favoritos: Dados.todos('favoritos').length, devocionais: tudo.devocionais, quizzes: tudo.quizzes
+      favoritos: A2Biblioteca.favVersiculos(Dados.todos('favoritos')).length, devocionais: tudo.devocionais, quizzes: tudo.quizzes
     };
   }
   function abrirPlano(p) { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(p.def.id); }, 50); }

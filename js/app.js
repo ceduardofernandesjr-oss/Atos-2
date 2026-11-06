@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada'];
+  var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
 
@@ -83,7 +83,8 @@
     UI.fecharTodas(); pendenteAtualizar = false;
     var aba = abaAtual(), tela = document.getElementById('tela');
     App.estado.aba = aba;
-    document.querySelectorAll('.abas a').forEach(function (a) { if (a.dataset.aba === aba) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    var abaNav = aba === 'obra' ? 'biblioteca' : aba;   // o leitor de livros pertence à Biblioteca
+    document.querySelectorAll('.abas a').forEach(function (a) { if (a.dataset.aba === abaNav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     tela.replaceChildren();
     try { Telas[aba].render(tela); }
     catch (e) { console.error(e); tela.appendChild(h('div.vazio', h('b', 'Algo deu errado ao abrir esta tela.'), h('span', String(e.message || e)), h('button.bt', { on: { click: mostrar } }, 'Tentar de novo'))); }

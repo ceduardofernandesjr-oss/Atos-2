@@ -2,6 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
+  var VERSAO_APP = '2.7.3';
   var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
@@ -16,6 +17,7 @@
   };
 
   var App = root.App = Object.assign(root.App || {}, {
+    versao: VERSAO_APP,
     estado: { aba: 'inicio', leitor: null, plano: null },
     config: function () {
       var c = Dados.obter('config', 'eu') || {};
@@ -217,7 +219,13 @@
     mostrar();
     setInterval(verificarNotificacoes, 60000); verificarNotificacoes();
     // versão instalada (GitHub Pages): guarda os arquivos do app para abrir sem internet
-    try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js'); } catch (e) {}
+    try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|claudeusercontent/.test(location.hostname)) navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) { reg.update(); });
+      // quando uma versão nova do app assume, recarrega uma vez para já usar os arquivos novos
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        var recarregou = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () { if (recarregou || UI.temFolha()) return; recarregou = true; location.reload(); });
+      }
+    } catch (e) {}
   }
   iniciar();
 })(window);

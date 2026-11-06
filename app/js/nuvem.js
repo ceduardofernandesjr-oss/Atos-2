@@ -59,7 +59,13 @@
     return perfil;
   }
   function ouvirConta(fn) { ouvintesConta.push(fn); return function () { ouvintesConta = ouvintesConta.filter(function (x) { return x !== fn; }); }; }
-  function conta() { return sessao ? { id: sessao.user.id, email: sessao.user.email, nome: (perfil && perfil.nome) || (sessao.user.user_metadata || {}).nome || (sessao.user.user_metadata || {}).full_name || (sessao.user.user_metadata || {}).name || '', papel: (perfil && perfil.papel) || 'leitor' } : null; }
+  function conta() {
+    if (!sessao) return null;
+    var md = sessao.user.user_metadata || {}, am = sessao.user.app_metadata || {};
+    return { id: sessao.user.id, email: sessao.user.email, nome: (perfil && perfil.nome) || md.nome || md.full_name || md.name || '', papel: (perfil && perfil.papel) || 'leitor',
+      // dados da conta Google (nome e foto), quando a pessoa entrou pelo Google
+      provedores: am.providers || (am.provider ? [am.provider] : []), nomeGoogle: md.full_name || md.name || '', fotoGoogle: md.avatar_url || md.picture || '' };
+  }
   function enderecoApp() { return location.origin + location.pathname; }
 
   function mensagem(e) {

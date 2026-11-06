@@ -1,6 +1,6 @@
 /* ATOS 2 — service worker da versão instalada: guarda os arquivos do app (nunca dados do usuário).
    A Bíblia é guardada pelo próprio app (IndexedDB) quando o usuário escolhe "Guardar a Bíblia". */
-var VERSAO = 'atos2-v12';
+var VERSAO = 'atos2-v13';
 var ARQUIVOS = ['./', 'index.html', 'css/app.css', 'manifest.webmanifest', 'icones/icone.svg',
   'js/nucleo/referencias.js', 'js/nucleo/conteudo.js', 'js/nucleo/planos.js', 'js/nucleo/busca.js', 'js/nucleo/arte.js', 'js/nucleo/sinc.js', 'js/nucleo/quiz.js', 'js/nucleo/mural.js', 'js/nucleo/assistente.js', 'js/nucleo/originais.js', 'js/nucleo/doutrinas.js',
   'js/ui.js', 'js/config.js', 'js/nuvem.js', 'js/vendor/supabase.js', 'js/dados.js', 'js/biblia.js', 'js/telas/inicio.js', 'js/telas/leitor.js', 'js/telas/pesquisa.js', 'js/telas/fotos.js', 'js/telas/cartao.js', 

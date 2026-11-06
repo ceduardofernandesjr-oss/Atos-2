@@ -258,13 +258,21 @@
         } catch (e) { msg.style.color = 'var(--perigo)'; msg.textContent = A2Nuvem.mensagem(e); }
         finally { bt.disabled = false; }
       }
+      var google = h('div.conta-google', { hidden: true },
+        h('button.bt.conta-google-bt#entrar-google', { type: 'button', on: { click: async function (ev) {
+          ev.currentTarget.disabled = true; msg.style.color = ''; msg.textContent = 'Abrindo o Google…';
+          try { await A2Nuvem.Conta.entrarComGoogle(); } catch (e) { ev.currentTarget.disabled = false; msg.style.color = 'var(--perigo)'; msg.textContent = A2Nuvem.mensagem(e); }
+        } } }, h('span.conta-google-g', { 'aria-hidden': 'true' }, 'G'), modo === 'cadastro' ? 'Criar conta com o Google' : 'Continuar com o Google'),
+        h('div.conta-ou', h('span', 'ou com e-mail')));
+      if (modo !== 'recuperar' && A2Nuvem.Conta.provedores) A2Nuvem.Conta.provedores().then(function (p) { if (p.google) google.hidden = false; });
       return h('form.form', { on: { submit: enviar } },
+        modo !== 'recuperar' ? google : null,
         modo === 'cadastro' ? h('label.campo', { for: 'conta-nome' }, h('span', 'Nome'), nome) : null,
         h('label.campo', { for: 'conta-email' }, h('span', 'E-mail'), email),
         modo !== 'recuperar' ? h('label.campo', { for: 'conta-senha' }, h('span', 'Senha' + (modo === 'cadastro' ? ' (mínimo 8 caracteres, com letras e números)' : '')), senha) : null,
         msg, h('div.linha-bts', bt),
         modo === 'entrar' ? h('div.linha-bts', h('button.bt.peq', { type: 'button', on: { click: function () { api.fechar(); abrirConta('recuperar'); } } }, 'Esqueci minha senha'), h('button.bt.peq', { type: 'button', on: { click: function () { api.fechar(); abrirConta('cadastro'); } } }, 'Criar conta')) : null,
-        modo === 'cadastro' ? h('p.sub', 'Usamos seu e-mail só para entrar e recuperar a senha. Seus dados são privados: só você vê.') : null);
+        modo === 'cadastro' ? h('p.sub', 'Usamos seu e-mail só para entrar e recuperar a senha. Com o Google, recebemos só nome, e-mail e foto da conta. Seus dados são privados: só você vê.') : null);
     });
   }
   function novaSenha() {

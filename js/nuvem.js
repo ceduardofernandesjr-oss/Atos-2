@@ -11,7 +11,7 @@
 (function (root) {
   'use strict';
   var CFG = root.ATOS2_CONFIG || {};
-  var cliente = null, carregando = null, sessao = null, perfil = null, ouvintesConta = [];
+  var cliente = null, carregando = null, sessao = null, perfil = null, ouvintesConta = [], provedoresCache = null;
 
   function configurado() { return !!(CFG.supabaseUrl && CFG.supabaseChave); }
   function erroCod(error) {
@@ -59,7 +59,7 @@
     return perfil;
   }
   function ouvirConta(fn) { ouvintesConta.push(fn); return function () { ouvintesConta = ouvintesConta.filter(function (x) { return x !== fn; }); }; }
-  function conta() { return sessao ? { id: sessao.user.id, email: sessao.user.email, nome: (perfil && perfil.nome) || (sessao.user.user_metadata || {}).nome || '', papel: (perfil && perfil.papel) || 'leitor' } : null; }
+  function conta() { return sessao ? { id: sessao.user.id, email: sessao.user.email, nome: (perfil && perfil.nome) || (sessao.user.user_metadata || {}).nome || (sessao.user.user_metadata || {}).full_name || (sessao.user.user_metadata || {}).name || '', papel: (perfil && perfil.papel) || 'leitor' } : null; }
   function enderecoApp() { return location.origin + location.pathname; }
 
   function mensagem(e) {
@@ -83,6 +83,16 @@
       return { precisaConfirmar: !d.session };
     },
     sair: async function () { await iniciar(); return exec(cliente.auth.signOut()); },
+    // Login com Google (OAuth do Supabase): volta para o app já com a sessão na URL
+    entrarComGoogle: async function () { await iniciar(); return exec(cliente.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: enderecoApp(), queryParams: { prompt: 'select_account' } } })); },
+    // Provedores ativados no painel do Supabase (o botão do Google só aparece quando o Google está ligado)
+    provedores: function () {
+      if (provedoresCache) return provedoresCache;
+      provedoresCache = fetch(CFG.supabaseUrl + '/auth/v1/settings', { headers: { apikey: CFG.supabaseChave } })
+        .then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { return (j && j.external) || {}; })
+        .catch(function () { provedoresCache = null; return {}; });
+      return provedoresCache;
+    },
     recuperar: async function (email) { await iniciar(); return exec(cliente.auth.resetPasswordForEmail(email, { redirectTo: enderecoApp() })); },
     novaSenha: async function (senha) { await iniciar(); return exec(cliente.auth.updateUser({ password: senha })); },
     salvarNome: async function (nome) { if (!sessao) return; await exec(cliente.from('perfis').update({ nome: nome }).eq('id', sessao.user.id)); if (perfil) perfil.nome = nome; }

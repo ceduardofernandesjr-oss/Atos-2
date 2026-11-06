@@ -150,6 +150,7 @@
     }, function () {});
     sobre.appendChild(h('div.aviso', ico('imagem'), h('span', A2Fotos.CREDITO)));
     sobre.appendChild(h('div.aviso', ico('texto'), h('span', A2Originais.CREDITO)));
+    sobre.appendChild(h('div.aviso', ico('pincel'), h('span', 'Fontes das artes e do app: Cormorant Garamond, Literata, Manrope, Playfair Display, Lora, Libre Baskerville, Cinzel, Montserrat, Josefin Sans, Bebas Neue, Dancing Script e Great Vibes, sob a SIL Open Font License 1.1 (arquivos via Fontsource). Ícones e decorações das artes: desenho próprio do ATOS 2.')));
     sobre.appendChild(h('div.aviso', ico('escudo'), h('span', 'As 95 Teses, as fichas dos livros, as explicações de palavras e os temas de doutrina são redação do ATOS 2. Confira tudo nas Escrituras.')));
     sobre.appendChild(h('div.rotulo', 'Aguardando licença'));
     sobre.appendChild(h('div.lista', Biblia.VERSOES.filter(function (v) { return !v.ativa; }).map(function (v) { return h('div.item', h('div.corpo', h('span.titulo', v.nome + ' (' + v.sigla + ')'), h('span.meta', v.situacao))); })));

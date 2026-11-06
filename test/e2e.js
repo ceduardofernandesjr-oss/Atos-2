@@ -80,69 +80,194 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.screenshot({ path: '/tmp/shots/3-pesquisa.png' });
   await p.keyboard.press('Escape');
 
-  // Criar
-  await p.click('a[data-aba="criar"]');
-  await p.waitForSelector('.palco canvas'); await p.waitForTimeout(1500);
-  const w = await p.$eval('.palco canvas', c => c.width);
-  checar(w > 300, 'Estúdio: canvas desenhado');
-  await p.fill('#arte-ref', 'Sl 23:1'); await p.press('#arte-ref', 'Enter'); await p.waitForTimeout(800);
-  checar((await p.textContent('.painel')).includes('O SENHOR é meu pastor'), 'Estúdio: versículo aplicado com texto exato');
-  await p.click('.chips .chip:has-text("Fundo")');
-  checar(await p.locator('.painel .chip').count() === 2 && (await p.textContent('.painel')).includes('Criar com IA'), 'Fundo: só fotos e Criar com IA');
-  await p.click('.fundos.papeis button >> nth=1'); await p.waitForTimeout(500);
-  await p.click('.chips .chip:has-text("Formato")'); await p.click('.painel .item:has-text("Instagram Stories")'); await p.waitForTimeout(800);
-  const dims = await p.$eval('.palco canvas', c => c.width / c.height);
-  checar(Math.abs(dims - 1080 / 1920) < 0.01, 'Estúdio: formato Stories 1080×1920');
-  // papéis de parede Full HD (com as fotos)
-  await p.click('.chips .chip:has-text("Formato")'); await p.click('.painel .item:has-text("celular")'); await p.waitForTimeout(1200);
-  checar(Math.abs(await p.$eval('.palco canvas', c => c.width / c.height) - 1080 / 1920) < 0.01, 'Papel de parede do celular: 1080×1920');
-  await p.screenshot({ path: '/tmp/shots/15-papel-celular.png' });
-  await p.click('.chips .chip:has-text("Formato")'); await p.click('.painel .item:has-text("computador")'); await p.waitForTimeout(1200);
-  checar(Math.abs(await p.$eval('.palco canvas', c => c.width / c.height) - 1920 / 1080) < 0.01, 'Papel de parede do computador: 1920×1080');
-  await p.screenshot({ path: '/tmp/shots/16-papel-pc.png' });
-  const exp = await p.evaluate(async () => { const c = document.createElement('canvas'); await Telas.criar.desenharArte(c, { formato: 'papel-pc', conteudo: { tipo: 'versiculo', ref: 'Sl 46:10', versao: 'blivre' }, fundo: { tipo: 'banco', id: 'leao' }, escurecer: 0, estilo: {}, pos: { x: 0.5, y: 0.5 }, referencia: { mostrar: true }, assinatura: {} }, 1920); return [c.width, c.height]; });
-  checar(exp[0] === 1920 && exp[1] === 1080, 'Exportação do papel de parede em Full HD (1920×1080)');
-  await p.click('.painel .item:has-text("Instagram Stories")'); await p.waitForTimeout(600);
-  // fotos da biblioteca (Pixabay)
-  await p.click('.chips .chip:has-text("Fundo")'); await p.waitForTimeout(800);
-  checar(await p.locator('.fundos.papeis button img').count() === 25, 'Fotos: 25 fundos');
-  await p.click('.fundos.papeis button[title="Leão de Judá"]'); await p.waitForTimeout(1800);
-  const px = await p.$eval('.palco canvas', c => { const d = c.getContext('2d').getImageData(Math.round(c.width * 0.5), Math.round(c.height * 0.15), 1, 1).data; return [d[0], d[1], d[2]]; });
-  checar(!(px[0] === 43 && px[1] === 53 && px[2] === 80), 'Fotos: imagem aplicada ao fundo');
-  checar((await p.textContent('.painel')).includes('Pixabay'), 'Fotos: crédito e licença no painel');
-  const expFoto = await p.evaluate(async () => { const c = document.createElement('canvas'); await Telas.criar.desenharArte(c, { formato: 'papel-pc', conteudo: { tipo: 'versiculo', ref: 'Sl 19:1', versao: 'blivre' }, fundo: { tipo: 'banco', id: 'fiorde' }, escurecer: 0.2, estilo: {}, pos: { x: 0.5, y: 0.5 }, referencia: { mostrar: true }, assinatura: {} }, 1920); const d = c.getContext('2d').getImageData(100, 100, 1, 1).data; return [c.width, c.height, d[0] + d[1] + d[2]]; });
-  checar(expFoto[0] === 1920 && expFoto[1] === 1080 && expFoto[2] > 30, 'Fotos: papel de parede do computador com foto em Full HD');
-  await p.screenshot({ path: '/tmp/shots/18-foto-leao.png' });
-  await p.click('.chips .chip:has-text("Texto")'); await p.click('.painel .chip:has-text("Texto livre")'); await p.waitForTimeout(300);
-  await p.fill('#arte-livre', ''); await p.waitForTimeout(300);
-  await p.click('button:has-text("Baixar PNG")'); await p.waitForTimeout(500);
-  checar((await p.textContent('body')).includes('só podem sair com texto'), 'Fotos: não baixa a foto sem texto (licença)');
-  await p.click('.painel .chip:has-text("Versículo bíblico")'); await p.waitForTimeout(300);
-  await p.fill('#arte-ref', 'Sl 23:1'); await p.press('#arte-ref', 'Enter'); await p.waitForTimeout(600);
-  // arrastar texto
-  const box = await p.$eval('.palco canvas', c => { const r = c.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; });
-  await p.mouse.move(box.x + box.w / 2, box.y + box.h * 0.47); await p.mouse.down(); await p.mouse.move(box.x + box.w / 2, box.y + box.h * 0.25, { steps: 5 }); await p.mouse.up();
-  await p.waitForTimeout(400);
-  await p.screenshot({ path: '/tmp/shots/4-estudio.png' });
-  await p.click('button:has-text("Salvar") >> nth=0'); await p.waitForTimeout(1500);
-  await p.click('.chip:has-text("Minhas artes")'); await p.waitForTimeout(400);
-  checar(await p.locator('.arte-card').count() === 1, 'Estúdio: arte salva em Minhas artes');
-  await p.click('.chip:has-text("Galeria")'); await p.waitForTimeout(2500);
-  checar(await p.locator('.arte-card canvas').count() >= 5, 'Galeria: artes prontas desenhadas');
-  await p.click('.chip:has-text("Papéis de parede")'); await p.waitForTimeout(4000);
-  checar(await p.locator('.arte-card.papel canvas').count() === 12, 'Galeria: papéis de parede prontos');
-  await p.screenshot({ path: '/tmp/shots/17-galeria-papeis.png', fullPage: true });
-  await p.click('.chip:has-text("Fotos da criação")'); await p.waitForTimeout(4000);
-  checar(await p.locator('.arte-card canvas').count() === 16, 'Galeria: fotos da criação');
-  await p.screenshot({ path: '/tmp/shots/19-galeria-fotos.png', fullPage: true });
-  await p.click('.chip:has-text("Versículos de fé")'); await p.waitForTimeout(1500);
-  await p.screenshot({ path: '/tmp/shots/5-galeria.png' });
-  // exportação PNG (fora do claude.ai: download direto)
-  await p.click('.arte-card >> nth=0'); await p.waitForTimeout(600);
-  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 15000 }).catch(() => null), p.click('.folha button:has-text("Baixar")')]);
-  if (dl) { const path = await dl.path(); const fs = require('fs'); const buf = fs.readFileSync(path); checar(buf.slice(1, 4).toString() === 'PNG' && buf.readUInt32BE(16) === 1080 && buf.readUInt32BE(20) === 1350, 'Exportação: PNG 1080×1350'); }
+  // ---------------------------------------------------------------- Criar: Estúdio v2 (4 etapas)
+  const estArte = () => p.evaluate(() => JSON.parse(JSON.stringify(Telas.criar._estado())));
+  const camadaDe = async (papel) => (await estArte()).spec.camadas.find(c => c.papel === papel);
+  await p.click('a[data-aba="criar"]'); await p.waitForSelector('.criar-hero');
+  checar((await p.textContent('.criar-hero')).includes('Nova arte'), 'Estúdio: início com Nova arte e as 4 etapas');
+  await p.screenshot({ path: '/tmp/shots/4-criar-inicio.png' });
+  // etapa 1 — versículo
+  await p.click('#nova-arte'); await p.waitForSelector('#arte-busca');
+  checar((await p.textContent('.passos li.atual')).includes('Versículo') && await p.isDisabled('#continuar-1'), 'Etapa 1: ativa e sem versículo não continua');
+  await p.fill('#arte-busca', 'pastor'); await p.press('#arte-busca', 'Enter');
+  await p.waitForSelector('.resultados-busca .item mark', { timeout: 30000 });
+  checar(await p.locator('.resultados-busca .item').count() > 3, 'Etapa 1: busca por palavra-chave');
+  await p.fill('#arte-busca', 'Sl 23:1'); await p.press('#arte-busca', 'Enter'); await p.waitForSelector('.resultados-busca .item');
+  await p.click('.resultados-busca .item'); await p.waitForSelector('.previa-vers .texto');
+  checar((await p.textContent('.previa-vers')).includes('O SENHOR é meu pastor'), 'Etapa 1: texto exato da tradução na prévia');
+  await p.selectOption('#sel-livro', 'JHN'); await p.waitForTimeout(200);
+  await p.selectOption('#sel-cap', '3'); await p.waitForTimeout(200);
+  await p.selectOption('#sel-v1', '16'); await p.waitForTimeout(700);
+  checar((await p.textContent('.previa-vers')).includes('Porque Deus amou o mundo'), 'Etapa 1: escolha por livro, capítulo e versículo');
+  await p.fill('#arte-rotulo', 'João 3.16');
+  await p.screenshot({ path: '/tmp/shots/4b-etapa1.png' });
+  await p.click('#continuar-1');
+  // etapa 2 — modelo
+  await p.waitForSelector('.modelo-card canvas'); await p.waitForTimeout(1500);
+  checar(await p.locator('.cats-modelo .chip').count() === 15, 'Etapa 2: 12 categorias, Todos, Favoritos e Meus modelos');
+  await p.click('.cats-modelo .chip:has-text("Clássico")'); await p.waitForTimeout(1500);
+  checar(await p.locator('.modelo-card').count() === 5, 'Etapa 2: categoria Clássico com prévias reais');
+  const pxModelo = await p.$eval('.modelo-card canvas', c => c.width);
+  checar(pxModelo === 300, 'Etapa 2: prévia desenhada com o versículo escolhido');
+  await p.click('.modelo-card >> nth=1 >> .mc-fav'); await p.waitForTimeout(200);
+  checar(await p.evaluate(() => Dados.todos('modelosFav').length) === 1, 'Etapa 2: modelo favoritado');
+  await p.click('.modelo-card >> nth=0 >> button[aria-label^="Ver"]'); await p.waitForSelector('.folha canvas'); await p.waitForTimeout(600);
+  checar(await p.$eval('.folha canvas', c => c.width) === 760, 'Etapa 2: modelo em tela cheia');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  await p.screenshot({ path: '/tmp/shots/4c-etapa2.png' });
+  await p.click('.modelo-card[data-modelo="cla-pergaminho"] .mc-usar');
+  // etapa 3 — editor
+  await p.waitForSelector('.editor-arte'); await p.waitForTimeout(1500);
+  checar(!(await p.isVisible('.abas')), 'Editor imersivo: navegação principal oculta');
+  checar(Math.abs(await p.$eval('.ed-mesa canvas', c => c.width / c.height) - 1080 / 1350) < 0.01, 'Editor: arte no formato Feed 1080×1350');
+  let e1 = await estArte();
+  checar(e1.spec.conteudo.ref === 'Jo 3:16' && e1.spec.conteudo.rotulo === 'João 3.16' && e1.spec.modelo === 'cla-pergaminho', 'Editor: versículo, referência personalizada e modelo aplicados');
+  checar((await p.textContent('.ed-painel')).includes('Porque Deus amou o mundo de tal maneira'), 'Editor: texto bíblico exato e não editável');
+  checar(!!(await p.$('.ed-sobre .sel .alca')), 'Editor: seleção com alças de redimensionar e girar');
+  // texto
+  await p.click('.sub-abas .chip:has-text("Fonte")'); await p.click('.fontes button:has-text("Montserrat")'); await p.waitForTimeout(200);
+  checar((await camadaDe('versiculo')).fonte === 'Montserrat', 'Texto: troca de fonte');
+  await p.click('.sub-abas .chip:has-text("Estilo")'); await p.click('.chip.alternar[title="Negrito"]'); await p.waitForTimeout(200);
+  checar((await camadaDe('versiculo')).negrito === true, 'Texto: negrito');
+  await p.click('.sub-abas .chip:has-text("Efeitos")');
+  await p.locator('.deslizador:has-text("Contorno") input').fill('3'); await p.waitForTimeout(200);
+  checar((await camadaDe('versiculo')).contorno === 3, 'Texto: contorno');
+  await p.click('#ed-desfazer'); await p.waitForTimeout(200);
+  checar((await camadaDe('versiculo')).contorno === 0, 'Edição: desfazer');
+  await p.click('#ed-refazer'); await p.waitForTimeout(200);
+  checar((await camadaDe('versiculo')).contorno === 3, 'Edição: refazer');
+  // arrastar o versículo
+  const yAntes = (await camadaDe('versiculo')).y;
+  const sb = await p.$eval('.ed-sobre .sel', el => { const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; });
+  await p.mouse.move(sb.x, sb.y); await p.mouse.down(); await p.mouse.move(sb.x, sb.y + 50, { steps: 6 }); await p.mouse.up(); await p.waitForTimeout(400);
+  checar((await camadaDe('versiculo')).y > yAntes + 0.05, 'Editor: arrastar o texto no canvas');
+  // arrastar a referência a solta do versículo
+  const rb = await p.evaluate(() => { const c = document.querySelector('.ed-mesa canvas'), r = c.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; });
+  // fundo
+  await p.click('.ed-barra button[data-painel="fundo"]'); await p.click('.sub-abas .chip:has-text("Cores")');
+  await p.click('.seletor-cor .amostra[aria-label="Cor #4A1C2A"]'); await p.waitForTimeout(300);
+  e1 = await estArte(); checar(e1.spec.fundo.tipo === 'cor' && e1.spec.fundo.cor === '#4A1C2A', 'Fundo: cor sólida');
+  await p.click('.sub-abas .chip:has-text("Degradês")'); await p.click('.degrades button >> nth=2'); await p.waitForTimeout(300);
+  checar((await estArte()).spec.fundo.tipo === 'gradiente', 'Fundo: degradê');
+  await p.click('.sub-abas .chip:has-text("Minhas imagens")');
+  await p.setInputFiles('#fundo-upload', { name: 'minha.jpg', mimeType: 'image/jpeg', buffer: require('fs').readFileSync(__dirname + '/../app/fundos/fotos/pier-mini.jpg') });
+  await p.waitForTimeout(1200);
+  e1 = await estArte(); checar(e1.spec.fundo.tipo === 'imagem' && await p.evaluate(() => Dados.todos('_imagensArte').length) === 1, 'Fundo: imagem própria enviada (fica no aparelho)');
+  await p.click('.sub-abas .chip:has-text("Fotos")'); await p.fill('#fundo-busca', 'leão'); await p.waitForTimeout(300);
+  checar(await p.locator('.fundos.papeis button').count() === 1, 'Fundo: busca nas fotos');
+  await p.click('.fundos.papeis button[title="Leão de Judá"]'); await p.waitForTimeout(1500);
+  checar((await estArte()).spec.fundo.id === 'leao' && (await p.textContent('.ed-painel')).includes('Pixabay'), 'Fundo: foto da biblioteca com crédito');
+  await p.click('.sub-abas .chip:has-text("Ajustes")');
+  await p.locator('.deslizador:has-text("Desfoque") input').fill('6'); await p.locator('.deslizador:has-text("Brilho") input').fill('0.8'); await p.waitForTimeout(800);
+  e1 = await estArte(); checar(e1.spec.fundo.desfoque === 6 && e1.spec.fundo.brilho === 0.8, 'Fundo: desfoque e brilho');
+  await p.click('.sub-abas .chip:has-text("Sobreposição")'); await p.locator('.deslizador:has-text("Intensidade") input').fill('0.4'); await p.waitForTimeout(300);
+  checar((await estArte()).spec.fundo.sobreposicao.opacidade === 0.4, 'Fundo: sobreposição');
+  // cores
+  await p.click('.ed-barra button[data-painel="cores"]'); await p.click('.paleta[aria-label="Aplicar a paleta Vinho"]'); await p.waitForTimeout(300);
+  checar((await estArte()).spec.paleta === 'vinho', 'Cores: paleta harmonizada aplicada');
+  checar(await p.locator('.harmonia').count() === 4, 'Cores: harmonias geradas pela cor selecionada');
+  // elementos
+  await p.click('.ed-barra button[data-painel="elementos"]');
+  const nAntes = (await estArte()).spec.camadas.length;
+  await p.click('.item-bib[aria-label="Adicionar Pomba"]'); await p.waitForTimeout(300);
+  e1 = await estArte(); const pomba = e1.spec.camadas.find(c => c.icone === 'pomba');
+  checar(e1.spec.camadas.length === nAntes + 1 && pomba && e1.sel === pomba.id, 'Elementos: ícone adicionado e selecionado');
+  const iVers = e1.spec.camadas.findIndex(c => c.papel === 'versiculo');
+  checar(e1.spec.camadas.findIndex(c => c.id === pomba.id) < iVers, 'Elementos: o texto continua por cima');
+  await p.click('.item-bib[aria-label="Adicionar Moldura dupla"]'); await p.waitForTimeout(300);
+  await p.click('#ed-duplicar'); await p.waitForTimeout(200);
+  checar((await estArte()).spec.camadas.filter(c => c.forma === 'moldura').length >= 3, 'Elementos: duplicar');
+  await p.click('#ed-excluir-el'); await p.waitForTimeout(200);
+  // camadas
+  await p.click('.ed-barra button[data-painel="camadas"]'); await p.waitForTimeout(200);
+  await p.click('.lista-camadas li:has-text("Referência") button[aria-label^="Ocultar"]'); await p.waitForTimeout(200);
+  checar((await camadaDe('referencia')).visivel === false, 'Camadas: ocultar');
+  await p.click('.lista-camadas li:has-text("Referência") button[aria-label^="Mostrar"]'); await p.waitForTimeout(200);
+  await p.click('.lista-camadas li:has-text("Pomba") .cam-nome'); await p.click('.lista-camadas li:has-text("Pomba") button[aria-label^="Bloquear"]'); await p.waitForTimeout(200);
+  checar((await estArte()).spec.camadas.find(c => c.icone === 'pomba').bloqueado === true && !!(await p.$('.ed-sobre .sel.travada')), 'Camadas: bloquear');
+  const ordem0 = (await estArte()).spec.camadas.findIndex(c => c.icone === 'pomba');
+  await p.click('.lista-camadas li.sel button:has-text("Subir")'); await p.waitForTimeout(200);
+  checar((await estArte()).spec.camadas.findIndex(c => c.icone === 'pomba') === ordem0 + 1, 'Camadas: reordenar');
+  await p.screenshot({ path: '/tmp/shots/4d-editor.png' });
+  // licença das fotos: sem texto visível não exporta
+  await p.evaluate(() => { const s = Telas.criar._estado().spec; s.camadas.forEach(c => { if (c.tipo === 'texto') c.visivel = false; }); });
+  await p.click('#ed-exportar'); await p.waitForSelector('#exp-baixar'); await p.click('#exp-baixar'); await p.waitForTimeout(600);
+  checar((await p.textContent('body')).includes('só podem sair com texto'), 'Fotos: não exporta a foto sem texto (licença)');
+  await p.keyboard.press('Escape');
+  await p.evaluate(() => { const s = Telas.criar._estado().spec; s.camadas.forEach(c => { if (c.tipo === 'texto') c.visivel = true; }); });
+  // menu: renomear e formato
+  await p.click('#ed-menu'); await p.click('.folha .item:has-text("Renomear")'); await p.fill('.folha input.entrada', 'Amor de Deus'); await p.click('.folha button:has-text("Salvar")'); await p.waitForTimeout(300);
+  checar((await p.textContent('.ed-nome')).includes('Amor de Deus'), 'Editor: renomear');
+  await p.click('#ed-menu'); await p.click('.folha .item:has-text("Formato")'); await p.click('.folha .item:has-text("Status do WhatsApp")'); await p.waitForTimeout(1200);
+  checar(Math.abs(await p.$eval('.ed-mesa canvas', c => c.width / c.height) - 1080 / 1920) < 0.01, 'Formato: Status do WhatsApp 1080×1920');
+  await p.waitForTimeout(1800);
+  e1 = await estArte();
+  const salvo = await p.evaluate(id => Dados.obter('artes', id), e1.id);
+  checar(salvo && salvo.estado === 'rascunho' && salvo.spec.nome === 'Amor de Deus' && /^data:image\/jpeg/.test(salvo.miniatura), 'Salvamento automático como rascunho');
+  checar((await p.textContent('.ed-status')).includes('Salvo'), 'Indicador de salvamento');
+  // etapa 4 — exportar
+  await p.click('#ed-exportar'); await p.waitForSelector('.folha .previa-export'); await p.waitForTimeout(800);
+  checar((await p.textContent('.folha .passos li.atual')).includes('Exportar'), 'Etapa 4: exportar e compartilhar');
+  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 20000 }).catch(() => null), p.click('#exp-baixar')]);
+  if (dl) { const buf = require('fs').readFileSync(await dl.path()); checar(buf.slice(1, 4).toString() === 'PNG' && buf.readUInt32BE(16) === 1080 && buf.readUInt32BE(20) === 1920, 'Exportação: PNG 1080×1920'); }
   else checar(false, 'Exportação: download do PNG');
-  await p.keyboard.press('Escape'); await p.keyboard.press('Escape');
+  await p.waitForTimeout(1200); await p.keyboard.press('Escape');   // fecha a folha de apoio “Salvar imagem”
+  checar((await p.evaluate(id => Dados.obter('artes', id), e1.id)).estado === 'finalizada', 'Exportar move a arte para Finalizadas');
+  await p.click('.folha .chip:has-text("JPG")'); await p.waitForTimeout(300);
+  const [dl2] = await Promise.all([p.waitForEvent('download', { timeout: 20000 }).catch(() => null), p.click('#exp-baixar')]);
+  if (dl2) { const buf = require('fs').readFileSync(await dl2.path()); checar(buf[0] === 0xFF && buf[1] === 0xD8 && dl2.suggestedFilename().endsWith('.jpg'), 'Exportação: JPG'); }
+  else checar(false, 'Exportação: download do JPG');
+  await p.waitForTimeout(600); await p.keyboard.press('Escape');
+  await p.click('#exp-modelo'); await p.fill('.folha input.entrada', 'Meu pergaminho'); await p.click('.folha button:has-text("Salvar modelo")'); await p.waitForTimeout(300);
+  checar(await p.evaluate(() => Dados.todos('modelos').length) === 1, 'Salvar como modelo');
+  // trocar o versículo mantendo o visual
+  await p.click('.ed-barra button[data-painel="texto"]'); await p.click('.lista-camadas li:has-text("Versículo") .cam-nome').catch(() => {});
+  await p.evaluate(() => { const e = Telas.criar._estado(); e.sel = 'versiculo'; e.sub.texto = 'conteudo'; });
+  await p.click('.ed-barra button[data-painel="camadas"]'); await p.click('.ed-barra button[data-painel="texto"]');
+  await p.click('#ed-trocar-vers'); await p.waitForSelector('#arte-busca');
+  await p.click('.chip:has-text("Fp 4:13")'); await p.waitForTimeout(600); await p.click('#continuar-1');
+  await p.waitForSelector('.editor-arte'); await p.waitForTimeout(800);
+  e1 = await estArte(); checar(e1.spec.conteudo.ref === 'Fp 4:13' && e1.spec.nome === 'Amor de Deus' && e1.spec.fundo.id === 'leao', 'Trocar versículo mantém o visual');
+  // voltar ao início: Minhas artes
+  await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.waitForSelector('.criar-hero'); await p.waitForTimeout(300);
+  checar(await p.isVisible('.abas') && await p.locator('.area-minhas .arte-card').count() === 1, 'Minhas artes: recentes');
+  await p.click('.abas-minhas .chip:has-text("Finalizadas")'); checar(await p.locator('.area-minhas .arte-card').count() === 1, 'Minhas artes: finalizadas');
+  await p.click('.abas-minhas .chip:has-text("Rascunhos")'); checar(await p.locator('.area-minhas .arte-card').count() === 0, 'Minhas artes: rascunhos');
+  await p.click('.abas-minhas .chip:has-text("Meus modelos")'); await p.waitForTimeout(600); checar(await p.locator('.area-minhas .arte-card canvas').count() === 1, 'Minhas artes: meus modelos');
+  await p.click('.abas-minhas .chip:has-text("Modelos favoritos")'); await p.waitForTimeout(600); checar(await p.locator('.area-minhas .arte-card canvas').count() === 1, 'Minhas artes: modelos favoritos');
+  await p.click('.abas-minhas .chip:has-text("Recentes")');
+  await p.click('.area-minhas .arte-card'); await p.click('.folha button:has-text("Duplicar")'); await p.waitForTimeout(300);
+  checar(await p.locator('.area-minhas .arte-card').count() === 2, 'Minhas artes: duplicar');
+  await p.click('.area-minhas .arte-card >> nth=0'); await p.click('.folha button:has-text("Abrir e editar")'); await p.waitForSelector('.editor-arte');
+  checar((await p.textContent('.ed-nome')).includes('Amor de Deus'), 'Minhas artes: reabrir para editar');
+  await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.waitForSelector('.criar-hero');
+  // Criar com IA (prévia do claude.ai): a IA só compõe; o versículo vem da tradução
+  await p.evaluate(() => { window.__sample = async () => ({ text: '{"nome":"Esperança","fundo":{"tipo":"gradiente","cores":["#0F4C5C","#192D50"],"angulo":160},"texto":{"fonte":"Lora","cor":"#F4F0E5","alinhar":"center","y":0.5,"italico":true,"conteudo":"TEXTO INVENTADO"},"referencia":{"cor":"#A58A57"},"elementos":[{"forma":"icone","icone":"pomba","x":0.5,"y":0.12,"w":0.1,"h":0.1,"cor":"#A58A57"},{"forma":"textura","estilo":"granulado","opacidade":0.3,"cor":"#FFFFFF"}]}' }); });
+  await p.click('#criar-ia'); await p.fill('#ia-ref', 'Is 41:10'); await p.fill('#ia-desc', 'coragem e esperança, tons de mar'); await p.click('#ia-criar');
+  await p.waitForSelector('.editor-arte'); await p.waitForTimeout(1200);
+  e1 = await estArte();
+  checar(e1.spec.criadaComIA && e1.spec.conteudo.ref === 'Is 41:10' && e1.spec.camadas.some(c => c.icone === 'pomba') && (await camadaDe('versiculo')).fonte === 'Lora', 'Criar com IA: composição em camadas editáveis');
+  const txIA = await p.evaluate(async () => (await A2Desenho.textoDaArte(Telas.criar._estado().spec)).texto);
+  checar(txIA.startsWith('Não temas') && !JSON.stringify(e1.spec).includes('TEXTO INVENTADO'), 'Criar com IA: o versículo vem da tradução, nunca da IA');
+  await p.screenshot({ path: '/tmp/shots/4e-ia.png' });
+  await p.evaluate(() => { window.__sample = null; });
+  await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.waitForSelector('.criar-hero');
+  // atalho da Bíblia: começa nos modelos com o versículo
+  await p.evaluate(() => Telas.criar.comVersiculo('Rm 8:28')); await p.waitForSelector('.modelo-card canvas'); await p.waitForTimeout(400);
+  checar((await p.textContent('.passos li.atual')).includes('Modelo'), 'Atalho “Criar arte”: abre a escolha de modelo com o versículo');
+  await p.click('.cab button[aria-label="Voltar"]'); await p.click('.cab button[aria-label="Voltar"]'); await p.waitForSelector('.criar-hero');
+  // compatibilidade: artes da v1 continuam desenhando
+  const exp = await p.evaluate(async () => { const c = document.createElement('canvas'); await Telas.criar.desenharArte(c, { formato: 'papel-pc', conteudo: { tipo: 'versiculo', ref: 'Sl 46:10', versao: 'blivre' }, fundo: { tipo: 'banco', id: 'fiorde' }, escurecer: 0.2, estilo: {}, pos: { x: 0.5, y: 0.5 }, referencia: { mostrar: true }, assinatura: {} }, 1920); const d = c.getContext('2d').getImageData(100, 100, 1, 1).data; return [c.width, c.height, d[0] + d[1] + d[2]]; });
+  checar(exp[0] === 1920 && exp[1] === 1080 && exp[2] > 30, 'Compatibilidade: arte da v1 (papel de parede Full HD com foto)');
+  // Inspirações (galeria editorial)
+  await p.click('.item.inspira'); await p.waitForTimeout(2500);
+  checar(await p.locator('.arte-card canvas').count() >= 5, 'Inspirações: artes prontas desenhadas');
+  await p.click('.chip:has-text("Papéis de parede")'); await p.waitForTimeout(4000);
+  checar(await p.locator('.arte-card.papel canvas').count() === 12, 'Inspirações: papéis de parede prontos');
+  await p.click('.arte-card >> nth=0'); await p.waitForTimeout(600);
+  await p.click('.folha button:has-text("Personalizar")'); await p.waitForSelector('.editor-arte'); await p.waitForTimeout(600);
+  checar((await estArte()).spec.formato === 'papel-celular', 'Inspirações: personalizar abre no editor');
+  await p.click('.ed-cab button[aria-label="Voltar para Criar"]'); await p.waitForSelector('.criar-hero');
 
   // Biblioteca
   await p.click('a[data-aba="biblioteca"]'); await p.waitForTimeout(300);

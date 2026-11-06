@@ -134,12 +134,13 @@ async function abrir(browser, cfg) {
   await a.keyboard.press('Escape');
 
   // Fundo gerado por IA: sem texto nem script
-  await a.click('a[data-aba="criar"]'); await a.waitForSelector('.palco canvas');
-  await a.click('.chips .chip:has-text("Fundo")'); await a.click('.painel .chip:has-text("Criar com IA")');
-  await a.fill('#ia-desc', 'amanhecer dourado'); await a.click('.painel button:has-text("Gerar fundo")');
-  await a.waitForFunction(() => document.querySelector('.painel').textContent.includes('Pronto'), null, { timeout: 8000 });
-  await a.waitForFunction(() => ((Dados.obter('_rascunhoArte', 'atual') || {}).spec || { fundo: {} }).fundo.tipo === 'ia', null, { timeout: 10000 });
-  const svg = await a.evaluate(() => JSON.parse(JSON.stringify(Dados.obter('_rascunhoArte', 'atual'))).spec.fundo.svg || '');
+  await a.evaluate(() => Telas.criar.comVersiculo('Jo 3:16')); await a.waitForSelector('.modelo-card[data-modelo="min-azul"] .mc-usar');
+  await a.click('.modelo-card[data-modelo="min-azul"] .mc-usar'); await a.waitForSelector('.editor-arte');
+  await a.click('.ed-barra button[data-painel="fundo"]'); await a.click('.sub-abas .chip:has-text("Criar com IA")');
+  await a.fill('#ia-fundo', 'amanhecer dourado'); await a.click('.ed-painel button:has-text("Gerar fundo")');
+  await a.waitForFunction(() => Telas.criar._estado().spec.fundo.tipo === 'ia', null, { timeout: 10000 });
+  await a.waitForFunction(() => document.querySelector('.ed-painel').textContent.includes('Pronto'), null, { timeout: 8000 });
+  const svg = await a.evaluate(() => Telas.criar._estado().spec.fundo.svg || '');
   checar(svg.includes('linearGradient') && !/<text|<script|JOAO/.test(svg), 'Fundo IA saneado: sem texto e sem script');
   checar(await a.evaluate(() => !window.__invadido), 'Script do SVG não executou');
 

@@ -1206,6 +1206,12 @@ body.selecionando .tela { padding-bottom: 300px; }
 .ficha-autor { font: 600 14px var(--f-ui); color: var(--tinta); }
 .ficha-bts { align-items: center; }
 .ficha-bts a.bt { text-decoration: none; }
+.outra-lingua { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 1px solid rgba(165,138,87,.45); border-radius: 12px; background: #F4F0E5; color: #192D50; font: inherit; text-align: left; cursor: pointer; }
+.outra-lingua .outra-lingua-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.outra-lingua small { color: #6B6455; font-size: 12.5px; }
+.outra-lingua .ico { color: #A58A57; }
+:root[data-tema="escuro"] .outra-lingua, :root[data-theme="dark"] .outra-lingua { background: rgba(165,138,87,.12); color: #F4F0E5; }
+:root[data-tema="escuro"] .outra-lingua small, :root[data-theme="dark"] .outra-lingua small { color: #C9BFA8; }
 .acoes-obra { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -2px; padding-bottom: 2px; }
 .acoes-obra::-webkit-scrollbar { display: none; }
 .acao-obra { flex: 1 0 64px; display: grid; justify-items: center; gap: 4px; padding: 4px 2px; border: 0; border-radius: 12px; background: transparent; font: 600 11.5px var(--f-ui); color: var(--tinta-2); }

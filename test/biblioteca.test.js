@@ -76,3 +76,21 @@ test('validação e compartilhamento de coleções', () => {
   assert.ok(txt.includes('• João 3:16 (BLIVRE) — “Porque Deus amou o mundo”'));
   assert.ok(txt.includes('• Estudo: Batismo em Atos'));
 });
+
+test('livros e artigos na Biblioteca: favorito, anotação, contagem e coleção', () => {
+  const B = require('../app/js/nucleo/biblioteca.js');
+  const obras = { conf: { id: 'conf', titulo: 'Confissões', autor: 'Agostinho', descricao: 'Graça.' } };
+  const d = {
+    favoritos: [{ id: 'JHN.3.16', criadoEm: '2026-11-01' }, { id: 'obra-conf', tipo: 'obra', obra: 'conf', criadoEm: '2026-11-02' }, { id: 'obra-sumiu', tipo: 'obra', obra: 'sumiu' }],
+    notas: [{ id: 'n1', refs: [], texto: 'Tarde te amei', obra: { id: 'conf', secao: 10, par: 3 } }],
+    obra: id => obras[id] || null, rotulo: k => k
+  };
+  const it = B.itens(d);
+  assert.deepEqual(it.map(x => x.tipo + ':' + x.id), ['versiculo:JHN.3.16', 'obra:conf', 'nota:n1']);
+  assert.equal(it[2].titulo, 'Anotação em Confissões');
+  const c = B.contagens(d);
+  assert.equal(c.versiculos, 1); assert.equal(c.obras, 2);
+  const col = { id: 'c1', itens: [{ tipo: 'obra', id: 'conf' }] };
+  assert.deepEqual(B.membros(col, d.favoritos), [{ tipo: 'obra', id: 'conf', em: undefined }]);
+  assert.ok(B.textoColecao({ nome: 'Leituras' }, [it[1]], {}, 'BLIVRE').includes('Confissões — Agostinho'));
+});

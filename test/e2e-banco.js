@@ -42,7 +42,9 @@ const MOCK = `(() => {
   sample.json = async (input) => ({ titulo: 'Perseverar juntos', contexto: 'Logo após o Pentecostes, a igreja de Jerusalém se formou ao redor do ensino dos apóstolos (At 2:1-41).',
     explicacao: 'Lucas descreve quatro marcas da comunidade.', reflexao: 'A fé cristã nasceu em comunidade, ouvindo os apóstolos e orando juntos.',
     aplicacao: 'Leia um trecho de Atos com alguém esta semana.', pergunta: 'O que significa perseverar?', oracao: 'Senhor, ajuda-me a perseverar na tua Palavra.', versiculoArte: 'At 2:42',
-    passagens: [{ ref: 'At 2:38', nota: 'arrependimento e batismo' }, { ref: 'At 99:1', nota: 'inválida' }, { ref: 'Rm 6:3-4', nota: 'união com Cristo' }], introducao: 'Estudo de teste.' });
+    passagens: [{ ref: 'At 2:38', nota: 'arrependimento e batismo' }, { ref: 'At 99:1', nota: 'inválida' }, { ref: 'Rm 6:3-4', nota: 'união com Cristo' }], introducao: 'Estudo de teste.',
+    resumo: 'Agostinho louva a Deus e reconhece que o coração humano só descansa nele.', conceitos: [{ termo: 'Graça', explicacao: 'Favor imerecido de Deus.' }],
+    referencias: [{ ref: 'Rm 3:24', motivo: 'justificação pela graça' }, { ref: 'Xx 99:1', motivo: 'inválida' }], leituras: [{ tradicao: 'Católica', leitura: 'Leitura de teste.' }], perguntas: ['Onde está o seu descanso?'] });
   window.claude = { use: async (n) => ({ db, user, sample })[n] || null };
 })();`;
 
@@ -146,6 +148,41 @@ async function abrir(browser, cfg) {
   const svg = await a.evaluate(() => Telas.criar._estado().spec.fundo.svg || '');
   checar(svg.includes('linearGradient') && !/<text|<script|JOAO/.test(svg), 'Fundo IA saneado: sem texto e sem script');
   checar(await a.evaluate(() => !window.__invadido), 'Script do SVG não executou');
+
+  // ---------- Biblioteca › Livros e Artigos: administração do acervo (revisão editorial antes de publicar)
+  await a.evaluate(() => { App.estado.secaoBiblioteca = 'acervo'; App.ir('biblioteca'); }); await a.waitForSelector('#acervo-admin', { timeout: 10000 });
+  await a.click('#acervo-admin'); await a.waitForSelector('.admin-acervo');
+  checar(await a.locator('.admin-acervo [data-revisar]').count() === 4, 'Acervo: quatro traduções do ATOS 2 aguardam revisão');
+  checar(await c.evaluate(() => !Telas.acervo.porId('didaque')), 'Acervo: leitor não vê rascunho em revisão');
+  await a.click('.admin-acervo [data-revisar="didaque"]'); await a.waitForSelector('#rev-publicar');
+  await a.click('#rev-publicar'); await a.waitForTimeout(150);
+  checar(![...loja.keys()].some(k => k === 'pub/conteudo/acervo/didaque'), 'Acervo: publicar exige as duas confirmações');
+  await a.click('label[for="rev-direitos"]'); await a.click('label[for="rev-conteudo"]'); await a.click('#rev-publicar');
+  await a.waitForFunction(() => !document.querySelector('#rev-publicar'), null, { timeout: 5000 });
+  const pubDid = loja.get('pub/conteudo/acervo/didaque');
+  checar(!!pubDid && pubDid.situacao === 'publicado' && !!pubDid.verificacao.editorialEm, 'Acervo: aprovado e publicado com revisão registrada');
+  await c.waitForFunction(() => !!Telas.acervo.porId('didaque'), null, { timeout: 6000 });
+  checar(true, 'Acervo: leitor passa a ver a publicação aprovada');
+  await a.evaluate(() => Telas.acervo.admin()); await a.waitForSelector('#acervo-nova'); await a.click('#acervo-nova'); await a.waitForSelector('#ad-tit');
+  await a.fill('#ad-tit', 'Artigo de teste'); await a.fill('#ad-aut', 'Autora Exemplo'); await a.fill('#ad-des', 'Descrição de teste.'); await a.fill('#ad-url', 'https://exemplo.org/artigo');
+  await a.click('#ad-salvar'); await a.waitForFunction(() => !document.querySelector('#ad-salvar'), null, { timeout: 5000 });
+  const novo = [...loja.keys()].find(k => k.startsWith('editorial/rascunhos/acervo/'));
+  checar(!!novo && loja.get(novo).situacao === 'revisao', 'Acervo: nova publicação entra em revisão');
+  checar(await c.evaluate(() => !Telas.acervo.todas().some(p => p.titulo === 'Artigo de teste')), 'Acervo: leitor não vê cadastro em revisão');
+  checar(await c.evaluate(async () => { try { await Dados.gravarConteudo('acervo', 'x', { titulo: 'invasão' }); return false; } catch (e) { return true; } }), 'Acervo: leitor não consegue publicar');
+  await a.evaluate(() => Telas.acervo.abrirFicha('historia-igreja-schaff-1')); await a.waitForSelector('.ficha-admin');
+  await a.click('.ficha-admin .bt.perigo'); await a.waitForTimeout(200); await a.locator('.fundo-camada').last().locator('.bt.perigo').click();
+  await c.waitForFunction(() => !Telas.acervo.porId('historia-igreja-schaff-1'), null, { timeout: 6000 });
+  checar(true, 'Acervo: publicação retirada some para os leitores');
+  // Assistente com IA: trecho do autor separado da explicação gerada por IA
+  await a.evaluate(() => Telas.acervo.abrirLeitura('confissoes-agostinho')); await a.waitForSelector('.obra-par[data-p="0"]', { timeout: 15000 });
+  await a.click('.obra-par[data-p="0"]'); await a.click('#obra-assistente-trecho'); await a.waitForSelector('#assist-obra-ia');
+  await a.click('#assist-obra-ia'); await a.waitForSelector('.explicacao-ia', { timeout: 8000 });
+  const ex = await a.textContent('.estudo-obra');
+  checar(ex.includes('Conteúdo original do autor') && ex.includes('Explicação gerada por IA'), 'Assistente: original do autor e explicação da IA identificados');
+  checar(ex.includes('Romanos 3:24') && ex.includes('não existiam e foram descartadas'), 'Assistente: referência inválida da IA descartada');
+  await a.click('#salvar-estudo-obra'); await a.waitForTimeout(200);
+  checar(await a.evaluate(() => Dados.todos('estudos').some(e => e.titulo === 'Leitura: Confissões' && e.origem === 'ia' && e.obra.id === 'confissoes-agostinho')), 'Assistente: explicação salva nos estudos da Biblioteca');
 
   console.log('\nOK:', ok.length, ' FALHAS:', falhas.length, ' ERROS:', erros.length); erros.slice(0, 8).forEach(e => console.log('  ', e.slice(0, 250)));
   await b.close(); process.exit(falhas.length || erros.length ? 1 : 0);

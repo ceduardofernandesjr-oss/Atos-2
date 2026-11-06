@@ -46,7 +46,7 @@
     tela.appendChild(secao('Minha caminhada'));
     tela.appendChild(h('div.acesso-bib.caminhada', [
       ['planos', 'planos', 'Planos de leitura', n(ativos.length, 'ativo', 'ativos', 'Nenhum ativo'), irBib('planos')],
-      ['favoritos', 'coracao', 'Versículos', n(Dados.todos('favoritos').length, 'favorito', 'favoritos', 'Nenhum ainda'), irBib('favoritos')],
+      ['favoritos', 'coracao', 'Versículos', n(A2Biblioteca.favVersiculos(Dados.todos('favoritos')).length, 'favorito', 'favoritos', 'Nenhum ainda'), irBib('favoritos')],
       ['devocionais', 'luz', 'Devocionais', n(Dados.todos('devSalvos').length, 'salvo', 'salvos', 'Nenhum ainda'), irBib('devocionais', function () { App.estado.abaDevo = 'salvos'; })],
       ['artes', 'pincel', 'Minhas artes', n(Dados.todos('artes').length, 'arte', 'artes', 'Nenhuma ainda'), function () { App.estado.secaoCriar = 'minhas'; App.ir('criar'); }],
       ['colecoes', 'colecao', 'Coleções', n(Dados.todos('colecoes').length, 'coleção', 'coleções', 'Nenhuma ainda'), irBib('colecoes')],

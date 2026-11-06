@@ -72,14 +72,17 @@ $$;
 
 -- ---------- Conteúdo editorial (devocionais, reflexões do dia, galeria; rascunhos só para a edição) ----------
 create table public.conteudo_editorial (
-  area text not null check (area in ('devocionais', 'reflexoes', 'galeria', 'rascunhos')),
+  area text not null check (area in ('devocionais', 'reflexoes', 'galeria', 'rascunhos', 'acervo', 'acervo_revisao')),
   id text not null,
   dados jsonb not null default '{}',
   atualizado_em timestamptz not null default now(),
   atualizado_por uuid references auth.users(id) default auth.uid(),
   primary key (area, id),
   -- devocional de IA só pode ser publicado com revisão registrada
-  constraint ia_revisada check (area <> 'devocionais' or coalesce(dados->>'origem', '') <> 'ia' or coalesce(dados->>'revisadoEm', '') <> '')
+  constraint ia_revisada check (area <> 'devocionais' or coalesce(dados->>'origem', '') <> 'ia' or coalesce(dados->>'revisadoEm', '') <> ''),
+  -- v2.6: Biblioteca › Livros e Artigos — publicação no acervo só com direitos verificados e revisão editorial (ou registro de retirada)
+  constraint acervo_verificado check (area <> 'acervo' or coalesce(dados->>'removido', 'false') = 'true'
+    or (coalesce(dados->'verificacao'->>'direitos', '') = 'verificado' and coalesce(dados->'verificacao'->>'editorialEm', '') <> ''))
 );
 
 -- ---------- Segurança (RLS) ----------
@@ -96,9 +99,9 @@ create policy perfil_nome on public.perfis for update to authenticated using (id
 create policy dados_proprios on public.documentos_usuario for all to authenticated
   using (usuario_id = (select auth.uid())) with check (usuario_id = (select auth.uid()));
 
-create policy conteudo_publico on public.conteudo_editorial for select to anon using (area <> 'rascunhos');
+create policy conteudo_publico on public.conteudo_editorial for select to anon using (area not in ('rascunhos', 'acervo_revisao'));
 create policy conteudo_leitura on public.conteudo_editorial for select to authenticated
-  using (area <> 'rascunhos' or (select privado.eh_editor()));
+  using (area not in ('rascunhos', 'acervo_revisao') or (select privado.eh_editor()));
 create policy conteudo_inserir on public.conteudo_editorial for insert to authenticated with check ((select privado.eh_editor()));
 create policy conteudo_alterar on public.conteudo_editorial for update to authenticated using ((select privado.eh_editor())) with check ((select privado.eh_editor()));
 create policy conteudo_excluir on public.conteudo_editorial for delete to authenticated using ((select privado.eh_editor()));

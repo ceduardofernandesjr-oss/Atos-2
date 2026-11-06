@@ -4,7 +4,8 @@
  * sincronize sem saber qual banco está em uso.
  *   - data/users/<id>           → tabela documentos_usuario (função salvar_documento_usuario)
  *   - pub/conteudo/<área>       → conteudo_editorial (devocionais, reflexoes, galeria)
- *   - editorial/rascunhos/...   → conteudo_editorial (área rascunhos, só editores)
+ *   - editorial/rascunhos/...   → conteudo_editorial (áreas rascunhos e acervo_revisao, só editores)
+ *   - pub/conteudo/acervo       → conteudo_editorial (área acervo: Biblioteca › Livros e Artigos)
  * A biblioteca do Supabase só é carregada fora do claude.ai.
  */
 (function (root) {
@@ -88,7 +89,8 @@
   };
 
   // ---------------------------------------------------------------- adaptador no formato do banco da prévia
-  var AREAS = { 'pub/conteudo/devocionais': 'devocionais', 'pub/conteudo/reflexoes': 'reflexoes', 'pub/conteudo/galeria': 'galeria', 'editorial/rascunhos/devocionais': 'rascunhos' };
+  var AREAS = { 'pub/conteudo/devocionais': 'devocionais', 'pub/conteudo/reflexoes': 'reflexoes', 'pub/conteudo/galeria': 'galeria', 'editorial/rascunhos/devocionais': 'rascunhos',
+    'pub/conteudo/acervo': 'acervo', 'editorial/rascunhos/acervo': 'acervo_revisao' };
   var contador = 0;
 
   function docUsuario(l) { var r = { c: l.colecao, id: l.id, d: l.dados, t: Number(l.t), x: !!l.excluido, dev: l.dev }; return { id: l.colecao + ':' + l.id, data: function () { return r; } }; }

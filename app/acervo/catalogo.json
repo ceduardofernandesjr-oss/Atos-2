@@ -1,0 +1,929 @@
+{
+ "versao": 1,
+ "atualizadoEm": "2026-11-06",
+ "nota": "Acervo inicial do ATOS 2. Cada publicação tem procedência e licença conferidas (verificacao). Textos integrais só de obras em domínio público; as demais aparecem com dados bibliográficos e link para a publicação original. Traduções do ATOS 2 ficam em revisão até a aprovação editorial.",
+ "publicacoes": [
+  {
+   "id": "confissoes-agostinho",
+   "tipo": "livro",
+   "categoria": "pais",
+   "titulo": "Confissões",
+   "tituloOriginal": "Confessiones (The Confessions of Saint Augustine)",
+   "autor": "Agostinho de Hipona",
+   "autorDatas": "354–430",
+   "tradutor": "E. B. Pusey (1800–1882)",
+   "tradicao": "Igreja antiga (Pai da Igreja latino). Referência comum a católicos, ortodoxos e protestantes.",
+   "ano": "c. 397–401",
+   "edicao": "Tradução inglesa de E. B. Pusey, publicada em 1838.",
+   "descricao": "Autobiografia espiritual escrita em forma de oração. Agostinho relembra a infância, a juventude inquieta, a busca pela verdade e a conversão a Cristo; nos últimos livros medita sobre a memória, o tempo e a criação. É uma das obras mais lidas sobre a graça de Deus na vida de uma pessoa.",
+   "temas": [
+    "Graça e salvação",
+    "Conversão",
+    "Pais da Igreja"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/confissoes-agostinho.json",
+   "fonte": {
+    "nome": "Edição de 1838 (tradução de E. B. Pusey); texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Obra antiga; o tradutor morreu em 1882. Em domínio público no Brasil (Lei 9.610/98, art. 41) e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho e o rodapé de licença do arquivo de origem. Texto conferido palavra por palavra pelo conversor."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "imitacao-de-cristo",
+   "tipo": "livro",
+   "categoria": "livros",
+   "titulo": "A imitação de Cristo",
+   "tituloOriginal": "De imitatione Christi (The Imitation of Christ)",
+   "autor": "Tomás de Kempis",
+   "autorDatas": "c. 1380–1471",
+   "tradutor": "William Benham (1831–1910)",
+   "tradicao": "Católica (Devotio Moderna, Países Baixos). Lida também por muitos protestantes.",
+   "ano": "c. 1418–1427",
+   "edicao": "Tradução inglesa de William Benham.",
+   "descricao": "Clássico devocional em quatro livros, com capítulos curtos sobre a vida interior: humildade, leitura das Escrituras, paciência nas provações, o amor a Jesus acima de todas as coisas e o caminho da cruz. O quarto livro trata da comunhão (eucaristia), segundo a fé católica.",
+   "temas": [
+    "Discipulado cristão",
+    "Ensinamentos de Jesus",
+    "Vida devocional"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/imitacao-de-cristo.json",
+   "fonte": {
+    "nome": "Tradução de William Benham; texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Obra do século XV; o tradutor morreu em 1910. Em domínio público no Brasil e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho e o rodapé do arquivo de origem. Texto conferido palavra por palavra (os títulos dos capítulos passaram para os títulos das seções)."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "liberdade-crista-lutero",
+   "tipo": "livro",
+   "categoria": "cristocentrica",
+   "titulo": "Da liberdade cristã",
+   "tituloOriginal": "De libertate christiana (Concerning Christian Liberty)",
+   "autor": "Martinho Lutero",
+   "autorDatas": "1483–1546",
+   "tradutor": "R. S. Grignon",
+   "tradicao": "Luterana (Reforma protestante).",
+   "ano": "1520",
+   "edicao": "Tradução inglesa de R. S. Grignon em First Principles of the Reformation (Londres: John Murray, 1883), ed. Henry Wace e C. A. Buchheim. Inclui a carta de Lutero ao papa Leão X.",
+   "descricao": "Tratado breve em que Lutero explica que o cristão é justificado somente pela fé em Cristo e, por isso, é livre; e que essa mesma fé o torna servo de todos pelo amor. Um dos textos centrais da Reforma sobre graça, fé e boas obras.",
+   "temas": [
+    "Graça e salvação",
+    "Jesus Cristo",
+    "Fé e obras"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/liberdade-crista-lutero.json",
+   "fonte": {
+    "nome": "First Principles of the Reformation (1883); texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Obra de 1520; tradução publicada em 1883. Em domínio público no Brasil e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho e o rodapé do arquivo de origem. Texto conferido palavra por palavra. Edição e tradutor conferidos no catálogo da CCEL (ccel.org/ccel/l/luther/first_prin)."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "galatas-lutero",
+   "tipo": "comentario",
+   "categoria": "comentarios",
+   "titulo": "Comentário à Epístola aos Gálatas",
+   "tituloOriginal": "In epistolam S. Pauli ad Galatas commentarius (Commentary on the Epistle to the Galatians)",
+   "autor": "Martinho Lutero",
+   "autorDatas": "1483–1546",
+   "tradutor": "Theodore Graebner (1876–1950)",
+   "tradicao": "Luterana (Reforma protestante).",
+   "ano": "1535",
+   "edicao": "Tradução inglesa condensada de Theodore Graebner, preparada para a editora Zondervan (projeto iniciado em 1937).",
+   "descricao": "Comentário de Gálatas versículo por versículo, a partir das preleções de Lutero em 1531. O tema que atravessa a obra é a justificação pela fé em Cristo, sem as obras da lei, e a vida no Espírito que nasce dessa fé. A edição é uma tradução condensada, como o tradutor explica no prefácio.",
+   "temas": [
+    "Graça e salvação",
+    "Doutrina dos apóstolos",
+    "Interpretação das Escrituras"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/galatas-lutero.json",
+   "refs": [
+    "GAL"
+   ],
+   "fonte": {
+    "nome": "Tradução condensada de Theodore Graebner; texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Obra de 1535; o tradutor morreu em 1950 (domínio público no Brasil desde 2021, Lei 9.610/98, art. 41). Liberada também nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho e o rodapé do arquivo de origem. Texto conferido palavra por palavra. A fonte digital traz “0 foolish Galatians” (zero no lugar de O) no cap. 3, mantido como está."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "julgamento-morte-jesus-stalker",
+   "tipo": "livro",
+   "categoria": "cristocentrica",
+   "titulo": "O julgamento e a morte de Jesus Cristo",
+   "tituloOriginal": "The Trial and Death of Jesus Christ: A Devotional History of Our Lord's Passion",
+   "autor": "James Stalker",
+   "autorDatas": "1848–1927",
+   "tradicao": "Presbiteriana (Igreja Livre da Escócia).",
+   "ano": "1894",
+   "edicao": "Edição de 1894 (Nova York: A. C. Armstrong & Son).",
+   "descricao": "História devocional da paixão de Cristo segundo os Evangelhos: a prisão, os julgamentos diante do Sinédrio, de Pilatos e de Herodes, o caminho da cruz, as sete palavras na cruz, a morte e o sepultamento. Une a narração dos fatos a reflexões para a vida cristã.",
+   "temas": [
+    "Morte e ressurreição",
+    "Evangelhos",
+    "Jesus Cristo"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/julgamento-morte-jesus-stalker.json",
+   "fonte": {
+    "nome": "Edição de 1894; texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Publicada em 1894; o autor morreu em 1927. Em domínio público no Brasil e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho e o rodapé do arquivo de origem e o sumário. Texto conferido palavra por palavra."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "vida-sao-paulo-stalker",
+   "tipo": "estudo",
+   "categoria": "estudos",
+   "titulo": "A vida de São Paulo",
+   "tituloOriginal": "The Life of St. Paul",
+   "autor": "James Stalker",
+   "autorDatas": "1848–1927",
+   "tradutor": "",
+   "tradicao": "Presbiteriana (Igreja Livre da Escócia).",
+   "ano": "1884",
+   "edicao": "Edição revista de 1912 (Nova York: Fleming H. Revell), com apresentação de Wilbert W. White (1863–1944).",
+   "descricao": "Manual de estudo bíblico sobre o apóstolo Paulo: preparo, conversão, evangelho, viagens missionárias, cartas, a vida de uma igreja paulina e o fim de sua vida. Os parágrafos são numerados e o livro termina com sugestões para professores e perguntas para a classe.",
+   "temas": [
+    "Doutrina dos apóstolos",
+    "Igreja primitiva",
+    "Teologia bíblica"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/vida-sao-paulo-stalker.json",
+   "refs": [
+    "ACT"
+   ],
+   "fonte": {
+    "nome": "Edição revista de 1912; texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Publicada nos EUA em 1912; autor (m. 1927) e autor da apresentação (m. 1944) morreram há mais de 70 anos. Em domínio público no Brasil e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho, o rodapé, as notas do digitalizador e o sumário. Texto conferido palavra por palavra."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "credo-apostolico-dodds",
+   "tipo": "estudo",
+   "categoria": "cristocentrica",
+   "titulo": "Exposição do Credo Apostólico",
+   "tituloOriginal": "Exposition of the Apostles' Creed",
+   "autor": "James Dodds",
+   "autorDatas": "1831–1907",
+   "tradicao": "Protestante (Escócia). A denominação do autor não foi confirmada nas fontes consultadas.",
+   "ano": "1896",
+   "edicao": "Edição de 1896 (série de manuais para classes bíblicas).",
+   "descricao": "Explica artigo por artigo o Credo Apostólico — Deus Pai, Jesus Cristo, sua concepção, morte, ressurreição, ascensão e volta, o Espírito Santo, a Igreja, o perdão, a ressurreição e a vida eterna —, reunindo as passagens das Escrituras em que cada artigo se apoia. Inclui notas e um apêndice com credos antigos.",
+   "temas": [
+    "Jesus Cristo e sua divindade",
+    "Doutrina dos apóstolos",
+    "Teologia bíblica"
+   ],
+   "idioma": "en",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/credo-apostolico-dodds.json",
+   "fonte": {
+    "nome": "Edição de 1896; texto digital em domínio público"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Publicada em 1896; o autor morreu em 1907. Em domínio público no Brasil e nos EUA."
+   },
+   "procedencia": {
+    "arquivo": "Arquivo digital de domínio público (registro completo em docs/acervo-procedencia.md, no repositório do ATOS 2)",
+    "tratamento": "Retirados o cabeçalho, o rodapé e o sumário. Texto conferido palavra por palavra."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "95-teses",
+   "tipo": "documento",
+   "categoria": "documentos",
+   "titulo": "As 95 Teses",
+   "tituloOriginal": "Disputatio pro declaratione virtutis indulgentiarum",
+   "autor": "Martinho Lutero",
+   "autorDatas": "1483–1546",
+   "tradutor": "Tradução do ATOS 2 a partir do latim de 1517",
+   "tradicao": "Luterana (início da Reforma protestante).",
+   "ano": "1517",
+   "edicao": "Texto latino de 1517 (domínio público), traduzido pelo ATOS 2 e conferido com a tradução inglesa de 1915 (domínio público).",
+   "descricao": "As teses sobre as indulgências que Lutero apresentou para debate em 31 de outubro de 1517 e que marcam o início da Reforma. No app, com contexto histórico, grupos temáticos, glossário e as passagens bíblicas aludidas.",
+   "temas": [
+    "História do cristianismo",
+    "Graça e salvação",
+    "Arrependimento"
+   ],
+   "idioma": "pt",
+   "acesso": "app",
+   "rota": "mural:teses",
+   "fonte": {
+    "nome": "Texto latino de 1517; tradução do ATOS 2"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Original em domínio público; tradução do ATOS 2",
+    "detalhe": "O texto de 1517 é de domínio público. A tradução portuguesa é redação do ATOS 2, já publicada no Mural."
+   },
+   "procedencia": {
+    "arquivo": "Conteúdo do próprio app (Mural › 95 Teses, v1.7)",
+    "tratamento": "Ver o registro de desenvolvimento do ATOS 2."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-05",
+    "editorialPor": "Publicado no Mural desde a v1.7"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "credo-apostolico",
+   "tipo": "documento",
+   "categoria": "documentos",
+   "titulo": "O Credo Apostólico",
+   "tituloOriginal": "Symbolum Apostolorum",
+   "autor": "Igreja antiga (texto tradicional latino)",
+   "autorDatas": "forma atual por volta do século VIII",
+   "tradutor": "Tradução do ATOS 2 a partir do latim, com apoio de IA",
+   "tradicao": "Comum a católicos e protestantes; as Igrejas ortodoxas usam o Credo Niceno-Constantinopolitano.",
+   "ano": "séculos II–VIII",
+   "edicao": "Texto latino tradicional (textus receptus), em domínio público.",
+   "descricao": "Resumo antigo da fé cristã, ligado ao batismo, que confessa Deus Pai, a vida, a morte e a ressurreição de Jesus Cristo, o Espírito Santo, a Igreja e a vida eterna. Com notas sobre expressões que as tradições traduzem de formas diferentes.",
+   "temas": [
+    "Jesus Cristo e sua divindade",
+    "Doutrina dos apóstolos",
+    "Morte e ressurreição"
+   ],
+   "idioma": "pt",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/credo-apostolico.json",
+   "fonte": {
+    "nome": "Texto latino tradicional; tradução do ATOS 2"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Original em domínio público; tradução do ATOS 2",
+    "detalhe": "Texto antigo, sem direitos autorais. A tradução é redação do ATOS 2, feita com apoio de IA, e precisa de revisão editorial antes de ser publicada."
+   },
+   "procedencia": {
+    "arquivo": "Tradução própria (app/acervo/textos/credo-apostolico.json)",
+    "tratamento": "Rascunho para revisão: conferir com o latim e com traduções de uso litúrgico."
+   },
+   "origem": {
+    "tipo": "traducao-atos2",
+    "ia": true
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)"
+   },
+   "situacao": "revisao"
+  },
+  {
+   "id": "credo-niceno-constantinopolitano",
+   "tipo": "documento",
+   "categoria": "documentos",
+   "titulo": "O Credo Niceno-Constantinopolitano",
+   "tituloOriginal": "Σύμβολον τῆς πίστεως (Concílio de Constantinopla, 381)",
+   "autor": "Concílios de Niceia (325) e Constantinopla (381)",
+   "autorDatas": "381",
+   "tradutor": "Tradução do ATOS 2 a partir do grego, com apoio de IA",
+   "tradicao": "Confessado por ortodoxos, católicos e pela maioria das Igrejas protestantes históricas.",
+   "ano": "381",
+   "edicao": "Texto grego do Concílio de Constantinopla (381), em domínio público.",
+   "descricao": "A confissão de fé mais usada no mundo cristão: afirma que Jesus Cristo é “Deus verdadeiro de Deus verdadeiro, gerado, não criado, da mesma substância do Pai”, e a divindade do Espírito Santo. Com nota sobre a expressão “e do Filho” (Filioque), acrescentada depois no Ocidente.",
+   "temas": [
+    "Jesus Cristo e sua divindade",
+    "História do cristianismo",
+    "Teologia bíblica"
+   ],
+   "idioma": "pt",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/credo-niceno-constantinopolitano.json",
+   "fonte": {
+    "nome": "Texto grego de 381; tradução do ATOS 2"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Original em domínio público; tradução do ATOS 2",
+    "detalhe": "Texto antigo, sem direitos autorais. A tradução é redação do ATOS 2, feita com apoio de IA, e precisa de revisão editorial antes de ser publicada."
+   },
+   "procedencia": {
+    "arquivo": "Tradução própria (app/acervo/textos/credo-niceno-constantinopolitano.json)",
+    "tratamento": "Rascunho para revisão: conferir com o grego."
+   },
+   "origem": {
+    "tipo": "traducao-atos2",
+    "ia": true
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)"
+   },
+   "situacao": "revisao"
+  },
+  {
+   "id": "definicao-calcedonia",
+   "tipo": "documento",
+   "categoria": "documentos",
+   "titulo": "A Definição de Calcedônia",
+   "tituloOriginal": "Ὅρος τῆς ἐν Χαλκηδόνι συνόδου (451)",
+   "autor": "Concílio de Calcedônia",
+   "autorDatas": "451",
+   "tradutor": "Tradução do ATOS 2 a partir do grego, com apoio de IA",
+   "tradicao": "Aceita por ortodoxos, católicos e protestantes históricos; não aceita pelas Igrejas ortodoxas orientais (copta, armênia, etíope, siríaca).",
+   "ano": "451",
+   "edicao": "Texto grego da definição cristológica (trecho central), em domínio público.",
+   "descricao": "O trecho central da definição sobre a pessoa de Cristo: um só e o mesmo Filho, perfeito na divindade e perfeito na humanidade, verdadeiro Deus e verdadeiro homem, reconhecido em duas naturezas sem confusão, sem mudança, sem divisão e sem separação.",
+   "temas": [
+    "Jesus Cristo e sua divindade",
+    "História do cristianismo"
+   ],
+   "idioma": "pt",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/definicao-calcedonia.json",
+   "fonte": {
+    "nome": "Texto grego de 451; tradução do ATOS 2"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Original em domínio público; tradução do ATOS 2",
+    "detalhe": "Texto antigo, sem direitos autorais. A tradução é redação do ATOS 2, feita com apoio de IA, e precisa de revisão editorial antes de ser publicada."
+   },
+   "procedencia": {
+    "arquivo": "Tradução própria (app/acervo/textos/definicao-calcedonia.json)",
+    "tratamento": "Rascunho para revisão: conferir com o grego."
+   },
+   "origem": {
+    "tipo": "traducao-atos2",
+    "ia": true
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)"
+   },
+   "situacao": "revisao"
+  },
+  {
+   "id": "didaque",
+   "tipo": "documento",
+   "categoria": "pais",
+   "titulo": "Didaquê — O ensino dos doze apóstolos",
+   "tituloOriginal": "Διδαχὴ τῶν δώδεκα ἀποστόλων",
+   "autor": "Autor desconhecido (comunidade cristã do século I ou início do II)",
+   "autorDatas": "c. 50–120",
+   "tradutor": "Tradução do ATOS 2 a partir do grego, com apoio de IA",
+   "tradicao": "Igreja antiga; um dos escritos cristãos mais antigos fora do Novo Testamento.",
+   "ano": "c. 50–120",
+   "edicao": "Texto grego do manuscrito de Jerusalém (1056), publicado por Filoteu Briênios em 1883; domínio público.",
+   "descricao": "Manual breve de uma comunidade cristã antiga: os dois caminhos (da vida e da morte), o batismo, o jejum, a oração do Pai-nosso, a eucaristia, o acolhimento de apóstolos, profetas e mestres, o dia do Senhor e a vigilância pela volta de Cristo.",
+   "temas": [
+    "Igreja primitiva",
+    "Doutrina dos apóstolos",
+    "Discipulado cristão"
+   ],
+   "idioma": "pt",
+   "acesso": "integral",
+   "arquivo": "acervo/textos/didaque.json",
+   "fonte": {
+    "nome": "Texto grego (Briênios, 1883); tradução do ATOS 2"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Original em domínio público; tradução do ATOS 2",
+    "detalhe": "Texto antigo, sem direitos autorais. A tradução é redação do ATOS 2, feita com apoio de IA, e precisa de revisão editorial antes de ser publicada."
+   },
+   "procedencia": {
+    "arquivo": "Tradução própria (app/acervo/textos/didaque.json)",
+    "tratamento": "Rascunho para revisão: conferir com o grego, capítulo por capítulo."
+   },
+   "origem": {
+    "tipo": "traducao-atos2",
+    "ia": true
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)"
+   },
+   "situacao": "revisao"
+  },
+  {
+   "id": "sermoes-vieira",
+   "tipo": "livro",
+   "categoria": "livros",
+   "titulo": "Sermões do padre Antonio Vieira",
+   "tituloOriginal": "Sermões do padre Antonio Vieira (Obras do padre Antonio Vieira)",
+   "autor": "Padre Antônio Vieira",
+   "autorDatas": "1608–1697",
+   "tradicao": "Católica (Companhia de Jesus).",
+   "ano": "1679–1748 (primeira edição)",
+   "edicao": "Edição de Lisboa, J. M. C. Seabra & T. Q. Antunes, 1854–1858, 15 volumes em 7, digitalizada pela Biblioteca Brasiliana Guita e José Mindlin (USP).",
+   "descricao": "Os sermões do maior pregador da língua portuguesa, pregados em Portugal e no Brasil no século XVII, com forte base bíblica e patrística. A obra completa está digitalizada na Brasiliana da USP (faltam ali os volumes 9 e 10).",
+   "temas": [
+    "Interpretação das Escrituras",
+    "História do cristianismo",
+    "Pregação"
+   ],
+   "idioma": "pt",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Biblioteca Brasiliana Guita e José Mindlin (USP)",
+    "url": "https://digital.bbm.usp.br/handle/bbm/8466"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Obra do século XVII. A digitalização pertence à Brasiliana USP: a leitura é feita no site da biblioteca, conforme as condições de uso dela."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Registro conferido no catálogo da Brasiliana USP."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "encarnacao-atanasio",
+   "tipo": "livro",
+   "categoria": "pais",
+   "titulo": "A encarnação do Verbo",
+   "tituloOriginal": "De incarnatione Verbi (On the Incarnation of the Word)",
+   "autor": "Atanásio de Alexandria",
+   "autorDatas": "c. 296–373",
+   "tradutor": "Archibald Robertson (1853–1931)",
+   "tradicao": "Igreja antiga (Pai da Igreja grego). Referência comum a ortodoxos, católicos e protestantes.",
+   "ano": "c. 318–335",
+   "edicao": "Tradução inglesa de Archibald Robertson, na coleção da Christian Classics Ethereal Library (CCEL).",
+   "descricao": "Por que o Filho de Deus se fez homem? Atanásio parte da criação e da queda, mostra que só o próprio Verbo podia renovar a humanidade e vencer a morte, e defende a morte e a ressurreição de Cristo diante de objeções de judeus e pagãos.",
+   "temas": [
+    "Jesus Cristo e sua divindade",
+    "Morte e ressurreição",
+    "Pais da Igreja"
+   ],
+   "idioma": "en",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Christian Classics Ethereal Library (CCEL)",
+    "url": "https://ccel.org/ccel/athanasius/incarnation"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público (obra e tradução)",
+    "detalhe": "Obra antiga; o tradutor morreu em 1931. A CCEL permite copiar os arquivos que formata só para fins não comerciais e sem modificação; por isso o ATOS 2 indica a leitura no site."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Página e condições de uso conferidas na CCEL."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "historia-eclesiastica-eusebio",
+   "tipo": "livro",
+   "categoria": "historia",
+   "titulo": "História eclesiástica",
+   "tituloOriginal": "Ἐκκλησιαστικὴ ἱστορία (The Church History of Eusebius)",
+   "autor": "Eusébio de Cesareia",
+   "autorDatas": "c. 263–339",
+   "tradutor": "Arthur Cushman McGiffert (1861–1933)",
+   "tradicao": "Igreja antiga. Fonte histórica usada por todas as tradições cristãs.",
+   "ano": "c. 313–325",
+   "edicao": "Tradução inglesa de A. C. McGiffert, em Nicene and Post-Nicene Fathers, 2ª série, vol. 1 (1890), ed. Philip Schaff e Henry Wace.",
+   "descricao": "A primeira história da Igreja: dos apóstolos ao tempo de Constantino, com a sucessão dos bispos, os mestres cristãos, as perseguições, os mártires e as controvérsias. Preserva trechos de muitos escritores antigos que se perderam.",
+   "temas": [
+    "Igreja primitiva",
+    "História do cristianismo",
+    "Pais da Igreja"
+   ],
+   "idioma": "en",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Christian Classics Ethereal Library (CCEL)",
+    "url": "https://ccel.org/ccel/schaff/npnf201"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Tradução publicada em 1890; o tradutor morreu em 1933."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Página da coleção conferida na CCEL."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "historia-igreja-schaff-1",
+   "tipo": "livro",
+   "categoria": "historia",
+   "titulo": "História da Igreja cristã, vol. 1: o cristianismo apostólico",
+   "tituloOriginal": "History of the Christian Church, Volume I: Apostolic Christianity, A.D. 1–100",
+   "autor": "Philip Schaff",
+   "autorDatas": "1819–1893",
+   "tradicao": "Reformada (protestante).",
+   "ano": "1882 (edição revista)",
+   "edicao": "Edição revista, disponível na Christian Classics Ethereal Library (CCEL), marcada como domínio público.",
+   "descricao": "O primeiro volume da grande história de Schaff cobre os anos 1 a 100: a preparação para o cristianismo, Jesus Cristo, Pentecostes, Pedro, Paulo e João, a vida, o culto, a organização e a teologia da Igreja apostólica e a formação do Novo Testamento.",
+   "temas": [
+    "Igreja primitiva",
+    "Doutrina dos apóstolos",
+    "História do cristianismo"
+   ],
+   "idioma": "en",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Christian Classics Ethereal Library (CCEL)",
+    "url": "https://ccel.org/ccel/schaff/hcc1"
+   },
+   "licenca": {
+    "codigo": "dominio-publico",
+    "nome": "Domínio público",
+    "detalhe": "Publicada no século XIX; o autor morreu em 1893. A CCEL registra “Rights: Public Domain”."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Página conferida na CCEL."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-principios-igreja-saudavel",
+   "tipo": "artigo",
+   "categoria": "estudos",
+   "titulo": "Princípios e práticas fundamentais de uma Igreja cristã saudável",
+   "autor": "Ney de Souza e Márcio Pureza de Lima",
+   "tradicao": "Não identificada (publicado em revista da PUCRS, instituição católica).",
+   "ano": "2018",
+   "edicao": "Teocomunicação (PUCRS), v. 48, n. 2, p. 231–240, jul.–dez. 2018. DOI 10.15448/0103-314X.2018.2.32080.",
+   "descricao": "Estuda os quatro elementos de Atos 2,42 — a doutrina dos apóstolos, a comunhão, o partir do pão e as orações — como princípios da comunidade cristã primitiva de Jerusalém e para a Igreja de hoje.",
+   "temas": [
+    "Doutrina dos apóstolos",
+    "Igreja primitiva"
+   ],
+   "idioma": "pt",
+   "refs": [
+    "ACT.2.42"
+   ],
+   "acesso": "link",
+   "fonte": {
+    "nome": "Teocomunicação (PUCRS)",
+    "url": "https://doi.org/10.15448/0103-314X.2018.2.32080"
+   },
+   "licenca": {
+    "codigo": "cc-by-4.0",
+    "nome": "Creative Commons Atribuição 4.0 Internacional (CC BY 4.0)",
+    "detalhe": "Licença declarada no próprio artigo. O ATOS 2 mostra os dados e leva à publicação original."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Título, autores, volume, páginas, DOI e licença conferidos no PDF do artigo."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-koinonia-atos",
+   "tipo": "artigo",
+   "categoria": "estudos",
+   "titulo": "Koinonía cristã: pressuposto hermenêutico da comunidade primitiva dos Atos dos Apóstolos",
+   "autor": "Luiz Alexandre Solano Rossi e Alfredo Rafael Belinato Barreto",
+   "tradicao": "Não identificada (publicado em revista da PUCPR).",
+   "ano": "2017",
+   "edicao": "Revista Pistis & Praxis: Teologia e Pastoral (PUCPR), v. 9, n. 3, p. 740–759, set.–dez. 2017. DOI 10.7213/2175-1838.09.003.AO02.",
+   "descricao": "Defende que a koinonía — a comunhão descrita nos sumários de Atos — é a chave para entender a identidade da primeira comunidade cristã e seus primeiros passos.",
+   "temas": [
+    "Igreja primitiva",
+    "Doutrina dos apóstolos",
+    "Interpretação das Escrituras"
+   ],
+   "idioma": "pt",
+   "refs": [
+    "ACT.2.42",
+    "ACT.4.32"
+   ],
+   "acesso": "link",
+   "fonte": {
+    "nome": "Pistis & Praxis (PUCPR)",
+    "url": "https://doi.org/10.7213/2175-1838.09.003.AO02"
+   },
+   "licenca": {
+    "codigo": "cc",
+    "nome": "Creative Commons (versão não indicada no PDF)",
+    "detalhe": "O PDF declara licença Creative Commons sem informar a versão. O ATOS 2 mostra só os dados e o link."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Dados conferidos no PDF do artigo (Redalyc)."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-comunidade-primitiva-atos2",
+   "tipo": "artigo",
+   "categoria": "estudos",
+   "titulo": "Características da comunidade cristã primitiva: ação do Espírito em Atos 2:42-47",
+   "autor": "Adolfo Semo Suárez e Vamberto Marinho de Arruda Junior",
+   "tradicao": "Adventista (publicado pelo Centro Universitário Adventista de São Paulo).",
+   "ano": "2025",
+   "edicao": "Kerygma (UNASP), v. 20, n. 1, e1673, 2025.",
+   "descricao": "Lê Atos 2,42-47 à luz da obra do Espírito Santo depois do Pentecostes: as práticas da Igreja primitiva aparecem como fruto do Espírito, não como estratégias humanas, com aplicações para a espiritualidade e a missão hoje.",
+   "temas": [
+    "Igreja primitiva",
+    "Doutrina dos apóstolos",
+    "Espírito Santo"
+   ],
+   "idioma": "pt",
+   "refs": [
+    "ACT.2.42"
+   ],
+   "acesso": "link",
+   "fonte": {
+    "nome": "Kerygma (UNASP)",
+    "url": "https://unasp.emnuvens.com.br/kerygma/article/download/1673/1720/6631"
+   },
+   "licenca": {
+    "codigo": "direitos-reservados",
+    "nome": "Acesso aberto para leitura (licença não declarada no PDF)",
+    "detalhe": "O PDF não traz licença de reutilização. O ATOS 2 mostra só os dados e o link para a revista."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Dados conferidos no PDF do artigo."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-jesus-historico",
+   "tipo": "artigo",
+   "categoria": "artigos",
+   "titulo": "A discussão cristológica sobre o “Jesus histórico”",
+   "autor": "José Armando Vicente",
+   "tradicao": "Católica (autor ligado à Faculdade Jesuíta de Filosofia e Teologia, FAJE).",
+   "ano": "2024",
+   "edicao": "Teocomunicação (PUCRS), v. 54, n. 1, e-45310, 2024. DOI 10.15448/0103-314X.2024.1.45310.",
+   "descricao": "Apresenta o debate sobre o “Jesus histórico”: a distinção entre o Jesus reconstruído pelo método histórico-crítico, o Jesus terrestre e o Cristo da fé, e o que esse debate significa para a cristologia.",
+   "temas": [
+    "Jesus Cristo",
+    "Evangelhos",
+    "Interpretação das Escrituras"
+   ],
+   "idioma": "pt",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Teocomunicação (PUCRS)",
+    "url": "https://doi.org/10.15448/0103-314X.2024.1.45310"
+   },
+   "licenca": {
+    "codigo": "cc-by-4.0",
+    "nome": "Creative Commons Atribuição 4.0 Internacional (CC BY 4.0)",
+    "detalhe": "Licença declarada no próprio artigo."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Dados e licença conferidos no PDF do artigo."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-eclesiologia-santos-padres",
+   "tipo": "artigo",
+   "categoria": "pais",
+   "titulo": "Ecclesia sicuti “unitate Patris et Filii et Spiritus Sancti”: aspectos de eclesiologia de comunhão na liturgia e nos Santos Padres",
+   "autor": "Vanderson de Sousa Silva",
+   "tradicao": "Católica.",
+   "ano": "2012",
+   "edicao": "Teocomunicação (PUCRS), v. 42, n. 2, p. 242–258, jul.–dez. 2012.",
+   "descricao": "Estuda como os Pais da Igreja entendiam a Igreja como comunhão nascida da eucaristia e da liturgia, passando pela Didaquê, por Justino e pela Anáfora de Hipólito, até as orações eucarísticas do Missal Romano.",
+   "temas": [
+    "Pais da Igreja",
+    "Igreja primitiva"
+   ],
+   "idioma": "pt",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Teocomunicação (PUCRS)",
+    "url": "https://revistaseletronicas.pucrs.br/teo/article/download/12305/8248/45700"
+   },
+   "licenca": {
+    "codigo": "cc-by-nc-nd-3.0",
+    "nome": "Creative Commons Atribuição-NãoComercial-SemDerivações 3.0 (CC BY-NC-ND 3.0)",
+    "detalhe": "Licença declarada no próprio artigo."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Dados e licença conferidos no PDF do artigo."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  },
+  {
+   "id": "artigo-paideia-pais-igreja",
+   "tipo": "artigo",
+   "categoria": "pais",
+   "titulo": "Paideia dos Pais da Igreja",
+   "autor": "Gabriele Greggersen",
+   "tradicao": "Não identificada (publicado em revista metodista).",
+   "ano": "2005",
+   "edicao": "Revista Caminhando (Universidade Metodista de São Paulo), v. 9, n. 1, p. 71–84, 2005.",
+   "descricao": "Discute a relação entre a cultura grega e o cristianismo antigo a partir da Carta de Barnabé e mostra como os Pais da Igreja “batizaram” o ideal grego de educação (paideia), lançando bases da educação no Ocidente.",
+   "temas": [
+    "Pais da Igreja",
+    "História do cristianismo"
+   ],
+   "idioma": "pt",
+   "acesso": "link",
+   "fonte": {
+    "nome": "Revista Caminhando (via CORE)",
+    "url": "https://core.ac.uk/download/229071669.pdf"
+   },
+   "licenca": {
+    "codigo": "direitos-reservados",
+    "nome": "Acesso aberto para leitura (licença não declarada)",
+    "detalhe": "O documento não traz licença de reutilização. O ATOS 2 mostra só os dados e o link."
+   },
+   "procedencia": {
+    "arquivo": "Somente dados bibliográficos e link",
+    "tratamento": "Dados conferidos no PDF do artigo."
+   },
+   "verificacao": {
+    "direitos": "verificado",
+    "em": "2026-11-06",
+    "por": "Curadoria inicial (Claude)",
+    "editorialEm": "2026-11-06",
+    "editorialPor": "Curadoria inicial (Claude) — confirme na administração"
+   },
+   "situacao": "publicado"
+  }
+ ]
+}

@@ -272,7 +272,7 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   // Biblioteca
   await p.click('a[data-aba="biblioteca"]'); await p.waitForSelector('.bib-resumo');
   checar((await p.textContent('.bib-num[data-num="favoritos"] b')) === '2' && (await p.textContent('.cab-bib')).includes('Seus conteúdos organizados'), 'Biblioteca: cabeçalho e resumo com números reais');
-  checar(await p.locator('.acesso-card').count() === 4 && await p.locator('.cats-bib .chip').count() === 10, 'Biblioteca: acesso rápido e 10 categorias');
+  checar(await p.locator('.acesso-card').count() === 4 && await p.locator('.cats-bib .chip').count() === 11, 'Biblioteca: acesso rápido e 11 categorias (com Livros e Artigos)');
   await p.click('.acesso-card[data-acesso="favoritos"]'); await p.waitForTimeout(300);
   checar((await p.textContent('.tela')).includes('2 versículos'), 'Biblioteca: 2 favoritos');
   await p.click('.chip:has-text("Planos")'); await p.click('.capa-plano:has-text("Atos dos Apóstolos")');
@@ -606,6 +606,80 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.waitForSelector('.mural .cartao b', { timeout: 15000 }); await p.waitForTimeout(300);
   checar(/aparece em\s*[\d.]+\s*versículo/.test(await p.textContent('.mural')), 'Mural: contador de palavras');
   await p.screenshot({ path: '/tmp/shots/26-numeros.png', fullPage: true });
+
+  // ---------- Biblioteca › Livros e Artigos (acervo)
+  await p.evaluate(() => { App.estado.secaoBiblioteca = 'todos'; App.ir('biblioteca'); }); await p.waitForSelector('.cats-bib [data-cat="acervo"]');
+  await p.click('.cats-bib [data-cat="acervo"]'); await p.waitForSelector('.obra-card', { timeout: 10000 });
+  const nObras = await p.locator('.obra-card').count();
+  checar(nObras === 18 && !(await p.$('.obra-card[data-obra="didaque"]')), 'Acervo: 18 publicações; traduções em revisão não aparecem para o leitor');
+  checar(await p.locator('.subcats-acervo .chip').count() === 9 && !(await p.$('#acervo-admin')), 'Acervo: oito subcategorias e sem administração para leitor');
+  await p.click('.subcats-acervo [data-subcat="pais"]'); await p.waitForTimeout(150);
+  const pais = await p.$$eval('.obra-card', els => els.map(e => e.dataset.obra));
+  checar(pais.includes('confissoes-agostinho') && pais.includes('encarnacao-atanasio') && !pais.includes('galatas-lutero'), 'Acervo: subcategoria Pais da Igreja');
+  await p.click('.subcats-acervo [data-subcat="todas"]'); await p.selectOption('#acervo-idioma', 'pt'); await p.waitForTimeout(150);
+  checar((await p.$$eval('.obra-card .obra-tipo', els => els.every(e => /Português/.test(e.textContent)))) && await p.locator('.obra-card').count() >= 8, 'Acervo: filtro de idioma (português)');
+  await p.selectOption('#acervo-idioma', ''); await p.selectOption('#acervo-acesso', 'app'); await p.waitForTimeout(150);
+  checar(await p.locator('.obra-card .selo-obra.fonte').count() === 0 && await p.locator('.obra-card').count() === 8, 'Acervo: filtro “Ler no app”');
+  await p.selectOption('#acervo-acesso', '');
+  // ficha com identificação completa
+  await p.click('.obra-card[data-obra="artigo-jesus-historico"]'); await p.waitForSelector('.ficha-obra'); await p.waitForTimeout(250);
+  const ficha = await p.textContent('.ficha-obra');
+  checar(['Licença', 'CC BY 4.0', 'Fonte original', 'Tradição teológica', 'Procedência', 'Verificação', 'Como citar', 'JOSÉ ARMANDO VICENTE'].every(t => ficha.includes(t)), 'Acervo: ficha com autor, fonte, licença, procedência e citação');
+  checar((await p.getAttribute('#obra-fonte', 'href')).startsWith('https://doi.org/') && (await p.getAttribute('#obra-fonte', 'target')) === '_blank', 'Acervo: material com direitos reservados só com link para a publicação original');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  // favoritar, lista de leitura e coleção usando os sistemas existentes
+  await p.click('.obra-card[data-obra="confissoes-agostinho"]'); await p.waitForSelector('#obra-fav'); await p.waitForTimeout(250);
+  await p.click('#obra-fav'); await p.click('#obra-lista');
+  checar(await p.evaluate(() => { const f = Dados.obter('favoritos', 'obra-confissoes-agostinho'); return !!f && f.tipo === 'obra' && Dados.obter('leituraObras', 'confissoes-agostinho').lista === true; }), 'Acervo: favorito na coleção de favoritos e lista de leitura');
+  await p.evaluate(() => Dados.salvar('colecoes', 'col-leituras', { nome: 'Leituras da fé', itens: [], criadoEm: new Date().toISOString() }));
+  await p.click('#obra-colecao'); await p.waitForSelector('#ec-col-leituras'); await p.click('label[for="ec-col-leituras"]'); await p.waitForTimeout(150);
+  checar(await p.evaluate(() => Dados.obter('colecoes', 'col-leituras').itens.some(i => i.tipo === 'obra' && i.id === 'confissoes-agostinho')), 'Acervo: livro adicionado a uma coleção existente');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  // leitura no app: começa no texto, destaque, anotação e progresso
+  await p.evaluate(() => Telas.acervo.abrirLeitura('confissoes-agostinho')); await p.waitForSelector('.obra-par', { timeout: 15000 });
+  checar((await p.textContent('.obra-sec-cab h1')) === 'Livro I' && (await p.textContent('.aviso-idioma')).includes('inglês'), 'Leitor de livros: começa no Livro I, com aviso do idioma');
+  checar(await p.getAttribute('a[data-aba="biblioteca"]', 'aria-current') === 'page', 'Leitor de livros: navegação marca a Biblioteca');
+  await p.click('.obra-par[data-p="0"]'); await p.waitForSelector('.painel-obra');
+  checar(await p.evaluate(() => document.body.classList.contains('selecionando')), 'Leitor de livros: painel de ações no padrão do leitor da Bíblia');
+  await p.click('#obra-destacar'); await p.click('.painel-obra .cor-bolinha[aria-label="Verde"]'); await p.waitForTimeout(150);
+  checar(await p.locator('.obra-par[data-p="0"].d-verde').count() === 1 && await p.evaluate(() => Dados.obter('destaques', 'obra-confissoes-agostinho-1-0').cor === 'verde'), 'Leitor de livros: trecho destacado no sistema de destaques');
+  await p.click('.obra-par[data-p="1"]'); await p.click('#obra-anotar'); await p.waitForSelector('#nota-txt');
+  checar((await p.textContent('.nota-obra')).includes('Confissões'), 'Leitor de livros: anotação mostra o trecho do livro');
+  await p.fill('#nota-txt', 'Inquieto é o coração até descansar em Deus.'); await p.click('.folha button[type=submit]'); await p.waitForTimeout(200);
+  checar(await p.evaluate(() => Dados.todos('notas').some(n => n.obra && n.obra.id === 'confissoes-agostinho' && n.obra.par === 1)), 'Leitor de livros: anotação salva no sistema de anotações');
+  await p.click('#obra-proxima'); await p.waitForTimeout(300);
+  checar((await p.textContent('.obra-sec-cab h1')) === 'Livro II', 'Leitor de livros: próxima seção');
+  await p.click('#obra-sumario'); await p.waitForSelector('.sumario-obra'); checar(await p.locator('.sumario-obra .item').count() === 14, 'Leitor de livros: sumário'); await p.keyboard.press('Escape');
+  await p.click('#obra-voltar'); await p.waitForSelector('.obra-card');
+  checar((await p.textContent('.tela')).includes('Continue lendo') && (await p.textContent('#lista-leitura')).includes('Confissões'), 'Acervo: continue lendo e minha lista de leitura');
+  const prog = await p.evaluate(() => Dados.obter('leituraObras', 'confissoes-agostinho'));
+  checar(prog.secao === 2 && prog.secoesVistas && prog.secoesVistas['1'] && prog.total === 14, 'Acervo: progresso guardado (continuar de onde parou)');
+  // referências bíblicas do texto em inglês abrem a Bíblia
+  await p.evaluate(() => Telas.acervo.abrirLeitura('imitacao-de-cristo', { secao: 0 })); await p.waitForSelector('.obra-par .ref-obra', { timeout: 15000 });
+  await p.click('.obra-par .ref-obra >> nth=0'); await p.waitForSelector('.v', { timeout: 10000 });
+  checar((await p.textContent('.seletor-cap')).includes('João 8'), 'Leitor de livros: referência “John viii. 12” abre João 8');
+  // integração com a Biblioteca: favoritos, anotações, destaques e pesquisa
+  await p.evaluate(() => { App.estado.secaoBiblioteca = 'favoritos'; App.ir('biblioteca'); }); await p.waitForTimeout(400);
+  checar((await p.textContent('.bib-area')).includes('Livros e artigos favoritos') && (await p.textContent('.bib-area')).includes('Confissões'), 'Biblioteca: livro favoritado aparece nos favoritos');
+  await p.evaluate(() => { App.estado.secaoBiblioteca = 'notas'; App.recarregar(); }); await p.waitForTimeout(300);
+  checar((await p.textContent('.bib-area')).includes('Anotação em Confissões'), 'Biblioteca: anotação do livro nas Anotações');
+  await p.evaluate(() => { App.estado.secaoBiblioteca = 'destaques'; App.recarregar(); }); await p.waitForTimeout(400);
+  checar(await p.locator('.destaque-obra').count() === 1, 'Biblioteca: destaque do livro nos Destaques');
+  await p.evaluate(() => { App.estado.secaoBiblioteca = 'todos'; App.recarregar(); }); await p.waitForTimeout(300);
+  checar(await p.locator('#acervo-destaques .obra-mini').count() >= 4, 'Biblioteca: bloco “Livros e artigos” em Todos');
+  await p.evaluate(() => { App.estado.bibBuscaTipo = ''; }); await p.fill('#bib-busca', 'eusébio');
+  const achouObra = await p.waitForFunction(() => document.querySelector('.bib-area') && document.querySelector('.bib-area').textContent.includes('História eclesiástica'), null, { timeout: 8000 }).then(() => true, () => false);
+  if (!achouObra) console.log('   busca:', (await p.textContent('.bib-area')).slice(0, 300));
+  checar(achouObra, 'Biblioteca: a pesquisa encontra livros e artigos');
+  await p.fill('#bib-busca', ''); await p.waitForTimeout(300);
+  // Assistente Bíblico sem IA: referência bibliográfica e modo guia
+  await p.evaluate(() => { window.__sample = null; });
+  await p.evaluate(() => Telas.acervo.estudar(Telas.acervo.porId('encarnacao-atanasio'), null)); await p.waitForSelector('#assist-obra-ia');
+  checar((await p.textContent('.estudo-obra')).includes('Referência bibliográfica'), 'Assistente: obra com link vai como referência bibliográfica');
+  await p.click('#assist-obra-ia'); await p.waitForTimeout(300);
+  checar((await p.textContent('.estudo-obra')).includes('Modo Bereano'), 'Assistente: sem IA, oferece o modo guia');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+  checar(await p.evaluate(() => A2Biblioteca.favVersiculos(Dados.todos('favoritos')).length === Dados.todos('favoritos').length - 1), 'Contagem de versículos favoritos não inclui livros');
 
   await p.evaluate(() => App.ir('inicio')); await p.waitForTimeout(300);
   // persistência após recarregar

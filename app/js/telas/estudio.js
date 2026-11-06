@@ -357,7 +357,7 @@
       }
       function escolherFavorito() {
         UI.folha('Versículos favoritos', function (api) {
-          var favs = Dados.todos('favoritos');
+          var favs = A2Biblioteca.favVersiculos(Dados.todos('favoritos'));
           if (!favs.length) return h('div.vazio', h('b', 'Você ainda não tem favoritos.'), h('span', 'Na Bíblia, toque em um versículo e escolha Favoritar.'));
           return h('div.lista', favs.map(function (f) {
             var k = A2Ref.deChave(f.id), r = { livro: k.livro, cap: k.cap, v1: k.v, v2: k.v }, t = h('span.texto-vers', '…');

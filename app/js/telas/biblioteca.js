@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   var h = UI.h, ico = UI.icone, B = A2Biblioteca;
-  var CATEGORIAS = [['todos', 'Todos'], ['favoritos', 'Favoritos'], ['colecoes', 'Coleções'], ['planos', 'Planos'], ['devocionais', 'Devocionais'],
+  var CATEGORIAS = [['todos', 'Todos'], ['favoritos', 'Favoritos'], ['colecoes', 'Coleções'], ['acervo', 'Livros e Artigos'], ['planos', 'Planos'], ['devocionais', 'Devocionais'],
     ['notas', 'Anotações'], ['estudos', 'Estudos'], ['artes', 'Artes'], ['destaques', 'Destaques'], ['historico', 'Histórico']];
   var ORDENS = [['recentes', 'Mais recentes'], ['antigos', 'Mais antigos'], ['az', 'A–Z'], ['biblica', 'Ordem bíblica']];
 
@@ -21,9 +21,15 @@
   function dadosBib() {
     return { favoritos: Dados.todos('favoritos'), notas: Dados.todos('notas'), estudos: Dados.todos('estudos'), devSalvos: Dados.todos('devSalvos'),
       artes: Dados.todos('artes'), devocionais: Dados.conteudo.devocionais || [], colecoes: Dados.todos('colecoes'), destaques: Dados.todos('destaques'),
-      rotulo: rotuloChave, rotuloRefs: rotuloRefs, chavesDe: chavesDe };
+      rotulo: rotuloChave, rotuloRefs: rotuloRefs, chavesDe: chavesDe, obra: function (id) { return Telas.acervo ? Telas.acervo.porId(id) : null; } };
   }
   function todosItens() { return B.itens(dadosBib()); }
+  // Conteúdos pessoais + publicações do acervo (para coleções e pesquisa); sem repetir os livros já favoritados
+  function comAcervo() {
+    var meus = todosItens(), ja = {};
+    meus.forEach(function (it) { if (it.tipo === 'obra') ja[it.id] = 1; });
+    return meus.concat((Telas.acervo ? Telas.acervo.itensBiblioteca() : []).filter(function (it) { return !ja[it.id]; }));
+  }
   function colecoes() { return Dados.todos('colecoes').sort(function (a, b) { return String(a.nome).localeCompare(String(b.nome)); }); }
   function sigla() { return Biblia.versao(Biblia.padrao()).sigla; }
   function dataCurta(iso) { return iso ? UI.dataCurta(String(iso).slice(0, 10)) : ''; }
@@ -44,7 +50,7 @@
   function render(tela) {
     var secao = App.estado.secaoBiblioteca || 'todos';
     if (!CATEGORIAS.some(function (c) { return c[0] === secao; })) secao = 'todos';
-    var busca = h('input.entrada#bib-busca', { type: 'search', placeholder: 'Pesquisar versículos, estudos, anotações…', autocomplete: 'off', enterkeyhint: 'search', 'aria-label': 'Pesquisar na Biblioteca' });
+    var busca = h('input.entrada#bib-busca', { type: 'search', placeholder: 'Pesquisar versículos, livros, autores, anotações…', autocomplete: 'off', enterkeyhint: 'search', 'aria-label': 'Pesquisar na Biblioteca' });
     busca.value = App.estado.bibBusca || '';
     tela.appendChild(h('header.cab.cab-bib', h('div.cab-bib-txt', h('h1', 'Biblioteca'), h('p.sub', 'Seus conteúdos organizados em um só lugar.')), h('div.esp'),
       h('button.bt-ico', { 'aria-label': 'Pesquisar na Biblioteca', on: { click: function () { busca.focus(); } } }, ico('busca'))));
@@ -76,7 +82,7 @@
     }
     App.aoSair(function () { if (espera) clearInterval(espera); espera = null; });
     App.aoMudar(function (c) {
-      var rel = ['favoritos', 'colecoes', 'notas', 'estudos', 'destaques', 'historico', 'planos', 'devSalvos', 'devLidos', 'artes', '*'];
+      var rel = ['favoritos', 'colecoes', 'notas', 'estudos', 'destaques', 'historico', 'planos', 'devSalvos', 'devLidos', 'artes', 'leituraObras', '*'];
       if (rel.indexOf(c) < 0) return;
       if (!UI.temFolha() && document.activeElement !== busca) App.atualizar(); else atualizarQuandoLivre();
     });
@@ -100,6 +106,7 @@
     if (it.tipo === 'nota') return 'Atualizada em ' + dataCurta(it.data);
     if (it.tipo === 'devocional') return [it.ref, it.dataConteudo ? UI.dataCurta(it.dataConteudo) : ''].filter(Boolean).join(' · ');
     if (it.tipo === 'arte') return (it.estado === 'rascunho' ? 'Rascunho' : 'Finalizada') + ' · Criada em ' + dataCurta(it.data);
+    if (it.tipo === 'obra' && it.obra) return [A2Acervo.TIPOS[it.obra.tipo] ? A2Acervo.TIPOS[it.obra.tipo].nome : '', A2Acervo.IDIOMAS[it.obra.idioma], A2Acervo.ACESSOS[it.obra.acesso], it.favorito ? 'Favoritado em ' + dataCurta(it.data) : ''].filter(Boolean).join(' · ');
     return '';
   }
   function cartao(it, opcoes) {
@@ -108,12 +115,13 @@
     if (it.tipo === 'versiculo') { var tx = h('span.bib-texto', '…'); textoVersiculo(it.id, tx); corpo.appendChild(tx); }
     else if (it.tipo === 'nota') { var prev = (it.sub ? it.sub + ' — ' : '') + (it.texto || ''); if (prev) corpo.appendChild(h('span.bib-texto', prev.slice(0, 180) + (prev.length > 180 ? '…' : ''))); }
     else if (it.tipo === 'estudo' && it.texto) corpo.appendChild(h('span.bib-texto', it.texto.slice(0, 140) + (it.texto.length > 140 ? '…' : '')));
+    else if (it.tipo === 'obra' && it.obra) corpo.appendChild(h('span.bib-texto', it.obra.autor + ' — ' + String(it.obra.descricao || '').slice(0, 120) + (String(it.obra.descricao || '').length > 120 ? '…' : '')));
     corpo.appendChild(h('small.bib-meta', meta(it)));
     if (it.tipo === 'versiculo' && it.colecoes && it.colecoes.length) {
       var nomes = it.colecoes.map(function (id) { var c = Dados.obter('colecoes', id); return c ? c.nome : null; }).filter(Boolean);
       if (nomes.length) corpo.appendChild(h('div.bib-cols', nomes.map(function (n) { return h('span.selo', n); })));
     }
-    var visual = it.tipo === 'arte' && it.miniatura ? h('img.bib-mini', { src: it.miniatura, alt: '' }) : h('span.bib-ico.t-' + it.tipo, ico(it.tipo === 'versiculo' ? 'coracaoCheio' : B.TIPOS[it.tipo].icone));
+    var visual = it.tipo === 'arte' && it.miniatura ? h('img.bib-mini', { src: it.miniatura, alt: '' }) : it.tipo === 'obra' && it.obra && Telas.acervo ? Telas.acervo.capa(it.obra, 'mini') : h('span.bib-ico.t-' + it.tipo, ico(it.tipo === 'versiculo' ? 'coracaoCheio' : B.TIPOS[it.tipo].icone));
     return h('div.bib-item', { 'data-tipo': it.tipo, 'data-id': it.id },
       h('button.bib-abrir', { 'aria-label': 'Abrir ' + B.TIPOS[it.tipo].nome.toLowerCase() + ': ' + it.titulo, on: { click: function () { abrirItem(it); } } }, visual, corpo),
       opcoes.remover ? h('button.bt-ico.peq', { 'aria-label': 'Tirar da coleção', title: 'Tirar da coleção', on: { click: opcoes.remover } }, ico('fechar'))
@@ -127,6 +135,7 @@
     else if (it.tipo === 'estudo') verEstudo(Dados.obter('estudos', it.id) ? Object.assign({ id: it.id }, Dados.obter('estudos', it.id)) : it.bruto);
     else if (it.tipo === 'devocional') Telas.devocionais.abrir(it.id);
     else if (it.tipo === 'arte') Telas.criar.abrirArte(it.id);
+    else if (it.tipo === 'obra') Telas.acervo.abrirFicha(it.id);
   }
   function compartilharItem(it) {
     if (it.tipo === 'versiculo') { textoDe(it.id).then(function (t) { App.compartilhar('“' + t + '”\n— ' + it.titulo + ' (' + sigla() + ')', 'Compartilhar versículo'); }); }
@@ -150,6 +159,7 @@
     return true;
   }
   function acoesItem(it) {
+    if (it.tipo === 'obra') { Telas.acervo.abrirFicha(it.id); return; }
     UI.folha(it.titulo, function (api) {
       function item(icone, titulo, fn, perigo) { return h('button.item' + (perigo ? '.perigo' : ''), { on: { click: function () { api.fechar(); setTimeout(fn, 30); } } }, ico(icone), h('div.corpo', h('span.titulo', titulo))); }
       var colecionavel = B.COLECIONAVEIS.indexOf(it.tipo) >= 0;
@@ -167,7 +177,7 @@
   }
 
   // ---------------------------------------------------------------- coleções
-  function membrosDe(col) { return B.resolver(col, Dados.todos('favoritos'), todosItens()); }
+  function membrosDe(col) { return B.resolver(col, Dados.todos('favoritos'), comAcervo()); }
   function cartaoColecao(col) {
     var n = membrosDe(col).length;
     return h('button.col-card', { 'data-col': col.id, on: { click: function () { abrirColecao(col.id); } } },
@@ -225,12 +235,12 @@
               Dados.todos('favoritos').forEach(function (f) { if ((f.colecoes || []).indexOf(id) >= 0) Dados.salvar('favoritos', f.id, Object.assign({}, f, { colecoes: f.colecoes.filter(function (x) { return x !== id; }) })); });
               Dados.excluir('colecoes', id); api.fechar(); UI.aviso('Coleção excluída.');
             } } }, ico('lixo'), 'Excluir')));
-          if (!itens.length) raiz.appendChild(vazio('colecao', 'Esta coleção ainda está vazia.', 'Junte versículos, estudos, anotações e devocionais sobre o mesmo assunto.', ['Adicionar conteúdos', function () { modo = 'adicionar'; desenhar(); }, 'mais']));
+          if (!itens.length) raiz.appendChild(vazio('colecao', 'Esta coleção ainda está vazia.', 'Junte versículos, estudos, anotações, devocionais, livros e artigos sobre o mesmo assunto.', ['Adicionar conteúdos', function () { modo = 'adicionar'; desenhar(); }, 'mais']));
           else raiz.appendChild(h('div.bib-lista', itens.map(function (it) {
             return cartao(it, { remover: function () { alternarNaColecao(col, it, false); desenhar(); } });
           })));
         } else {
-          var todos = B.ordenar(todosItens().filter(function (it) { return B.COLECIONAVEIS.indexOf(it.tipo) >= 0; }), 'recentes');
+          var todos = B.ordenar(comAcervo().filter(function (it) { return B.COLECIONAVEIS.indexOf(it.tipo) >= 0; }), 'recentes');
           var q = h('input.entrada#col-filtro', { type: 'search', placeholder: 'Filtrar conteúdos', value: filtro });
           var listaSel = h('div.lista-sel');
           function preencher() {
@@ -301,12 +311,14 @@
       area.appendChild(vazio('livro', 'Sua biblioteca está começando.', 'Tudo o que você salvar no Atos 2 aparece aqui: versículos favoritos, anotações, estudos, devocionais e artes.', ['Explorar a Bíblia', function () { App.ir('biblia'); }, 'livro']));
       area.appendChild(h('div.linha-bts.centro', h('button.bt', { on: { click: function () { editarNota({ refs: [], texto: '' }); } } }, ico('editar'), 'Criar anotação'),
         h('button.bt', { on: { click: function () { editarEstudo({}); } } }, ico('nota'), 'Novo estudo'), h('button.bt', { on: { click: function () { editarColecao(null); } } }, ico('colecao'), 'Nova coleção')));
+      if (Telas.acervo) Telas.acervo.teaser(area);
       return;
     }
     area.appendChild(secaoTitulo('Acesso rápido'));
     area.appendChild(h('div.acesso-bib', [['favoritos', 'coracao', 'Versículos', c.versiculos, 'salvo', 'salvos', 'Nenhum ainda'], ['notas', 'editar', 'Anotações', c.notas, 'escrita', 'escritas', 'Nenhuma ainda'], ['estudos', 'nota', 'Estudos bíblicos', c.estudos, 'salvo', 'salvos', 'Nenhum ainda'], ['colecoes', 'colecao', 'Coleções', c.colecoes, 'criada', 'criadas', 'Nenhuma ainda']].map(function (x) {
       return h('button.acesso-card', { 'data-acesso': x[0], on: { click: function () { irPara(x[0]); } } }, h('span.acesso-ico', ico(x[1])), h('b', x[2]), h('small', x[3] ? x[3] + ' ' + (x[3] === 1 ? x[4] : x[5]) : x[6]));
     })));
+    if (Telas.acervo) Telas.acervo.teaser(area);
     area.appendChild(secaoTitulo('Coleções', c.colecoes ? 'Ver todas' : null, function () { irPara('colecoes'); }));
     area.appendChild(h('div.cols-linha', [cartaoNovaColecao()].concat(colecoes().slice(0, 8).map(cartaoColecao))));
     var todosRec = App.estado.bibRecentesTodos;
@@ -317,15 +329,19 @@
   SECOES.favoritos = function (area) {
     var cols = colecoes(), filtro = App.estado.colecao || 'todas', ordem = App.estado.bibOrdemFav || 'recentes';
     var itens = todosItens().filter(function (it) { return it.tipo === 'versiculo'; });
+    var obras = B.ordenar(todosItens().filter(function (it) { return it.tipo === 'obra'; }), 'recentes');
     var total = itens.length;
     if (filtro !== 'todas') itens = itens.filter(function (it) { return (it.colecoes || []).indexOf(filtro) >= 0; });
-    if (!total) { area.appendChild(vazio('coracao', 'Nenhum versículo salvo ainda.', 'Salve passagens importantes durante sua leitura para encontrá-las facilmente depois.', ['Explorar Bíblia', function () { App.ir('biblia'); }, 'livro'])); return; }
+    function blocoObras() { if (obras.length) { area.appendChild(secaoTitulo('Livros e artigos favoritos', 'Ver acervo', function () { irPara('acervo'); })); area.appendChild(lista(obras)); } }
+    if (!total) { area.appendChild(vazio('coracao', 'Nenhum versículo salvo ainda.', 'Salve passagens importantes durante sua leitura para encontrá-las facilmente depois.', ['Explorar Bíblia', function () { App.ir('biblia'); }, 'livro'])); blocoObras(); return; }
     area.appendChild(h('div.barra-bib', h('p.sub', itens.length + ' versículo' + (itens.length !== 1 ? 's' : '')), h('div.esp'), seletorOrdem(ordem, function (v) { App.estado.bibOrdemFav = v; App.recarregar(); })));
     if (cols.length) area.appendChild(h('div.chips', h('button.chip', { 'aria-pressed': String(filtro === 'todas'), on: { click: function () { App.estado.colecao = 'todas'; App.recarregar(); } } }, 'Todas as coleções'),
       cols.map(function (c) { return h('button.chip', { 'aria-pressed': String(filtro === c.id), on: { click: function () { App.estado.colecao = c.id; App.recarregar(); } } }, c.nome); })));
-    if (!itens.length) { area.appendChild(vazio('colecao', 'Nenhum versículo nesta coleção.', 'Abra o menu ⋮ de um versículo e escolha “Adicionar a uma coleção”.')); return; }
-    area.appendChild(lista(B.ordenar(itens, ordem, ordemLivros())));
+    if (!itens.length) area.appendChild(vazio('colecao', 'Nenhum versículo nesta coleção.', 'Abra o menu ⋮ de um versículo e escolha “Adicionar a uma coleção”.'));
+    else area.appendChild(lista(B.ordenar(itens, ordem, ordemLivros())));
+    blocoObras();
   };
+  SECOES.acervo = function (area) { Telas.acervo.secao(area); };
   SECOES.colecoes = function (area) {
     var cols = colecoes();
     area.appendChild(h('div.cols-grade', [cartaoNovaColecao()].concat(cols.map(cartaoColecao))));
@@ -363,7 +379,7 @@
   };
 
   // ---------------------------------------------------------------- pesquisa inteligente
-  var FILTROS_BUSCA = [['', 'Tudo'], ['versiculo', 'Versículos'], ['estudo', 'Estudos'], ['nota', 'Anotações'], ['devocional', 'Devocionais'], ['arte', 'Artes'], ['colecao', 'Coleções']];
+  var FILTROS_BUSCA = [['', 'Tudo'], ['versiculo', 'Versículos'], ['obra', 'Livros e artigos'], ['estudo', 'Estudos'], ['nota', 'Anotações'], ['devocional', 'Devocionais'], ['arte', 'Artes'], ['colecao', 'Coleções']];
   async function resultadosBusca(area, consulta) {
     var tipo = App.estado.bibBuscaTipo || '', ordem = App.estado.bibBuscaOrdem || 'relevancia';
     var topo = h('div.busca-filtros', h('div.chips', FILTROS_BUSCA.map(function (f) {
@@ -372,7 +388,7 @@
     var res = h('div', { 'aria-live': 'polite' }, h('div.carregando', h('div.giro')));
     area.appendChild(topo); area.appendChild(res);
     var r = Biblia.interpretar(consulta), ref = r.ok && /\d/.test(consulta) ? r.ref : (r.ok && r.soLivro ? { livro: r.ref.livro, cap: null } : null);
-    var itens = todosItens(), textos = {};
+    var itens = comAcervo(), textos = {};
     await Promise.all(itens.filter(function (it) { return it.tipo === 'versiculo'; }).map(function (it) { return textoDe(it.id).then(function (t) { textos[it.id] = t; }); }));
     if (!res.isConnected) return;
     var cols = colecoes().map(function (c) { return Object.assign({}, c, { membros: B.membros(c, Dados.todos('favoritos')).map(function (m) { return B.chaveItem(m.tipo, m.id); }) }); });
@@ -388,12 +404,19 @@
     res.appendChild(h('p.sub.busca-total', total ? total + ' resultado' + (total > 1 ? 's' : '') + ' para “' + consulta + '”' + (ref ? ' (referência ' + A2Ref.formatar(ref.cap ? ref : { livro: ref.livro, cap: 1 }).replace(/ 1$/, '') + ')' : '') : ''));
     if (colsAchadas.length) res.appendChild(h('div.cols-linha', colsAchadas.map(cartaoColecao)));
     if (achados.length) res.appendChild(lista(achados));
-    if (!total) res.appendChild(vazio('busca', 'Nada encontrado.', 'Tente outra palavra, uma referência como Jo 3:16 ou o nome de um estudo, tema ou coleção.'));
+    if (!total) res.appendChild(vazio('busca', 'Nada encontrado.', 'Tente outra palavra, uma referência como Jo 3:16, o nome de um autor, livro, estudo, tema ou coleção.'));
   }
 
   // ---------------------------------------------------------------- destaques
   function destaques(area) {
-    var ds = Dados.todos('destaques');
+    var todosD = Dados.todos('destaques'), ds = todosD.filter(function (d) { return d.tipo !== 'obra'; }), dObras = todosD.filter(function (d) { return d.tipo === 'obra'; });
+    if (dObras.length) setTimeout(function () { if (!area.isConnected) return; area.appendChild(secaoTitulo('Em livros e artigos'));
+      area.appendChild(h('div.lista', dObras.sort(function (a, b) { return String(b.criadoEm).localeCompare(String(a.criadoEm)); }).map(function (d) {
+        var p = Telas.acervo && Telas.acervo.porId(d.obra);
+        return h('button.item.destaque-obra', { on: { click: function () { Telas.acervo.abrirLeitura(d.obra, { secao: d.secao, par: d.par }); } } }, h('div.corpo', h('span.titulo', (p ? p.titulo : d.titulo || 'Publicação') + ' · seção ' + (d.secao + 1)),
+          h('span.texto-vers', { style: { background: 'var(--d-' + d.cor + ')', borderRadius: '4px', padding: '0 3px' } }, String(d.trecho || '').slice(0, 220) + (String(d.trecho || '').length > 220 ? '…' : ''))));
+      }))); }, 0);
+    if (!ds.length && dObras.length) return;
     if (!ds.length) { area.appendChild(vazio('marcador', 'Nenhum destaque ainda.', 'Na Bíblia, selecione versículos e escolha Destacar para marcá-los com cores.', ['Explorar Bíblia', function () { App.ir('biblia'); }, 'livro'])); return; }
     var ordem = A2Ref.LIVROS.map(function (l) { return l.id; });
     ds.sort(function (a, b) { var x = A2Ref.deChave(a.id), y = A2Ref.deChave(b.id); return ordem.indexOf(x.livro) - ordem.indexOf(y.livro) || x.cap - y.cap || x.v - y.v; });
@@ -418,20 +441,24 @@
     UI.folha(novo ? 'Nova anotação' : 'Anotação', function (api) {
       var tit = h('input.entrada#nota-tit', { type: 'text', maxlength: 80, placeholder: 'Ex.: O que aprendi sobre a graça' }); tit.value = n.titulo || '';
       var ta = h('textarea.entrada#nota-txt', { rows: 8, placeholder: 'Escreva o que você aprendeu, perguntas, aplicações…' }); ta.value = n.texto || '';
-      var ver = h('div.cartao', { style: { font: '400 16px/1.6 var(--f-leitura)' } });
+      var ver = h('div.cartao', { style: { font: '400 16px/1.6 var(--f-leitura)' } }), obra = n.obra && Telas.acervo ? Telas.acervo.porId(n.obra.id) : null;
       if (n.refs && n.refs.length) { ver.textContent = '…'; Promise.all(n.refs.map(function (k) { var d = A2Ref.deChave(k); return Biblia.livro(d.livro).then(function (lv) { return d.v + ' ' + UI.plano(lv.caps[d.cap - 1][d.v - 1]); }); })).then(function (ts) { ver.textContent = ts.join('  '); }); }
       return h('form.form', { on: { submit: function (e) {
         e.preventDefault();
         if (!ta.value.trim()) { UI.aviso('Escreva algo antes de salvar.', true); return; }
-        Dados.salvar('notas', id, { titulo: tit.value.trim(), refs: n.refs || [], texto: ta.value.trim(), criadoEm: n.criadoEm || new Date().toISOString(), atualizadoEm: new Date().toISOString() });
+        var reg = { titulo: tit.value.trim(), refs: n.refs || [], texto: ta.value.trim(), criadoEm: n.criadoEm || new Date().toISOString(), atualizadoEm: new Date().toISOString() };
+        if (n.obra) reg.obra = n.obra;
+        Dados.salvar('notas', id, reg);
         api.fechar(); UI.aviso('Anotação salva.');
       } } },
         n.refs && n.refs.length ? h('div.campo', h('span', rotuloRefs(n.refs)), ver) : null,
+        n.obra ? h('div.campo.nota-obra', h('span', (obra ? obra.titulo + ' — ' + obra.autor : 'Livro do acervo') + ' · seção ' + ((n.obra.secao || 0) + 1)), h('blockquote.cartao', n.obra.trecho || '')) : null,
         h('label.campo', { for: 'nota-tit' }, h('span', 'Título (opcional)'), tit),
         h('label.campo', { for: 'nota-txt' }, h('span', 'Sua anotação'), ta),
         h('div.linha-bts', h('button.bt.pri', { type: 'submit' }, 'Salvar'),
           !novo ? h('button.bt.perigo', { type: 'button', on: { click: async function () { if (await UI.confirmar('Excluir anotação', 'Esta anotação será apagada.', 'Excluir', true)) { Dados.excluir('notas', id); limparDasColecoes('nota', id); api.fechar(); } } } }, ico('lixo'), 'Excluir') : null,
-          n.refs && n.refs.length ? h('button.bt', { type: 'button', on: { click: function () { api.fechar(); var r = refDeChave(n.refs[0]); App.abrirBiblia(r.livro, r.cap, r.v1); } } }, ico('livro'), 'Abrir na Bíblia') : null));
+          n.refs && n.refs.length ? h('button.bt', { type: 'button', on: { click: function () { api.fechar(); var r = refDeChave(n.refs[0]); App.abrirBiblia(r.livro, r.cap, r.v1); } } }, ico('livro'), 'Abrir na Bíblia') : null,
+          n.obra && obra && obra.acesso === 'integral' ? h('button.bt', { type: 'button', on: { click: function () { api.fechar(); Telas.acervo.abrirLeitura(n.obra.id, { secao: n.obra.secao, par: n.obra.par }); } } }, ico('livro'), 'Abrir no livro') : null));
     });
   }
 
@@ -548,5 +575,5 @@
   SECOES.destaques = destaques;
   SECOES.historico = historico;
 
-  root.Telas.biblioteca = { render: render, editarNota: editarNota, abrirColecao: abrirColecao };
+  root.Telas.biblioteca = { render: render, editarNota: editarNota, abrirColecao: abrirColecao, escolherColecoes: escolherColecoes };
 })(window);

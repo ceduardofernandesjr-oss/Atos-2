@@ -52,6 +52,20 @@ async function entrar(p) {
   // leitor não grava conteúdo editorial
   const neg = await a.evaluate(async () => { try { await Dados.gravarConteudo('devocionais', 'teste', { titulo: 'x' }); return 'gravou'; } catch (e) { return 'negado'; } });
   checar(neg === 'negado', 'Segurança: leitor não publica devocional');
+  // Jornada da Sabedoria: o servidor calcula os pontos e eles aparecem no outro aparelho
+  const jr = await a.evaluate(async () => {
+    await A2Quiz.pronto();
+    const qs = A2Quiz.BANCO.filter(x => x.secao === 'evangelhos').slice(0, 5);
+    const r = Jornada.registrarRodada('livre', null, qs.map(q => ({ p: q.id, r: q.resposta })));
+    const s = await r.confirmacao;
+    return { previa: r.pontos, servidor: s && s.pontos, erro: s && s.erro, estado: Jornada.estado().pontos, fila: Jornada.fila().length, servidorAtivo: r.servidor };
+  });
+  checar(jr.servidorAtivo && jr.servidor === jr.previa && jr.previa === 50 + 15 + 20 && jr.fila === 0, 'Jornada: servidor confirma os pontos da rodada (' + JSON.stringify(jr) + ')');
+  checar(servidor.sabedoria.get('u-teste') && servidor.sabedoria.get('u-teste').pontos === 85, 'Jornada: pontos gravados no servidor, não no aparelho');
+  const repete = await a.evaluate(async () => { const f = await A2Nuvem.rpc('sabedoria_estado'); try { await A2Nuvem.rpc('sabedoria_registrar_rodada', { p_id: 'x-falsa', p_modo: 'livre', p_especial: null, p_dia: UI.hoje(), p_respostas: [{ p: 'nao-existe', r: 'a' }] }); return 'aceitou'; } catch (e) { return e.message; } });
+  checar(/desconhecida/.test(repete), 'Jornada: servidor recusa pergunta inventada');
+  const outro = await c.evaluate(async () => { await Jornada.carregar(); return Jornada.estado().pontos; });
+  checar(outro === 85, 'Jornada: mesmos pontos no outro aparelho');
   // sair
   await a.click('a[data-aba="perfil"]'); await a.click('button:has-text("Sair da conta")'); await a.click('.folha .bt.perigo');
   await a.waitForFunction(() => !Dados.estado.conta && Dados.estado.modo === 'local', null, { timeout: 15000 }).catch(() => {});

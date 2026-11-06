@@ -113,3 +113,6 @@ grant execute on function public.salvar_documento_usuario(text, text, jsonb, big
 
 -- ---------- Tempo real ----------
 alter publication supabase_realtime add table public.documentos_usuario, public.conteudo_editorial;
+
+-- ---------------------------------------------------------------- v2.7 Jornada da Sabedoria
+-- Script completo em docs/sabedoria.sql (migração jornada_da_sabedoria, aplicada em 06/11/2026).

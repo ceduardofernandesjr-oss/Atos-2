@@ -1,9 +1,22 @@
 // Supabase falso para testes: o navegador recebe um cliente com a mesma API usada por js/nuvem.js;
 // os dados ficam no Node (compartilhados entre abas), com regras equivalentes às do banco (RLS).
 const crypto = require('crypto');
+const fs = require('fs'), path = require('path');
+const J = require('../app/js/nucleo/sabedoria.js');
+// banco de perguntas e regras da Jornada: o "servidor" usa o mesmo motor das regras SQL
+const DIR_QUIZ = path.join(__dirname, '..', 'app', 'quiz');
+const IND = JSON.parse(fs.readFileSync(path.join(DIR_QUIZ, 'indice.json'), 'utf8'));
+const POR_ID = {}; IND.arquivos.forEach(a => JSON.parse(fs.readFileSync(path.join(DIR_QUIZ, a.arquivo), 'utf8')).forEach(q => { POR_ID[q.id] = q; }));
+function hojeSP() { return new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10); }
+function paraServidor(e) {
+  return { linha: { pontos: e.pontos, nivel: e.nivel, iniciado_em: e.iniciadoEm, rodadas: e.rodadas, respondidas: e.respondidas, acertos: e.acertos, seq_atual: e.seqAtual, seq_max: e.seqMax,
+      dias_seguidos: e.diasSeguidos, maior_dias: e.maiorDias, ultimo_dia: e.ultimoDia, medalhas: e.medalhas, especiais: e.especiais, diario: e.diario },
+    respostas: Object.entries(e.respostas).map(([id, r]) => ({ pergunta_id: id, acertos: r.a, erros: r.e, ultima_em: r.u, secao: r.s })),
+    eventos: e.historico.map(x => { const { em, tipo, ...dados } = x; return { criado_em: em, tipo, dados }; }) };
+}
 function criarServidor() {
   const usuarios = [{ id: 'u-teste', email: 'teste@atos2.invalid', senha: 'Senha123teste', nome: 'Teste', papel: 'leitor', confirmado: true }];
-  const docs = new Map(), conteudo = new Map(), sessoes = new Map(), inscritos = [];
+  const docs = new Map(), conteudo = new Map(), sessoes = new Map(), inscritos = [], sabedoria = new Map(), rodadasVistas = new Set();
   function uid(page) { const s = sessoes.get(page); return s && s.user.id; }
   async function avisar(tabela, linha) {
     for (const i of inscritos.slice()) {
@@ -44,10 +57,24 @@ function criarServidor() {
         if (a.acao === 'upsert') { conteudo.set(a.corpo.area + ':' + a.corpo.id, a.corpo); await avisar('conteudo_editorial', a.corpo); return { data: null }; }
         if (a.acao === 'delete') { conteudo.delete(f.area + ':' + f.id); await avisar('conteudo_editorial', { area: f.area, id: f.id }); return { data: null }; }
       }
+      if (a.tabela === 'sabedoria_desafios') return { data: J.ESPECIAIS.map(d => ({ id: d.id, titulo: d.titulo, descricao: d.descricao, pontos: d.pontos, perguntas: d.perguntas, min_acertos: d.minAcertos, secoes: d.secoes || null, dificuldade_min: d.dificuldadeMin || null, periodo: d.periodo, ativo: true })) };
+      if (a.tabela === 'sabedoria_perguntas') return { data: [] };
       return { erro: 'tabela desconhecida' };
+    }
+    if (op === 'rpc' && a.nome === 'sabedoria_estado') { if (!eu) return { erro: 'JWT expired' }; return { data: paraServidor(sabedoria.get(eu) || J.estadoInicial()) }; }
+    if (op === 'rpc' && a.nome === 'sabedoria_registrar_rodada') {
+      if (!eu) return { erro: 'JWT expired' };
+      const x = a.args;
+      if (rodadasVistas.has(x.p_id)) return { erro: 'Esta rodada já foi registrada.' };
+      try {
+        const r = J.registrar(sabedoria.get(eu) || J.estadoInicial(), { id: x.p_id, modo: x.p_modo, especial: x.p_especial, dia: x.p_dia, respostas: x.p_respostas }, { porId: POR_ID, hoje: hojeSP(), agora: new Date().toISOString() });
+        sabedoria.set(eu, r.estado); rodadasVistas.add(x.p_id);
+        return { data: { pontos: r.pontos, ganhos: r.ganhos, eventos: r.eventos, detalhe: r.detalhe, acertos: r.acertos, total: r.total, estado: paraServidor(r.estado) } };
+      } catch (e) { return { erro: e.message }; }
     }
     if (op === 'rpc') {
       if (!eu) return { erro: 'JWT expired' };
+      a = a.args;
       const k = eu + ':' + a.p_colecao + ':' + a.p_id, atual = docs.get(k);
       if (!atual || atual.t < a.p_t || (atual.t === a.p_t && (atual.dev || '') < (a.p_dev || ''))) {
         const l = { usuario_id: eu, colecao: a.p_colecao, id: a.p_id, dados: a.p_dados, t: a.p_t, dev: a.p_dev, excluido: a.p_excluido };
@@ -59,7 +86,7 @@ function criarServidor() {
     if (op === 'cancelar') { const i = inscritos.findIndex(x => x.page === page && x.id === a.id); if (i >= 0) inscritos.splice(i, 1); return {}; }
     return { erro: 'op desconhecida ' + op };
   }
-  return { tratar, docs, conteudo, usuarios };
+  return { tratar, docs, conteudo, usuarios, sabedoria };
 }
 
 // Código injetado no navegador: substitui window.supabase antes de nuvem.js carregar a biblioteca
@@ -89,7 +116,7 @@ function clienteNavegador() {
         async updateUser() { return { data: {}, error: null }; }
       },
       from: q,
-      rpc: async (nome, args) => { const r = await window.__sb('rpc', args); return r.erro ? { error: { message: r.erro } } : { error: null, data: null }; },
+      rpc: async (nome, args) => { const r = await window.__sb('rpc', { nome, args }); return r.erro ? { data: null, error: { message: r.erro } } : { error: null, data: r.data == null ? null : r.data }; },
       channel(nome) {
         const id = 'c' + (++n); let cfg = null;
         return { on(tipo, f, cb) { cfg = { tabela: f.table, filtro: f.filter, cb }; return this; }, subscribe() { canais[id] = cfg; window.__sb('inscrever', { id, tabela: cfg.tabela, filtro: cfg.filtro }); this.__id = id; return this; } };

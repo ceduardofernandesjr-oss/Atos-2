@@ -30,10 +30,21 @@
     var selo = h('span.perfil-sinc');
     function desenharSelo() { var m = modoSinc(); selo.className = 'perfil-sinc' + (m[0] ? ' ' + m[0] : ''); UI.trocar(selo, ico(est.modo === 'sincronizado' ? 'nuvem' : 'escudo'), m[1]); }
     desenharSelo(); App.aoMudar(function (c) { if (c === '_estado') desenharSelo(); });
+    var nivelHero = h('button.perfil-nivel#perfil-nivel', { on: { click: function () { Jornada.abrir(); } } });
+    function desenharNivelHero() { var j = Jornada.estado(), nv = A2Sabedoria.progresso(j.pontos, j.nivel).nivel; UI.trocar(nivelHero, Jornada.emblemaEl(nv.n, 22), h('span', nv.nome)); }
+    desenharNivelHero();
     tela.appendChild(h('section.perfil-hero',
       h('div.perfil-id', avatar(p),
-        h('div.perfil-nome', h('span.sobre', 'Meu perfil'), h('b#perfil-nome-txt', p.nome || 'Sem nome'), h('small', ico('livro'), 'Lendo a ' + (v ? v.nome + ' (' + v.sigla + ')' : 'Bíblia')))),
+        h('div.perfil-nome', h('span.sobre', 'Meu perfil'), h('b#perfil-nome-txt', p.nome || 'Sem nome'), h('small', ico('livro'), 'Lendo a ' + (v ? v.nome + ' (' + v.sigla + ')' : 'Bíblia')),
+          nivelHero)),
       h('div.perfil-rodape', selo, h('button.bt.perfil-editar#editar-perfil', { on: { click: function () { editarPerfil(arq); } } }, ico('editar'), 'Editar perfil')), arq));
+
+    // Jornada da Sabedoria (gamificação do quiz): nível, emblema, pontos, barra e medalhas; painel completo em folha
+    tela.appendChild(secao('Jornada da Sabedoria', h('button.link-secao#ir-quiz-perfil', { on: { click: function () { App.ir('quiz'); } } }, 'Jogar quiz', ico('direita'))));
+    var jornadaEl = h('div#jornada-perfil', Jornada.cartao({ medalhas: true }));
+    tela.appendChild(jornadaEl);
+    App.aoSair(Jornada.ouvir(function () { if (jornadaEl.isConnected) { UI.trocar(jornadaEl, Jornada.cartao({ medalhas: true })); desenharNivelHero(); } }));
+    Jornada.carregar();
 
     // Minha jornada (o mesmo resumo do Início; painel completo em #jornada)
     tela.appendChild(secao('Minha jornada', h('button.link-secao#ver-jornada', { on: { click: function () { App.ir('jornada'); } } }, 'Painel completo', ico('direita'))));

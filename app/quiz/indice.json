@@ -1,0 +1,104 @@
+{
+ "versao": 1,
+ "total": 1087,
+ "fonte": "Bíblia Livre (conferência das respostas)",
+ "arquivos": [
+  {
+   "secao": "pentateuco",
+   "arquivo": "pentateuco.json",
+   "total": 140
+  },
+  {
+   "secao": "historicos",
+   "arquivo": "historicos.json",
+   "total": 153
+  },
+  {
+   "secao": "poeticos",
+   "arquivo": "poeticos.json",
+   "total": 95
+  },
+  {
+   "secao": "profetas-maiores",
+   "arquivo": "profetas-maiores.json",
+   "total": 78
+  },
+  {
+   "secao": "profetas-menores",
+   "arquivo": "profetas-menores.json",
+   "total": 91
+  },
+  {
+   "secao": "evangelhos",
+   "arquivo": "evangelhos.json",
+   "total": 188
+  },
+  {
+   "secao": "atos",
+   "arquivo": "atos.json",
+   "total": 80
+  },
+  {
+   "secao": "paulo",
+   "arquivo": "paulo.json",
+   "total": 127
+  },
+  {
+   "secao": "gerais",
+   "arquivo": "gerais.json",
+   "total": 83
+  },
+  {
+   "secao": "apocalipse",
+   "arquivo": "apocalipse.json",
+   "total": 52
+  }
+ ],
+ "resumo": {
+  "total": 1087,
+  "secoes": {
+   "pentateuco": 140,
+   "historicos": 153,
+   "poeticos": 95,
+   "profetas-maiores": 78,
+   "profetas-menores": 91,
+   "evangelhos": 188,
+   "atos": 80,
+   "paulo": 127,
+   "gerais": 83,
+   "apocalipse": 52
+  },
+  "dificuldades": {
+   "1": 153,
+   "2": 448,
+   "3": 336,
+   "4": 150
+  },
+  "formatos": {
+   "multipla": 667,
+   "identifique": 32,
+   "vf": 56,
+   "quem-sou-eu": 21,
+   "relacione": 14,
+   "complete": 121,
+   "qual-livro": 96,
+   "referencia": 80
+  },
+  "temas": {
+   "acontecimentos": 99,
+   "personagens": 138,
+   "lugares": 46,
+   "milagres": 47,
+   "mulheres": 45,
+   "reis-profetas": 61,
+   "geral": 157,
+   "doutrinas": 279,
+   "profecias": 60,
+   "genealogias": 14,
+   "ensinos-jesus": 62,
+   "apostolos": 30,
+   "parabolas": 17,
+   "contexto": 32
+  }
+ }
+}

@@ -10,50 +10,83 @@ const B = require('./biblia-node.js');
 const ref = s => { const r = R.interpretar(s, B.contagem); assert.ok(r.ok, s + ': ' + r.erro); return r.ref; };
 const textoRef = s => S.normalizar(R.versiculosDa(ref(s), B.contagem).map(([b, c, v]) => B.plano(B.texto(b, c, v))).join(' '));
 
-test('Quiz: banco com perguntas suficientes e bem formadas', () => {
-  assert.ok(Q.BANCO.length >= 100, 'banco tem ' + Q.BANCO.length);
-  const textos = new Set();
-  for (const x of Q.BANCO) {
-    assert.equal(x.ops.length, 4, x.id);
-    assert.equal(new Set(x.ops).size, 4, x.id + ' opções repetidas');
-    assert.ok([1, 2, 3].includes(x.nivel), x.id);
-    assert.ok(Q.CATEGORIAS.some(c => c.id === x.cat), x.id);
-    assert.ok(!textos.has(x.p), 'pergunta repetida: ' + x.p); textos.add(x.p);
+const fs = require('fs'), path = require('path');
+const DIR_QUIZ = path.join(__dirname, '..', 'app', 'quiz');
+const INDICE = JSON.parse(fs.readFileSync(path.join(DIR_QUIZ, 'indice.json'), 'utf8'));
+const BANCO = [].concat(...INDICE.arquivos.map(a => JSON.parse(fs.readFileSync(path.join(DIR_QUIZ, a.arquivo), 'utf8'))));
+Q.carregar(BANCO);
+const NOMES = Object.fromEntries(B.indice.livros.map((l, i) => [l.id, i]));
+
+test('Quiz: banco com mais de 1.000 perguntas, variado e bem formado', () => {
+  assert.ok(BANCO.length >= 1000, 'banco tem ' + BANCO.length);
+  assert.equal(INDICE.total, BANCO.length);
+  assert.equal(Q.BANCO.length, BANCO.length, 'todas passam na validação do aplicativo');
+  const ids = new Set(), textos = new Set();
+  for (const x of BANCO) {
+    assert.ok(!ids.has(x.id), 'id repetido ' + x.id); ids.add(x.id);
+    const t = S.normalizar(x.pergunta).replace(/[^a-z0-9 ]/g, '');
+    assert.ok(!textos.has(t), 'pergunta repetida: ' + x.pergunta); textos.add(t);
+    assert.equal(x.opcoes.length, x.formato === 'vf' ? 2 : 4, x.id);
+    assert.equal(new Set(x.opcoes.map(S.normalizar)).size, x.opcoes.length, x.id + ' opções repetidas');
+    assert.equal(x.opcoes[x.certa], x.resposta, x.id);
+    assert.ok(x.explicacao.length >= 20, x.id + ' sem explicação');
+    assert.ok([1, 2, 3, 4].includes(x.dificuldade), x.id);
+    assert.equal(x.secao, INDICE.arquivos.find(a => a.secao === x.secao).secao);
+    const cont = B.contagem(x.livro); assert.ok(cont && cont[x.capitulo - 1] >= x.versiculo, x.id + ': livro/capítulo/versículo inválidos');
   }
-  for (const c of Q.CATEGORIAS) assert.ok(Q.BANCO.filter(x => x.cat === c.id).length >= 10, c.id);
+  const r = Q.resumo(BANCO);
+  for (const s of Q.SECOES) assert.ok(r.secoes[s.id] >= 40, s.id + ': ' + r.secoes[s.id]);
+  for (const d of [1, 2, 3, 4]) assert.ok(r.dificuldades[d] >= 100, 'dificuldade ' + d);
+  for (const f of Object.keys(Q.FORMATOS)) assert.ok(r.formatos[f] >= 10, 'formato ' + f);
+  for (const t of Q.TEMAS) assert.ok(r.temas[t.id] >= 10, 'tema ' + t.id);
 });
 
 test('Quiz: toda resposta está no texto da referência (Bíblia Livre)', () => {
   const falhas = [];
-  for (const x of Q.BANCO) {
-    const r = ref(x.ref);
-    for (const chave of x.chave.split(';')) {
-      if (chave.startsWith('#caps=')) {
-        const n = +chave.slice(6);
-        if (B.contagem(r.livro).length !== n) falhas.push(`${x.id} ${x.ref}: ${B.contagem(r.livro).length} capítulos, esperado ${n}`);
-        continue;
-      }
-      const t = textoRef(x.ref);
-      if (!chave.split('|').some(alt => t.includes(S.normalizar(alt)))) falhas.push(`${x.id} ${x.ref}: “${chave}” não encontrado — ${t.slice(0, 160)}`);
+  const conferir = (id, refTxt, chave) => {
+    const r = ref(refTxt);
+    for (const k of chave.split(';')) {
+      if (k.startsWith('#caps=')) { if (B.contagem(r.livro).length !== +k.slice(6)) falhas.push(`${id}: capítulos`); continue; }
+      if (k.startsWith('#ordem=')) { if (NOMES[r.livro] !== NOMES[k.slice(7)] + 1) falhas.push(`${id}: ordem`); continue; }
+      const t = textoRef(refTxt);
+      if (!k.split('|').some(alt => t.includes(S.normalizar(alt)))) falhas.push(`${id} ${refTxt}: “${k}” não encontrado — ${t.slice(0, 160)}`);
     }
+  };
+  for (const x of BANCO) {
+    if (x.chave) conferir(x.id, x.ref, x.chave);
+    (x.conferir || []).forEach(c => conferir(x.id, c.ref, c.chave));
+    if (!x.chave && !x.conferir) falhas.push(x.id + ': sem chave');
+    if (x.formato === 'complete') assert.ok(textoRef(x.ref).includes(S.normalizar(x.resposta)), x.id);
   }
   assert.deepEqual(falhas, []);
 });
 
-test('Quiz: rodada, desafio do dia e pontuação', () => {
+test('Quiz: rodada, sorteio inteligente, desafio do dia e pontuação', () => {
   const r1 = Q.rodada('a', { n: 10 }), r2 = Q.rodada('a', { n: 10 });
   assert.deepEqual(r1.map(x => x.id), r2.map(x => x.id), 'determinístico');
   assert.equal(new Set(r1.map(x => x.id)).size, 10);
-  for (const x of r1) assert.equal(x.opcoes[x.certa], x.ops[0]);
-  const so = Q.rodada('b', { cats: ['ev'], nivel: 1, n: 50 });
-  assert.ok(so.length > 0 && so.every(x => x.cat === 'ev' && x.nivel === 1));
-  const ev = Q.rodada('c', { n: 5, evitar: Q.BANCO.slice(0, Q.BANCO.length - 5).map(x => x.id) });
-  assert.deepEqual(ev.map(x => x.id).sort(), Q.BANCO.slice(-5).map(x => x.id).sort(), 'prefere perguntas não vistas');
+  for (const x of r1) assert.equal(x.opcoes[x.certa], x.resposta);
+  const so = Q.rodada('b', { secoes: ['evangelhos'], dificuldade: 1, n: 50 });
+  assert.ok(so.length > 0 && so.every(x => x.secao === 'evangelhos' && x.dificuldade === 1));
+  const poucas = Q.filtrar({ secoes: ['apocalipse'], dificuldade: 4 });
+  const ev = Q.rodada('c', { secoes: ['apocalipse'], dificuldade: 4, n: 3, evitar: poucas.slice(0, poucas.length - 3).map(x => x.id) });
+  assert.deepEqual(ev.map(x => x.id).sort(), poucas.slice(-3).map(x => x.id).sort(), 'prefere perguntas não vistas');
+  // sorteio inteligente: inéditas primeiro, nível alto puxa dificuldade
+  const vistas = {}; Q.filtrar({ secoes: ['atos'] }).slice(0, 60).forEach(x => { vistas[x.id] = { a: 1, e: 0, u: '2026-11-01', s: 'atos' }; });
+  const sel = Q.selecionar('s', { nivel: 1, respostas: vistas, hoje: '2026-11-05' }, { secoes: ['atos'], n: 10 });
+  assert.ok(sel.filter(x => !vistas[x.id]).length >= 8, 'prioriza inéditas');
+  const media = l => l.reduce((s, x) => s + x.dificuldade, 0) / l.length;
+  let m1 = 0, m8 = 0; for (let i = 0; i < 20; i++) { m1 += media(Q.selecionar('n1' + i, { nivel: 1 }, { n: 10 })); m8 += media(Q.selecionar('n8' + i, { nivel: 8 }, { n: 10 })); }
+  assert.ok(m8 > m1 + 0.8, 'dificuldade sobe com o nível: ' + m1 / 20 + ' → ' + m8 / 20);
+  const erros = {}; Q.filtrar({ secoes: ['paulo'] }).slice(0, 10).forEach(x => { erros[x.id] = { a: 0, e: 3, s: 'paulo' }; });
+  assert.ok(Q.taxaDeErroPorSecao(erros).paulo === 1);
+  const vf = Q.BANCO.find(x => x.formato === 'vf'); assert.deepEqual(Q.preparar(vf, 'x').opcoes, ['Verdadeiro', 'Falso'], 'V/F não embaralha');
   const d = Q.desafioDoDia('2026-11-05');
-  assert.equal(d.length, 5); assert.deepEqual(d.map(x => x.cat), Q.CATEGORIAS.map(c => c.id));
+  assert.equal(d.length, 5); assert.equal(new Set(d.map(x => x.secao)).size, 5, 'cinco seções diferentes');
   assert.deepEqual(d.map(x => x.id), Q.desafioDoDia('2026-11-05').map(x => x.id));
-  const p = Q.pontuar([{ certo: true, nivel: 1 }, { certo: true, nivel: 3 }, { certo: true, nivel: 2 }, { certo: false, nivel: 1 }]);
+  const p = Q.pontuar([{ certo: true, dificuldade: 1 }, { certo: true, dificuldade: 3 }, { certo: true, nivel: 2 }, { certo: false, dificuldade: 1 }]);
   assert.deepEqual(p, { pontos: 10 + 15 + 14, acertos: 3, total: 4, melhorSequencia: 3 });
+  assert.ok(Q.POR_ID.at1 && Q.POR_ID.qd108, 'ids das perguntas originais preservados');
 });
 
 test('Mural: 95 teses, grupos contínuos e referências válidas', () => {

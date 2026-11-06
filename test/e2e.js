@@ -576,24 +576,57 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.waitForSelector('.estudo-topo', { timeout: 10000 });
   checar((await p.textContent('.estudo-topo')).includes('Romanos 8:28'), 'Estudo do versículo: enviar ao Assistente Bíblico');
 
-  // Quiz
-  await p.evaluate(() => App.ir('quiz')); await p.waitForSelector('.quiz-desafio');
-  await p.click('.quiz-desafio .bt');
+  // Quiz + Jornada da Sabedoria
+  await p.evaluate(() => App.ir('quiz')); await p.waitForSelector('.quiz-desafio', { timeout: 15000 });
+  checar(await p.evaluate(() => A2Quiz.BANCO.length) >= 1000, 'Quiz: banco com mais de 1.000 perguntas carregado');
+  checar((await p.textContent('#jornada-quiz')).includes('Aprendiz das Escrituras'), 'Jornada: começa no nível Aprendiz das Escrituras');
+  await p.click('#comecar-desafio');
   for (let i = 0; i < 5; i++) {
-    await p.waitForSelector('.opcao:not([disabled])'); await p.click('.opcao >> nth=0');
+    await p.waitForSelector('.opcao:not([disabled])');
+    // responde certo nas 3 primeiras (ganha o bônus do desafio), errado nas outras
+    const alvo = await p.evaluate(i => { const q = A2Quiz.POR_ID[document.querySelector('.quiz-topo').dataset.pergunta]; const t = [...document.querySelectorAll('.opcao')].map(b => b.dataset.opcao); const k = t.indexOf(q.resposta); return i < 3 ? k : (k + 1) % t.length; }, i);
+    await p.click('.opcao >> nth=' + Math.max(0, alvo));
     await p.waitForSelector('.quiz-feedback .trecho sup', { timeout: 8000 });
-    if (i === 0) { checar((await p.locator('.opcao.certa').count()) === 1, 'Quiz: mostra a resposta certa'); await p.screenshot({ path: '/tmp/shots/22-quiz.png', fullPage: true }); }
-    await p.click('.quiz-feedback .bt.pri');
+    if (i === 0) { checar((await p.locator('.opcao.certa').count()) === 1, 'Quiz: mostra a resposta certa'); checar((await p.textContent('.quiz-explicacao')).length > 20, 'Quiz: explicação depois da resposta'); await p.screenshot({ path: '/tmp/shots/22-quiz.png', fullPage: true }); }
+    await p.click('#quiz-proxima');
   }
   await p.waitForSelector('.quiz-final');
   checar((await p.textContent('.placar')).includes('/5'), 'Quiz: resultado do desafio do dia');
+  const ganhos = await p.textContent('.quiz-ganhos');
+  checar(ganhos.includes('Quiz concluído') && ganhos.includes('+20'), 'Jornada: +20 por quiz concluído');
+  checar(ganhos.includes('Desafio do dia'), 'Jornada: bônus configurável do desafio do dia');
+  checar(await p.locator('.quiz-medalha-nova').count() >= 1 && (await p.textContent('.quiz-medalha-nova')).includes('Primeiro Passo'), 'Jornada: medalha Primeiro Passo');
   await p.screenshot({ path: '/tmp/shots/23-quiz-final.png', fullPage: true });
-  await p.click('.quiz-final ~ .linha-bts .bt.pri'); await p.waitForSelector('.quiz-desafio');
+  await p.click('#jogar-de-novo'); await p.waitForSelector('.quiz-desafio');
   checar((await p.textContent('.quiz-desafio')).includes('Feito'), 'Quiz: desafio do dia marcado como feito');
+  const pts = await p.evaluate(() => Jornada.estado().pontos);
+  checar(pts >= 75, 'Jornada: pontos somados (' + pts + ')');
   await p.click('.chip:has-text("Evangelhos")'); await p.click('.chip:has-text("Fácil")');
-  await p.click('button:has-text("Jogar 10 perguntas")'); await p.waitForSelector('.quiz-topo');
-  checar((await p.textContent('.quiz-topo')).includes('Evangelhos') && (await p.textContent('.quiz-topo')).includes('Fácil'), 'Quiz: rodada filtrada por tema e nível');
-  await p.click('.quiz .linha-bts .bt:has-text("Sair")');
+  await p.click('#jogar-livre'); await p.waitForSelector('.quiz-topo');
+  checar((await p.textContent('.quiz-topo')).includes('Evangelhos') && (await p.textContent('.quiz-topo')).includes('Fácil'), 'Quiz: rodada filtrada por parte da Bíblia e dificuldade');
+  await p.click('.quiz .linha-bts .bt:has-text("Sair")'); await p.click('.fundo-camada >> nth=-1 >> .bt:has-text("Sair")');
+  await p.waitForSelector('#rodada-inteligente');
+  // formatos: um de cada é exibido sem erro
+  const formatos = await p.evaluate(() => Object.keys(A2Quiz.FORMATOS).every(f => A2Quiz.filtrar({ formatos: [f] }).length >= 10));
+  checar(formatos, 'Quiz: os 8 formatos têm perguntas');
+  await p.click('.chip:has-text("Complete o versículo")'); await p.click('.chip:has-text("Misto")'); await p.click('.chip:has-text("Todas")');
+  await p.click('#jogar-livre'); await p.waitForSelector('.quiz-versiculo .lacuna');
+  checar(true, 'Quiz: formato “complete o versículo” com lacuna');
+  await p.screenshot({ path: '/tmp/shots/22b-quiz-complete.png', fullPage: true });
+  await p.click('.quiz .linha-bts .bt:has-text("Sair")'); await p.click('.fundo-camada >> nth=-1 >> .bt:has-text("Sair")');
+  await p.waitForSelector('#ver-sabedoria'); await p.click('#ver-sabedoria');
+  await p.waitForSelector('.jornada-painel .niveis-galeria');
+  checar(await p.locator('.niveis-galeria .nivel-card').count() === 8 && await p.locator('.niveis-galeria .nivel-card.bloqueado').count() === 7, 'Jornada: galeria com os 8 níveis (bloqueados visíveis)');
+  checar(await p.locator('.medalhas-grade .medalha-item').count() === 7 && await p.locator('.medalhas-grade .medalha-item.ganha').count() >= 1, 'Jornada: 7 medalhas, ganhas e bloqueadas');
+  checar(await p.locator('.dominio-item').count() === 10, 'Jornada: domínio bíblico nas 10 seções');
+  checar((await p.textContent('.jornada-aviso')).includes('representam ordenação'), 'Jornada: aviso de que os títulos são simbólicos');
+  await p.waitForTimeout(800); await p.screenshot({ path: '/tmp/shots/23b-jornada.png', fullPage: false });
+  await p.evaluate(() => UI.fecharTodas());
+  await p.evaluate(() => Jornada.celebrarNivel(5)); await p.waitForSelector('.subiu-nivel #subiu-continuar');
+  checar((await p.textContent('.subiu-nivel h2')) === 'Evangelista', 'Jornada: tela de novo nível com emblema e mensagem');
+  await p.waitForTimeout(1300); await p.screenshot({ path: '/tmp/shots/23c-novo-nivel.png' });
+  await p.click('#subiu-continuar'); await p.waitForTimeout(400);
+  checar(await p.locator('.subiu-nivel').count() === 0, 'Jornada: tela de novo nível fecha');
 
   // Mural
   await p.evaluate(() => App.ir('mural')); await p.waitForSelector('.curio');

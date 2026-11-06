@@ -548,7 +548,7 @@
 
   Telas.assistente = { render: renderAssistente, estudar: function (ref, foco) { App.estado.assistentePedido = { ref: ref, foco: foco || '' }; if (App.estado.aba === 'assistente') App.recarregar(); else App.ir('assistente'); } };
 
-  // ====================================================================== QUIZ
+  // ====================================================================== QUIZ + JORNADA DA SABEDORIA
   var jogo = null;
   function estatQuiz() { return Object.assign({ jogos: 0, pontos: 0, melhor: 0, acertos: 0, respondidas: 0, vistas: [], desafios: {} }, Dados.obter('quiz', 'estatisticas') || {}); }
 
@@ -558,67 +558,135 @@
     tela.appendChild(area);
     if (jogo && !jogo.fim) { desenharPergunta(area); return; }
     jogo = null;
-    menuQuiz(area);
+    if (!A2Quiz.BANCO.length) UI.trocar(area, h('p.sub.quiz-carregando', 'Carregando o banco de perguntas…'));
+    A2Quiz.pronto().then(function () {
+      if (!area.isConnected || jogo) return;
+      menuQuiz(area);
+      Jornada.carregar();
+    }, function () {
+      if (!area.isConnected) return;
+      UI.trocar(area, h('div.vazio', h('b', 'Não foi possível carregar o banco de perguntas.'), h('span', 'Verifique a conexão e tente de novo.'),
+        h('button.bt', { on: { click: function () { App.recarregar(); } } }, 'Tentar de novo')));
+    });
+  }
+
+  function chips(opcoes, valor, aoEscolher, multiplo) {
+    return h('div.chips', opcoes.map(function (o) {
+      var on = multiplo ? (o[0] === '' ? !valor.length : valor.indexOf(o[0]) >= 0) : valor === o[0];
+      return h('button.chip', { 'aria-pressed': String(on), on: { click: function () { aoEscolher(o[0], on); } } }, o[1]);
+    }));
   }
 
   function menuQuiz(area) {
     var e = estatQuiz(), hoje = UI.hoje(), feito = e.desafios[hoje];
-    var filtro = App.estado.quizFiltro || { cats: [], nivel: 0 };
-    function chipsCat() {
-      return h('div.chips', h('button.chip', { 'aria-pressed': String(!filtro.cats.length), on: { click: function () { filtro.cats = []; App.estado.quizFiltro = filtro; App.recarregar(); } } }, 'Todas'),
-        A2Quiz.CATEGORIAS.map(function (c) {
-          var on = filtro.cats.indexOf(c.id) >= 0;
-          return h('button.chip', { 'aria-pressed': String(on), on: { click: function () { filtro.cats = on ? filtro.cats.filter(function (x) { return x !== c.id; }) : filtro.cats.concat([c.id]); App.estado.quizFiltro = filtro; App.recarregar(); } } }, c.nome);
-        }));
-    }
+    var f = App.estado.quizFiltro = Object.assign({ secoes: [], dificuldade: 0, formatos: [] }, App.estado.quizFiltro || {});
+    if (f.cats) { f.secoes = []; delete f.cats; delete f.nivel; }
+    var j = Jornada.estado(), desafios = Jornada.desafiosAtivos();
+    var diario = Jornada.desafiosAtivos().filter(function (d) { return d.id === 'desafio-do-dia'; })[0];
+    var avancadoFeito = !!((j.diario[hoje] || {}).avancado);
+    var cartaoJornada = h('div#jornada-quiz', Jornada.cartao({ medalhas: true }));
+    var desl = Jornada.ouvir(function () { if (cartaoJornada.isConnected) UI.trocar(cartaoJornada, Jornada.cartao({ medalhas: true })); });
+    App.aoSair(desl);
+    function recarregar() { menuQuiz(area); }
+    function multi(campo) { return function (v, on) { f[campo] = v === '' ? [] : on ? f[campo].filter(function (x) { return x !== v; }) : f[campo].concat([v]); recarregar(); }; }
+    var ultimo = function (d) { return d.periodo === 'unico' ? 'Uma única vez · +' + d.pontos + ' pontos' : 'Uma vez por dia · +' + d.pontos + ' pontos'; };
     UI.trocar(area,
+      cartaoJornada,
       h('div.cartao.quiz-desafio',
-        h('span.rotulo', 'Desafio do dia'), h('h2', feito ? 'Feito: ' + feito.acertos + ' de 5' : '5 perguntas, uma de cada tema'),
-        h('p.sub', feito ? 'Volte amanhã para um novo desafio. Você pode jogar rodadas livres à vontade.' : 'As mesmas perguntas para todos hoje.'),
-        feito ? null : h('button.bt.ouro', { on: { click: function () { iniciar(A2Quiz.desafioDoDia(hoje), 'desafio'); } } }, ico('estrela'), 'Começar desafio')),
+        h('span.rotulo', 'Desafio do dia'), h('h2', feito ? 'Feito: ' + feito.acertos + ' de 5' : '5 perguntas de cinco partes da Bíblia'),
+        h('p.sub', feito ? 'Volte amanhã para um novo desafio. Você pode jogar outras rodadas à vontade.' : 'As mesmas perguntas para todos hoje' + (diario ? ' · acerte 3 e ganhe +' + diario.pontos + ' pontos.' : '.')),
+        feito ? null : h('button.bt.ouro#comecar-desafio', { on: { click: function () { iniciar(A2Quiz.desafioDoDia(hoje), 'desafio'); } } }, ico('estrela'), 'Começar desafio')),
+      h('div.secao', h('h2', 'Jogar')),
+      h('div.quiz-modos',
+        h('button.cartao.quiz-modo#rodada-inteligente', { on: { click: function () { iniciar(A2Quiz.selecionar(semente(), Jornada.perfilSorteio(), { n: 10 }), 'livre'); } } },
+          h('span.acesso-ico', ico('play')), h('div', h('b', 'Rodada da jornada'), h('small', '10 perguntas escolhidas para você: prioriza as inéditas, revisa as que você errou e acompanha o seu nível.'))),
+        h('button.cartao.quiz-modo#desafio-avancado', { disabled: avancadoFeito, on: { click: function () {
+          var p = A2Quiz.selecionar(semente(), Jornada.perfilSorteio(), { n: 10, dificuldadeMin: 3 });
+          iniciar(p, 'avancado');
+        } } }, h('span.acesso-ico', ico('chama')), h('div', h('b', 'Desafio avançado'), h('small', avancadoFeito ? 'Concluído hoje. Volte amanhã!' : '10 perguntas difíceis e de especialista. Acerte 7 e ganhe +30 pontos (uma vez por dia).')))),
+      desafios.filter(function (d) { return d.id !== 'desafio-do-dia'; }).length ? h('div.secao', h('h2', 'Desafios especiais')) : null,
+      h('div.quiz-modos', desafios.filter(function (d) { return d.id !== 'desafio-do-dia'; }).map(function (d) {
+        return h('button.cartao.quiz-modo.especial', { 'data-especial': d.id, disabled: d.feito, on: { click: function () {
+          var p = A2Quiz.selecionar(semente(), Jornada.perfilSorteio(), { n: d.perguntas, secoes: d.secoes || null, dificuldadeMin: d.dificuldadeMin || 0 });
+          if (p.length < d.perguntas) { UI.aviso('Ainda não há perguntas suficientes para este desafio.', true); return; }
+          iniciar(p, 'especial', d);
+        } } }, h('span.acesso-ico', ico(d.feito ? 'ok' : 'estrela')), h('div', h('b', d.titulo), h('small', d.feito ? 'Conquistado' + (d.periodo === 'unico' ? '' : ' hoje') + '. Parabéns!' : d.descricao), h('small.quiz-modo-pts', ultimo(d))));
+      })),
       h('div.secao', h('h2', 'Rodada livre')),
-      h('p.sub', 'Temas'), chipsCat(),
-      h('p.sub', { style: { marginTop: '10px' } }, 'Nível'),
-      h('div.chips', [0, 1, 2, 3].map(function (n) { return h('button.chip', { 'aria-pressed': String(filtro.nivel === n), on: { click: function () { filtro.nivel = n; App.estado.quizFiltro = filtro; App.recarregar(); } } }, n ? A2Quiz.NIVEIS[n] : 'Misto'); })),
-      h('div.linha-bts', { style: { marginTop: '14px' } }, h('button.bt.pri', { on: { click: function () {
-        var p = A2Quiz.rodada(Date.now() + ':' + Math.random(), { cats: filtro.cats, nivel: filtro.nivel, n: 10, evitar: estatQuiz().vistas });
+      h('p.sub', 'Partes da Bíblia'),
+      chips([['', 'Todas']].concat(A2Quiz.SECOES.map(function (s) { return [s.id, s.curto]; })), f.secoes, multi('secoes'), true),
+      h('p.sub', { style: { marginTop: '10px' } }, 'Dificuldade'),
+      chips([[0, 'Misto'], [1, 'Fácil'], [2, 'Intermediário'], [3, 'Difícil'], [4, 'Especialista']], f.dificuldade, function (v) { f.dificuldade = v; recarregar(); }),
+      h('p.sub', { style: { marginTop: '10px' } }, 'Formato'),
+      chips([['', 'Todos']].concat(Object.keys(A2Quiz.FORMATOS).map(function (k) { return [k, A2Quiz.FORMATOS[k]]; })), f.formatos, multi('formatos'), true),
+      h('div.linha-bts', { style: { marginTop: '14px' } }, h('button.bt.pri#jogar-livre', { on: { click: function () {
+        var p = A2Quiz.selecionar(semente(), Jornada.perfilSorteio(), { secoes: f.secoes, dificuldade: f.dificuldade, formatos: f.formatos, n: 10 });
         if (!p.length) { UI.aviso('Nenhuma pergunta com esses filtros.', true); return; }
         iniciar(p, 'livre');
-      } } }, ico('play'), 'Jogar 10 perguntas')),
+      } } }, ico('play'), 'Jogar ' + Math.min(10, A2Quiz.filtrar({ secoes: f.secoes, dificuldade: f.dificuldade, formatos: f.formatos }).length) + ' perguntas')),
       h('div.secao', h('h2', 'Seu desempenho')),
       h('div.grade.g3.quiz-numeros',
         numero(e.jogos, 'partidas'), numero(e.respondidas ? UI.pct(100 * e.acertos / e.respondidas) : '—', 'de acertos'), numero(e.melhor, 'melhor pontuação')),
-      h('p.sub', { style: { marginTop: '12px' } }, A2Quiz.BANCO.length + ' perguntas. Cada resposta foi conferida no texto bíblico, e depois de responder você lê o versículo na sua tradução.'));
+      h('p.sub', { style: { marginTop: '12px' } }, Jornada.fmt(A2Quiz.BANCO.length) + ' perguntas em 10 partes da Bíblia. Cada resposta foi conferida no texto bíblico e vem com explicação e referência.'));
   }
   function numero(n, r) { return h('div.cartao.numero-cartao', h('b', String(n)), h('span', r)); }
+  function semente() { return Date.now() + ':' + Math.random(); }
 
-  function iniciar(perguntas, modo) {
-    jogo = { perguntas: perguntas, i: 0, respostas: [], modo: modo, fim: false };
+  function iniciar(perguntas, modo, especial) {
+    jogo = { perguntas: perguntas, i: 0, respostas: [], modo: modo, especial: especial || null, fim: false, seq: 0 };
     App.recarregar();
   }
 
+  function rotuloModo() {
+    return jogo.modo === 'desafio' ? 'Desafio do dia' : jogo.modo === 'avancado' ? 'Desafio avançado' : jogo.especial ? jogo.especial.titulo : 'Resultado';
+  }
+
+  function enunciado(p) {
+    if (p.formato === 'complete') {
+      var m = /^Complete o versículo: “([\s\S]*)”$/.exec(p.pergunta), partes = (m ? m[1] : p.pergunta).split('______');
+      var resto = partes.slice(1).join('______') + '”', cola = /^[^\s]*/.exec(resto)[0];
+      return h('div', h('span.quiz-instrucao', 'Complete o versículo'), h('h2.quiz-pergunta.quiz-versiculo', '“' + partes[0],
+        h('span.lacuna-junto', h('span.lacuna', { 'aria-label': 'lacuna' }, '______'), cola), resto.slice(cola.length)));
+    }
+    if (p.formato === 'quem-sou-eu') return h('div', h('span.quiz-instrucao', 'Quem sou eu?'), h('h2.quiz-pergunta', p.pergunta.replace(/\s*Quem sou eu\?$/, '')));
+    if (p.formato === 'vf') return h('div', h('span.quiz-instrucao', 'Verdadeiro ou falso?'), h('h2.quiz-pergunta', p.pergunta));
+    if (p.formato === 'relacione') return h('div', h('span.quiz-instrucao', 'Relacione'), h('h2.quiz-pergunta', p.pergunta));
+    return h('h2.quiz-pergunta', p.pergunta);
+  }
+  function textoOpcao(p, o) {
+    if (p.formato !== 'relacione') return h('span', o);
+    return h('span.opcao-pares', o.split(' · ').map(function (par) { var x = par.split(' → '); return h('span', h('b', x[0]), ' → ', x[1]); }));
+  }
+
   async function desenharPergunta(area) {
-    var p = jogo.perguntas[jogo.i], cat = A2Quiz.CATEGORIAS.filter(function (c) { return c.id === p.cat; })[0];
+    var p = jogo.perguntas[jogo.i], sec = A2Quiz.secao(p.secao);
     var feedback = h('div.quiz-feedback', { 'aria-live': 'polite' });
+    var vf = p.formato === 'vf';
     var botoes = p.opcoes.map(function (o, k) {
-      return h('button.opcao', { on: { click: function () { responder(k); } } }, h('span.letra', 'ABCD'[k]), h('span', o));
+      return h('button.opcao' + (vf ? '.opcao-vf' : '') + (p.formato === 'relacione' ? '.opcao-rel' : ''), { 'data-opcao': o, on: { click: function () { responder(k); } } },
+        h('span.letra', vf ? (k ? 'F' : 'V') : 'ABCD'[k]), textoOpcao(p, o));
     });
     UI.trocar(area,
-      h('div.quiz-topo', h('span', 'Pergunta ' + (jogo.i + 1) + ' de ' + jogo.perguntas.length), h('div.esp'), h('span.selo', cat.nome), h('span.selo', A2Quiz.NIVEIS[p.nivel])),
+      h('div.quiz-topo', { 'data-pergunta': p.id }, h('span', 'Pergunta ' + (jogo.i + 1) + ' de ' + jogo.perguntas.length), h('div.esp'),
+        sec ? h('span.selo', sec.curto) : null, h('span.selo.dif-' + p.dificuldade, A2Quiz.DIFICULDADES[p.dificuldade])),
       h('div.barra', { role: 'progressbar', 'aria-valuenow': jogo.i, 'aria-valuemin': 0, 'aria-valuemax': jogo.perguntas.length }, h('i', { style: { width: (100 * jogo.i / jogo.perguntas.length) + '%' } })),
-      h('h2.quiz-pergunta', p.p),
-      h('div.opcoes', botoes), feedback,
-      h('div.linha-bts', h('button.bt', { on: { click: function () { jogo = null; App.recarregar(); } } }, 'Sair')));
+      enunciado(p),
+      h('div.opcoes' + (vf ? '.opcoes-vf' : ''), botoes), feedback,
+      h('div.linha-bts', h('button.bt', { on: { click: function () { UI.confirmar('Sair da rodada?', 'As respostas desta rodada não serão contadas.', 'Sair').then(function (ok) { if (ok) { jogo = null; App.recarregar(); } }); } } }, 'Sair')));
     function responder(k) {
-      var certo = k === p.certa;
+      var certo = k === p.certa, ineditoCerto = certo && !Jornada.jaAcertou(p.id) && !jogo.respostas.some(function (x) { return x.id === p.id; });
       botoes.forEach(function (b, i) { b.disabled = true; if (i === p.certa) b.classList.add('certa'); else if (i === k) b.classList.add('errada'); });
-      jogo.respostas.push({ id: p.id, certo: certo, nivel: p.nivel, escolha: p.opcoes[k] });
+      jogo.respostas.push({ id: p.id, certo: certo, dificuldade: p.dificuldade, escolha: p.opcoes[k] });
+      jogo.seq = certo ? jogo.seq + 1 : 0;
       var r = Biblia.interpretar(p.ref), txt = h('p.trecho', '…');
       UI.trocar(feedback, h('div.cartao.' + (certo ? 'ok' : 'erro'),
-        h('b', certo ? 'Isso mesmo!' : 'Resposta certa: ' + p.opcoes[p.certa]),
-        r.ok ? h('p.sub', A2Ref.formatar(r.ref) + ' · ' + sigla()) : null, txt, p.nota ? h('p.sub', p.nota) : null,
+        h('div.quiz-veredito', h('b', certo ? 'Isso mesmo!' : 'Resposta certa: ' + p.resposta),
+          ineditoCerto ? h('span.selo.ouro.quiz-ganho', '+10') : null,
+          certo && jogo.seq > 0 && jogo.seq % 5 === 0 ? h('span.selo.ouro.quiz-ganho', '5 seguidos') : null),
+        h('p.quiz-explicacao', p.explicacao),
+        r.ok ? h('p.sub', A2Ref.formatar(r.ref) + ' · ' + sigla()) : null, txt,
         h('div.linha-bts', r.ok ? h('button.bt.peq', { on: { click: function () { App.abrirBiblia(r.ref.livro, r.ref.cap, r.ref.v1); } } }, ico('livro'), 'Ler') : null,
-          h('button.bt.pri', { on: { click: proxima } }, jogo.i + 1 < jogo.perguntas.length ? 'Próxima' : 'Ver resultado'))));
+          h('button.bt.pri#quiz-proxima', { on: { click: proxima } }, jogo.i + 1 < jogo.perguntas.length ? 'Próxima' : 'Ver resultado'))));
       if (r.ok) versosEl(r.ref, 8).then(function (el) { txt.replaceWith(el); });
       setTimeout(function () { var b = feedback.querySelector('.bt.pri'); if (b) b.focus(); }, 50);
     }
@@ -632,20 +700,54 @@
     e.vistas = e.vistas.concat(jogo.perguntas.map(function (p) { return p.id; })).slice(-60);
     if (jogo.modo === 'desafio') { var d = Object.assign({}, e.desafios); d[UI.hoje()] = { acertos: res.acertos, pontos: res.pontos }; var ks = Object.keys(d).sort(); ks.slice(0, Math.max(0, ks.length - 60)).forEach(function (k) { delete d[k]; }); e.desafios = d; }
     Dados.salvar('quiz', 'estatisticas', e);
-    App.registrar('quiz', { titulo: (jogo.modo === 'desafio' ? 'Desafio do dia' : 'Quiz') + ': ' + res.acertos + '/' + res.total });
-    var texto = 'Fiz ' + res.acertos + ' de ' + res.total + ' no ' + (jogo.modo === 'desafio' ? 'desafio bíblico do dia' : 'quiz bíblico') + ' do ATOS 2 (' + res.pontos + ' pontos). Topa o desafio?';
+    App.registrar('quiz', { titulo: (jogo.modo === 'desafio' ? 'Desafio do dia' : jogo.modo === 'avancado' ? 'Desafio avançado' : 'Quiz') + ': ' + res.acertos + '/' + res.total });
+
+    // Jornada da Sabedoria: prévia no aparelho; com conta, o servidor confirma
+    var modo = jogo.modo === 'desafio' ? 'especial' : jogo.modo, especial = jogo.modo === 'desafio' ? 'desafio-do-dia' : jogo.especial && jogo.especial.id;
+    var reg = null;
+    try { reg = Jornada.registrarRodada(modo, especial, jogo.respostas.map(function (r) { return { p: r.id, r: r.escolha }; })); }
+    catch (err) { UI.aviso(err.message, true); }
+    var antes = reg ? A2Sabedoria.progresso(reg.antes.pontos, reg.antes.nivel) : null;
+    var ganhosEl = h('div.quiz-ganhos'), statusEl = h('small.quiz-servidor');
+    function desenharGanhos(g, eventos) {
+      UI.trocar(ganhosEl, g.length ? g.map(function (x) { return h('div.quiz-ganho-linha', h('span', x.rotulo), h('b', '+' + x.pontos)); }) : h('p.sub', 'Sem pontos novos nesta rodada: as perguntas já acertadas antes não pontuam de novo.'),
+        (eventos || []).filter(function (x) { return x.tipo === 'medalha'; }).map(function (x) {
+          var m = A2Sabedoria.medalhas(Jornada.estado()).filter(function (y) { return y.id === x.id; })[0];
+          return m ? h('div.quiz-medalha-nova', Jornada.medalhaEl(m, 40), h('div', h('span.rotulo', 'Medalha conquistada'), h('b', m.nome), h('small', m.descricao))) : null;
+        }));
+    }
+    var mostrouNivel = false;
+    function nivelSubiu(eventos) { var ev = (eventos || []).filter(function (x) { return x.tipo === 'nivel'; })[0]; if (ev && !mostrouNivel) { mostrouNivel = true; setTimeout(function () { Jornada.celebrarNivel(ev.para); }, 700); } }
+    if (reg) {
+      desenharGanhos(reg.ganhos, reg.eventos);
+      UI.trocar(statusEl, reg.servidor ? 'Confirmando seus pontos no servidor…' : Dados.estado.tipo === 'nuvem' ? 'Entre na sua conta para guardar seus pontos no servidor.' : '');
+      nivelSubiu(reg.eventos);
+      reg.confirmacao.then(function (s) {
+        if (!statusEl.isConnected && !s) return;
+        if (s && !s.erro) { desenharGanhos(s.ganhos || [], s.eventos); UI.trocar(statusEl, ico('ok'), 'Pontos confirmados pelo servidor.'); nivelSubiu(s.eventos); }
+        else if (s && s.erro) UI.trocar(statusEl, 'O servidor não aceitou esta rodada: ' + s.erro);
+        else if (reg.servidor) UI.trocar(statusEl, 'Sem conexão agora: seus pontos serão enviados assim que possível.');
+      });
+    }
+    var texto = 'Fiz ' + res.acertos + ' de ' + res.total + ' no ' + (jogo.modo === 'desafio' ? 'desafio bíblico do dia' : 'quiz bíblico') + ' do ATOS 2. Topa o desafio?';
     var perguntas = jogo.perguntas, respostas = jogo.respostas;
+    var depois = Jornada.estado(), progDepois = A2Sabedoria.progresso(depois.pontos, depois.nivel);
     UI.trocar(area,
-      h('div.cartao.quiz-final', h('span.rotulo', jogo.modo === 'desafio' ? 'Desafio do dia' : 'Resultado'),
-        h('div.placar', h('b', res.acertos + '/' + res.total), h('span', res.pontos + ' pontos')),
+      h('div.cartao.quiz-final', h('span.rotulo', rotuloModo()),
+        h('div.placar', h('b', res.acertos + '/' + res.total), h('span', reg ? '+' + reg.pontos + ' pontos na jornada' : res.pontos + ' pontos')),
         h('p', A2Quiz.mensagem(res.acertos, res.total)),
         res.melhorSequencia >= 3 ? h('p.sub', 'Melhor sequência: ' + res.melhorSequencia + ' acertos seguidos.') : null),
+      reg ? h('section.cartao.quiz-jornada',
+        h('div.jornada-topo', Jornada.emblemaEl(progDepois.nivel.n, 48), h('div.jornada-id', h('span.rotulo', 'Jornada da Sabedoria'), h('b.jornada-nivel', progDepois.nivel.nome), h('small', h('strong', Jornada.fmt(depois.pontos)), ' pontos'))),
+        Jornada.barraNivel(progDepois, antes && antes.nivel.n === progDepois.nivel.n ? antes.pct : 0),
+        ganhosEl, statusEl,
+        h('div.linha-bts', h('button.bt.peq', { on: { click: function () { Jornada.abrir(); } } }, 'Ver minha jornada'))) : null,
       h('div.lista', perguntas.map(function (p, i) {
         var r = Biblia.interpretar(p.ref), ok = respostas[i] && respostas[i].certo;
         return h('button.item', { on: { click: function () { if (r.ok) App.abrirBiblia(r.ref.livro, r.ref.cap, r.ref.v1); } } }, h('span.marca-res.' + (ok ? 'ok' : 'erro'), ok ? '✓' : '✗'),
-          h('div.corpo', h('span', p.p), h('span.meta', p.opcoes[p.certa] + (r.ok ? ' · ' + A2Ref.formatar(r.ref) : ''))));
+          h('div.corpo', h('span', p.formato === 'complete' ? p.pergunta.replace(/^Complete o versículo: /, '') : p.pergunta), h('span.meta', p.resposta + (r.ok ? ' · ' + A2Ref.formatar(r.ref) : ''))));
       })),
-      h('div.linha-bts', h('button.bt.pri', { on: { click: function () { jogo = null; App.recarregar(); } } }, 'Jogar de novo'),
+      h('div.linha-bts', h('button.bt.pri#jogar-de-novo', { on: { click: function () { jogo = null; App.recarregar(); } } }, 'Jogar de novo'),
         h('button.bt', { on: { click: function () { App.compartilhar(texto, 'Compartilhar resultado'); } } }, ico('compartilhar'), 'Compartilhar')));
     jogo = null;
   }

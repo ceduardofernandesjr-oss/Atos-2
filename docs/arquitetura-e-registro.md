@@ -1,7 +1,7 @@
 # ATOS 2 — Arquitetura e registro de desenvolvimento
 
 Prévia: https://claude.ai/artifact/KM3ZGnNsWwF3RRgAJbGkri (privada; o proprietário compartilha pelo próprio claude.ai)
-Última atualização: 06/11/2026 (v2.6.2 — versões sem licença retiradas do app; v2.6.1 — botão de modo noturno no Início e no leitor; v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
+Última atualização: 06/11/2026 (v2.7 — Jornada da Sabedoria e banco com 1.087 perguntas conferidas; v2.6.2 — versões sem licença retiradas do app; v2.6.1 — botão de modo noturno no Início e no leitor; v2.6 — Biblioteca com acervo de Livros e Artigos; v2.5 — Perfil redesenhado e paleta oficial unificada; v2.4 — Leitor com painel Estudo do versículo; v2.3 — Biblioteca reformulada; v2.2 — Minha jornada; v2.1 — tela inicial reorganizada; v2.0 — Estúdio de Criação reformulado: 4 etapas, editor em camadas, 64 modelos em 12 categorias, fontes hospedadas no app)
 Versão publicada: https://ceduardofernandesjr-oss.github.io/Atos-2/ (repositório `ceduardofernandesjr-oss/Atos-2`; o Pages publica o ramo `gh-pages`, cópia da pasta `app/`; o ramo `main` guarda o projeto e roda os testes no GitHub Actions)
 
 ## 1. Decisões

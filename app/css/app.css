@@ -422,3 +422,9 @@ ol.teses li.tese p { margin: 4px 0 6px; font-family: var(--f-leitura); line-heig
 .grade.g3.explorar .atalho small { font-size: 12px; }
 .trecho .alvo { background: color-mix(in srgb, var(--ouro) 18%, transparent); border-radius: 4px; }
 .outra-trad { margin-top: 8px; }
+/* quiz: respiro entre a resposta e o botão Sair */
+.quiz-feedback { margin: 16px 0 0; }
+.quiz-feedback .cartao { display: grid; gap: 6px; }
+.quiz-feedback .cartao .trecho { margin: 4px 0 2px; }
+.quiz-feedback .linha-bts { margin-top: 10px; }
+.quiz > .linha-bts:last-child { margin: 24px 0 12px; padding-top: 16px; border-top: 1px solid var(--linha); }

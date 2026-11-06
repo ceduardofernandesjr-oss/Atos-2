@@ -84,6 +84,18 @@
   }
   window.addEventListener('hashchange', function () { mostrar(); });
 
+  // Teclado aberto (celular): esconde a barra flutuante para não cobrir campos
+  function verificarTeclado() {
+    var vv = window.visualViewport, el = document.activeElement;
+    var campo = el && (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !/^(checkbox|radio|range|button|submit|color|file)$/.test(el.type)));
+    var toque = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    var reduzido = vv ? window.innerHeight - vv.height > 140 : false;
+    document.body.classList.toggle('teclado', !!(reduzido || (campo && toque)));
+  }
+  document.addEventListener('focusin', verificarTeclado);
+  document.addEventListener('focusout', function () { setTimeout(verificarTeclado, 120); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', verificarTeclado);
+
   // ---------------------------------------------------------------- boas-vindas
   function boasVindas() {
     return new Promise(function (fim) {

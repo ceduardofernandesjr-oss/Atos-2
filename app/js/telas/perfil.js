@@ -118,7 +118,8 @@
       } else {
         UI.trocar(contaEl,
           h('div.ajuste', ajusteIco('nuvem'), h('div.ajuste-txt', h('b', 'Guarde tudo na sua conta'), h('small', 'Crie uma conta gratuita para usar seus favoritos, notas, planos e artes em qualquer aparelho. Sem conta, tudo continua funcionando e fica salvo só neste aparelho.'))),
-          h('div.linha-bts.conta-bts', h('button.bt.pri', { on: { click: function () { abrirConta('cadastro'); } } }, 'Criar conta'), h('button.bt', { on: { click: function () { abrirConta('entrar'); } } }, 'Entrar')));
+          h('div.linha-bts.conta-bts', h('button.bt.pri', { on: { click: function () { abrirConta('cadastro'); } } }, 'Criar conta'), h('button.bt', { on: { click: function () { abrirConta('entrar'); } } }, 'Entrar')),
+          botaoGoogle('Continuar com o Google', h('p.sub')));
       }
     }
     async function sair() {
@@ -233,6 +234,16 @@
   }
 
   // ---------------------------------------------------------------- conta (versão publicada)
+  // Botão "Continuar com o Google": só aparece quando o provedor está ativo no Supabase
+  function botaoGoogle(rotulo, msg, comDivisor) {
+    var bt = h('button.bt.conta-google-bt', { type: 'button', on: { click: async function () {
+      bt.disabled = true; msg.style.color = ''; msg.textContent = 'Abrindo o Google…';
+      try { await A2Nuvem.Conta.entrarComGoogle(); } catch (e) { bt.disabled = false; msg.style.color = 'var(--perigo)'; msg.textContent = A2Nuvem.mensagem(e); }
+    } } }, h('span.conta-google-g', { 'aria-hidden': 'true' }, 'G'), rotulo);
+    var caixa = h('div.conta-google', { hidden: true }, bt, comDivisor ? h('div.conta-ou', h('span', 'ou com e-mail')) : msg);
+    if (root.A2Nuvem && A2Nuvem.Conta && A2Nuvem.Conta.provedores) A2Nuvem.Conta.provedores().then(function (p) { if (p.google || p.indisponivel) caixa.hidden = false; });
+    return caixa;
+  }
   function abrirConta(modo) {
     UI.folha(modo === 'cadastro' ? 'Criar conta' : modo === 'recuperar' ? 'Recuperar senha' : 'Entrar', function (api) {
       var nome = h('input.entrada#conta-nome', { type: 'text', maxlength: 40, autocomplete: 'given-name', value: App.perfil().nome || '' });
@@ -258,13 +269,7 @@
         } catch (e) { msg.style.color = 'var(--perigo)'; msg.textContent = A2Nuvem.mensagem(e); }
         finally { bt.disabled = false; }
       }
-      var google = h('div.conta-google', { hidden: true },
-        h('button.bt.conta-google-bt#entrar-google', { type: 'button', on: { click: async function (ev) {
-          ev.currentTarget.disabled = true; msg.style.color = ''; msg.textContent = 'Abrindo o Google…';
-          try { await A2Nuvem.Conta.entrarComGoogle(); } catch (e) { ev.currentTarget.disabled = false; msg.style.color = 'var(--perigo)'; msg.textContent = A2Nuvem.mensagem(e); }
-        } } }, h('span.conta-google-g', { 'aria-hidden': 'true' }, 'G'), modo === 'cadastro' ? 'Criar conta com o Google' : 'Continuar com o Google'),
-        h('div.conta-ou', h('span', 'ou com e-mail')));
-      if (modo !== 'recuperar' && A2Nuvem.Conta.provedores) A2Nuvem.Conta.provedores().then(function (p) { if (p.google) google.hidden = false; });
+      var google = botaoGoogle(modo === 'cadastro' ? 'Criar conta com o Google' : 'Continuar com o Google', msg, true);
       return h('form.form', { on: { submit: enviar } },
         modo !== 'recuperar' ? google : null,
         modo === 'cadastro' ? h('label.campo', { for: 'conta-nome' }, h('span', 'Nome'), nome) : null,

@@ -4,7 +4,8 @@
   var h = UI.h, ico = UI.icone;
   var todosPor = {}; // texto completo carregado, por tradução
 
-  function abrir(inicial) {
+  // opcoes: { tema: id } ou { personagem: nome } abre direto o tema/personagem curado
+  function abrir(inicial, opcoes) {
     UI.folha('Pesquisar', function (api) {
       var entrada = h('input.entrada#pesq', { type: 'search', placeholder: 'Palavra, “expressão exata” ou referência', autocomplete: 'off', enterkeyhint: 'search' });
       entrada.value = inicial || '';
@@ -92,6 +93,8 @@
       }
 
       if (inicial) setTimeout(executar, 0);
+      if (opcoes && opcoes.tema) { var tt = A2Conteudo.TEMAS.filter(function (x) { return x.id === opcoes.tema; })[0]; if (tt) setTimeout(function () { tema(tt); }, 0); }
+      if (opcoes && opcoes.personagem) { var pp = A2Conteudo.PERSONAGENS.filter(function (x) { return x.nome === opcoes.personagem; })[0]; if (pp) setTimeout(function () { personagem(pp); }, 0); }
       return h('div.form', form, chipsEscopo, h('label.chave', { for: 'pesq-var' }, h('div', h('span', 'Incluir variações'), h('small', 'Palavras que começam com o termo')), variacoes), sugestoes, resultados);
     }, { cheia: true });
   }

@@ -1389,9 +1389,10 @@
     E.voltar = null; E.etapa = 'modelo';
     App.ir('criar');
   }
+  function abrirInspiracoes() { E.etapa = 'galeria'; if (App.estado.aba === 'criar') App.recarregar(); else App.ir('criar'); }
   // Compatível com a v1: desenha qualquer arte (v1 ou v2) num canvas
   function desenharArte(canvas, spec, largura) { return A2Desenho.desenhar(canvas, spec, largura); }
 
-  root.Telas.criar = { render: render, comVersiculo: comVersiculo, desenharArte: desenharArte, salvarImagem: salvarImagem, compartilharImagem: compartilharImagem,
+  root.Telas.criar = { render: render, comVersiculo: comVersiculo, abrirInspiracoes: abrirInspiracoes, desenharArte: desenharArte, salvarImagem: salvarImagem, compartilharImagem: compartilharImagem,
     _estado: function () { return E; } };
 })(window);

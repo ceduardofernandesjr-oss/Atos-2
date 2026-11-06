@@ -4,7 +4,7 @@
 
 **App:** https://ceduardofernandesjr-oss.github.io/Atos-2/
 
-- `app/` — o aplicativo (PWA em JavaScript puro). É o que vai para o GitHub Pages.
+- `app/` — o aplicativo (PWA em JavaScript puro). O GitHub Pages publica o ramo `gh-pages`, que é uma cópia desta pasta.
 - `docs/arquitetura-e-registro.md` — decisões, fontes, licenças e registro do desenvolvimento.
 - `docs/schema.sql` — banco no Supabase (contas, sincronização, conteúdo editorial).
 - `ferramentas/` — conversores e verificadores das traduções e das fotos.

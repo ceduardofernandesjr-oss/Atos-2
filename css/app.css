@@ -1432,6 +1432,8 @@ body.lendo-obra .tela { background: var(--areia); }
 .conta-ou::before, .conta-ou::after { content: ''; flex: 1; height: 1px; background: var(--linha); }
 .conta-perfil > .conta-google { margin-top: 10px; }
 .versao-app { padding: 10px 16px 14px; font-size: 12px; }
+.versao-app.link-priv { padding-bottom: 0; }
+.versao-app a { color: var(--azul-texto); font-weight: 700; text-decoration: underline; text-decoration-color: var(--ouro); text-underline-offset: 3px; }
 .bv-google { display: grid; gap: 8px; width: 100%; margin: 6px 0 4px; text-align: center; }
 .onboarding .bt.bv-google-bt, .bv-google-bt { width: 100%; min-height: 48px; background: #FFFFFF; border-color: #FFFFFF; color: #192D50; font-weight: 700; }
 .bv-google small { font-size: 12.5px; color: rgba(244, 240, 229, .78); }

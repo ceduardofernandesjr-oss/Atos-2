@@ -89,6 +89,12 @@
       return { precisaConfirmar: !d.session };
     },
     sair: async function () { await iniciar(); return exec(cliente.auth.signOut()); },
+    // Exclui a conta e tudo o que está guardado nela (função excluir_minha_conta no Supabase); depois encerra a sessão local
+    excluir: async function () {
+      await iniciar(); if (!sessao) throw new Error('Entre na sua conta para excluí-la.');
+      await exec(cliente.rpc('excluir_minha_conta', {}));
+      try { await cliente.auth.signOut({ scope: 'local' }); } catch (e) {}
+    },
     // Login com Google (OAuth do Supabase): volta para o app já com a sessão na URL
     entrarComGoogle: async function () { await iniciar(); return exec(cliente.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: enderecoApp(), queryParams: { prompt: 'select_account' } } })); },
     // Provedores ativados no painel do Supabase (o botão do Google só aparece quando o Google está ligado)

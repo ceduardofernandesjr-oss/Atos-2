@@ -116,3 +116,20 @@ alter publication supabase_realtime add table public.documentos_usuario, public.
 
 -- ---------------------------------------------------------------- v2.7 Jornada da Sabedoria
 -- Script completo em docs/sabedoria.sql (migração jornada_da_sabedoria, aplicada em 06/11/2026).
+
+-- ---------------------------------------------------------------- exclusão da conta pelo próprio usuário (v2.8.1)
+-- Exigência da Google Play e direito previsto na LGPD (art. 18, VI). Apaga o usuário do Auth;
+-- perfis, documentos_usuario e as tabelas da Jornada saem em cascata.
+alter table public.conteudo_editorial alter column atualizado_por drop not null;
+create or replace function public.excluir_minha_conta()
+returns void language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid(); mail text;
+begin
+  if uid is null then raise exception 'Entre na sua conta para excluí-la.' using errcode = '28000'; end if;
+  select email into mail from auth.users where id = uid;
+  update public.conteudo_editorial set atualizado_por = null where atualizado_por = uid;
+  if mail is not null then delete from public.convites_papel where lower(email) = lower(mail); end if;
+  delete from auth.users where id = uid;
+end; $$;
+revoke all on function public.excluir_minha_conta() from public, anon;
+grant execute on function public.excluir_minha_conta() to authenticated;

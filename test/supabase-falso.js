@@ -61,6 +61,12 @@ function criarServidor() {
       if (a.tabela === 'sabedoria_perguntas') return { data: [] };
       return { erro: 'tabela desconhecida' };
     }
+    if (op === 'rpc' && a.nome === 'excluir_minha_conta') {
+      if (!eu) return { erro: 'Entre na sua conta para excluí-la.' };
+      const i = usuarios.findIndex(x => x.id === eu); if (i >= 0) usuarios.splice(i, 1);
+      for (const [k, d] of docs) if (d.usuario_id === eu) docs.delete(k);
+      sabedoria.delete(eu); return { data: null };
+    }
     if (op === 'rpc' && a.nome === 'sabedoria_estado') { if (!eu) return { erro: 'JWT expired' }; return { data: paraServidor(sabedoria.get(eu) || J.estadoInicial()) }; }
     if (op === 'rpc' && a.nome === 'sabedoria_registrar_rodada') {
       if (!eu) return { erro: 'JWT expired' };
@@ -111,7 +117,7 @@ function clienteNavegador() {
         onAuthStateChange(cb) { ouvAuth.push(cb); return { data: { subscription: { unsubscribe() {} } } }; },
         async signInWithPassword(a) { const r = await window.__sb('entrar', { email: a.email, senha: a.password }); if (r.erro) return { data: null, error: { message: r.erro } }; ouvAuth.forEach(f => f('SIGNED_IN', r.sessao)); return { data: { session: r.sessao }, error: null }; },
         async signUp(a) { const r = await window.__sb('cadastrar', { email: a.email, senha: a.password, nome: a.options.data.nome }); return r.erro ? { data: null, error: { message: r.erro } } : { data: { session: null, user: {} }, error: null }; },
-        async signOut() { await window.__sb('sair', {}); ouvAuth.forEach(f => f('SIGNED_OUT', null)); return { error: null }; },
+        async signOut(_o) { await window.__sb('sair', {}); ouvAuth.forEach(f => f('SIGNED_OUT', null)); return { error: null }; },
         async resetPasswordForEmail() { return { data: {}, error: null }; },
         async updateUser() { return { data: {}, error: null }; }
       },

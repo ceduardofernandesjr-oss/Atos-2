@@ -114,13 +114,28 @@
           h('div.ajuste', ajusteIco('pessoa'), h('div.ajuste-txt', h('b', c.email), h('small', 'Favoritos, notas, planos, estudos e artes ficam na sua conta e aparecem em qualquer aparelho em que você entrar.')),
             c.papel !== 'leitor' ? h('span.selo.ouro', c.papel === 'administrador' ? 'Administração' : 'Edição') : null),
           linhaAjuste('cadeado', 'Trocar senha', null, function () { Telas.perfil.novaSenha(); }),
-          linhaAjuste('esquerda', 'Sair da conta', 'Seus dados continuam guardados na conta', sair));
+          linhaAjuste('esquerda', 'Sair da conta', 'Seus dados continuam guardados na conta', sair),
+          linhaAjuste('lixo', 'Excluir minha conta', 'Apaga a conta e tudo o que está guardado nela', excluirConta));
       } else {
         UI.trocar(contaEl,
           h('div.ajuste', ajusteIco('nuvem'), h('div.ajuste-txt', h('b', 'Guarde tudo na sua conta'), h('small', 'Crie uma conta gratuita para usar seus favoritos, notas, planos e artes em qualquer aparelho. Sem conta, tudo continua funcionando e fica salvo só neste aparelho.'))),
           h('div.linha-bts.conta-bts', h('button.bt.pri', { on: { click: function () { abrirConta('cadastro'); } } }, 'Criar conta'), h('button.bt', { on: { click: function () { abrirConta('entrar'); } } }, 'Entrar')),
           botaoGoogle('Continuar com o Google', h('p.sub')));
       }
+    }
+    async function excluirConta() {
+      var c = est.conta || {};
+      var ok = await UI.confirmar('Excluir minha conta', 'Sua conta (' + (c.email || '') + ') e tudo o que está guardado nela serão apagados para sempre: perfil, favoritos, destaques, anotações, planos, estudos, artes, progresso de leitura e pontos da Jornada da Sabedoria. Isso não pode ser desfeito.', 'Continuar', true);
+      if (!ok) return;
+      var conf = await UI.perguntar('Confirme a exclusão', 'Para confirmar, digite EXCLUIR', '', { ok: 'Excluir para sempre' });
+      if (conf == null) return;
+      if (String(conf).trim().toUpperCase() !== 'EXCLUIR') { UI.aviso('A conta não foi excluída: a confirmação não confere.', true); return; }
+      try {
+        await A2Nuvem.Conta.excluir();
+        try { await Dados.apagarAparelho(); } catch (e) {}
+        UI.aviso('Sua conta e seus dados foram excluídos.');
+        setTimeout(function () { location.reload(); }, 1200);
+      } catch (e) { UI.aviso((e && e.message) || 'Não foi possível excluir a conta agora. Tente de novo.', true); }
     }
     async function sair() {
       var apagar = await UI.confirmar('Sair da conta', 'Seus dados continuam guardados na conta. Deseja também apagar a cópia deste aparelho? (Recomendado em aparelho compartilhado.)', 'Sair e apagar deste aparelho', true);
@@ -166,6 +181,7 @@
       h('div.sobre-marca', h('div.marca-peq', { html: UI.logo(40) + '<b>ATOS 2</b>' }), h('p.lema', 'De volta à doutrina dos apóstolos.'),
         h('p.sub', 'O ATOS 2 não pertence a nenhuma denominação. As Escrituras vêm sempre das traduções, sem alterações; conteúdos com apoio de inteligência artificial são identificados e revisados antes de publicar.')),
       linhaAjuste('escudo', 'Licenças e créditos', 'Traduções, textos originais, fotos e fontes', abrirLicencas, '#ver-licencas'),
+      h('p.sub.versao-app.link-priv', h('a#link-privacidade', { href: 'privacidade.html', target: '_blank', rel: 'noopener' }, 'Política de privacidade')),
       h('p.sub.versao-app', 'Versão ' + (App.versao || '') + (root.A2Nuvem && A2Nuvem.Conta && A2Nuvem.Conta.provedores ? ' · login com Google disponível' : ''))));
   }
 

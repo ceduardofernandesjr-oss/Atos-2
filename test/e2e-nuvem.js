@@ -81,6 +81,18 @@ async function entrar(p) {
   await a.screenshot({ path: '/tmp/shots/30-conta.png', fullPage: true });
   await a.keyboard.press('Escape');
   await c.click('a[data-aba="perfil"]'); await c.waitForTimeout(500); await c.screenshot({ path: '/tmp/shots/31-conta-logada.png', fullPage: true });
+  // política de privacidade e exclusão da conta (exigências da Google Play / LGPD)
+  checar(await c.getAttribute('#link-privacidade', 'href') === 'privacidade.html', 'Perfil: link para a Política de privacidade');
+  const priv = await c.evaluate(async () => { const r = await fetch('privacidade.html'); const t = await r.text(); return r.ok && /Excluir minha conta/.test(t) && /Supabase/.test(t) && /LGPD/.test(t); });
+  checar(priv, 'Política de privacidade publicada com exclusão de conta, Supabase e LGPD');
+  await c.click('button:has-text("Excluir minha conta")'); await c.click('.folha .bt.perigo');
+  await c.waitForSelector('.folha input.entrada'); await c.fill('.folha input.entrada', 'apagar'); await c.click('.folha button[type="submit"]');
+  await c.waitForTimeout(400);
+  checar(servidor.usuarios.some(u => u.id === 'u-teste'), 'Excluir conta: confirmação errada não exclui');
+  await c.click('button:has-text("Excluir minha conta")'); await c.click('.folha .bt.perigo');
+  await c.waitForSelector('.folha input.entrada'); await c.fill('.folha input.entrada', 'excluir'); await c.click('.folha button[type="submit"]');
+  await c.waitForFunction(() => !Dados.estado.conta, null, { timeout: 15000 }).catch(() => {});
+  checar(!servidor.usuarios.some(u => u.id === 'u-teste') && ![...servidor.docs.values()].some(d => d.usuario_id === 'u-teste') && !servidor.sabedoria.get('u-teste'), 'Excluir conta: conta, documentos e Jornada apagados no servidor');
   console.log('\nOK:', ok.length, ' FALHAS:', falhas.length, ' ERROS:', erros.length); erros.slice(0, 8).forEach(e => console.log('  ', e.slice(0, 250)));
   await b.close(); process.exit(falhas.length || erros.length ? 1 : 0);
 })().catch(e => { console.error('ERRO', e); console.log('OK:', ok.length, 'FALHAS:', falhas); process.exit(2); });

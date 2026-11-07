@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Política de privacidade — ATOS 2</title>
+<meta name="description" content="Como o ATOS 2 trata seus dados: o que é guardado, para quê, onde fica e como excluir sua conta.">
+<meta name="theme-color" content="#192D50">
+<link rel="icon" href="icones/icone.svg" type="image/svg+xml">
+<style>
+@font-face { font-family: "Cormorant Garamond"; font-weight: 700; font-display: swap; src: url(fontes/cormorant-garamond-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 600; font-display: swap; src: url(fontes/cormorant-garamond-latin-600-italic.woff2) format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 400; font-display: swap; src: url(fontes/manrope-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 700; font-display: swap; src: url(fontes/manrope-latin-700-normal.woff2) format("woff2"); }
+:root { --azul: #192D50; --ouro: #A58A57; --areia: #F4F0E5; --branco: #FFFFFF; --tinta: #2A3142; --tinta-2: #5C6170; --linha: #E4DCC8; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--areia); color: var(--tinta); font: 400 16px/1.65 Manrope, system-ui, sans-serif; }
+header { background: radial-gradient(90% 120% at 100% 0%, rgba(165,138,87,.35), transparent 60%), linear-gradient(160deg, #213B68, var(--azul) 60%, #0F1D37); color: var(--areia);
+  padding: calc(28px + env(safe-area-inset-top)) 22px 34px; }
+.topo { max-width: 760px; margin: 0 auto; }
+.marca { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+.marca img { width: 44px; height: 44px; }
+.marca b { font: 700 24px/1 "Cormorant Garamond", Georgia, serif; letter-spacing: .12em; font-variant-numeric: lining-nums; }
+h1 { margin: 26px 0 6px; font: 700 40px/1.08 "Cormorant Garamond", Georgia, serif; color: var(--branco); }
+.lema { margin: 0; font: italic 600 20px/1.3 "Cormorant Garamond", Georgia, serif; color: #E2C894; }
+.data { margin: 14px 0 0; font-size: 13px; color: rgba(244,240,229,.75); }
+main { max-width: 760px; margin: -18px auto 0; padding: 0 16px calc(40px + env(safe-area-inset-bottom)); }
+.cartao { background: var(--branco); border: 1px solid var(--linha); border-radius: 20px; padding: 22px 20px; box-shadow: 0 8px 22px rgba(25,45,80,.06); }
+.cartao + .cartao { margin-top: 14px; }
+.resumo { border-color: rgba(165,138,87,.5); }
+h2 { margin: 0 0 8px; font: 700 26px/1.15 "Cormorant Garamond", Georgia, serif; color: var(--azul); }
+h3 { margin: 18px 0 4px; font-size: 15px; color: var(--azul); }
+p { margin: 8px 0; }
+ul { margin: 8px 0; padding-left: 20px; }
+li { margin: 4px 0; }
+li::marker { color: var(--ouro); }
+strong { color: var(--azul); }
+a { color: var(--azul); font-weight: 700; text-decoration-color: var(--ouro); text-underline-offset: 3px; }
+.passos { counter-reset: p; list-style: none; padding: 0; }
+.passos li { counter-increment: p; position: relative; padding-left: 38px; margin: 10px 0; }
+.passos li::before { content: counter(p); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--azul); color: #E2C894; font: 700 13px/26px Manrope, sans-serif; text-align: center; }
+.destaque { border-left: 3px solid var(--ouro); background: rgba(165,138,87,.09); padding: 10px 14px; border-radius: 0 12px 12px 0; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.indice a { display: inline-block; padding: 6px 12px; border: 1px solid var(--linha); border-radius: 999px; background: var(--areia); font-size: 13px; text-decoration: none; }
+footer { max-width: 760px; margin: 0 auto; padding: 0 22px 40px; font-size: 13px; color: var(--tinta-2); text-align: center; }
+@media (min-width: 640px) { h1 { font-size: 48px; } .cartao { padding: 28px 30px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="topo">
+    <a class="marca" href="./#inicio"><img src="icones/icone.svg" alt=""><b>ATOS 2</b></a>
+    <h1>Política de privacidade</h1>
+    <p class="lema">De volta à doutrina dos apóstolos</p>
+    <p class="data">Última atualização: 7 de novembro de 2026</p>
+  </div>
+</header>
+
+<main>
+  <section class="cartao resumo">
+    <h2>Em poucas palavras</h2>
+    <ul>
+      <li>Você pode usar o ATOS 2 <strong>sem criar conta</strong>. Nesse caso, tudo fica só no seu aparelho.</li>
+      <li>Com uma conta, guardamos o que for preciso para seus dados aparecerem em qualquer aparelho: e-mail, nome, foto de perfil e o que você cria no app.</li>
+      <li><strong>Não vendemos dados</strong>, não exibimos anúncios e não usamos ferramentas de rastreamento ou de análise de uso.</li>
+      <li>Você pode <a href="#excluir-conta">excluir sua conta</a> a qualquer momento dentro do app, e tudo o que está nela é apagado.</li>
+    </ul>
+    <ul class="indice">
+      <li><a href="#quem">Quem somos</a></li>
+      <li><a href="#dados">Dados tratados</a></li>
+      <li><a href="#uso">Para que usamos</a></li>
+      <li><a href="#onde">Onde ficam</a></li>
+      <li><a href="#direitos">Seus direitos</a></li>
+      <li><a href="#excluir-conta">Excluir conta</a></li>
+    </ul>
+  </section>
+
+  <section class="cartao" id="quem">
+    <h2>Quem somos</h2>
+    <p>O ATOS 2 é um aplicativo cristão gratuito de leitura e estudo da Bíblia, com planos de leitura, devocionais, acervo de livros, Jornada da Sabedoria e ferramentas para criar cartões com versículos. Esta política vale para o app instalado (Android) e para a versão web em <a href="https://ceduardofernandesjr-oss.github.io/Atos-2/">ceduardofernandesjr-oss.github.io/Atos-2</a>.</p>
+    <p>O responsável pelo tratamento dos dados é o desenvolvedor do ATOS 2. Para falar sobre privacidade, use o e-mail de contato do desenvolvedor que aparece na página do ATOS 2 na Google Play.</p>
+  </section>
+
+  <section class="cartao" id="dados">
+    <h2>Quais dados são tratados</h2>
+    <h3>Sem conta</h3>
+    <p>O que você faz no app (favoritos, destaques, anotações, planos, progresso de leitura, estudos, cartões e configurações) fica guardado <strong>apenas no armazenamento do seu aparelho</strong>. Nada disso é enviado para nós.</p>
+    <h3>Com conta</h3>
+    <ul>
+      <li><strong>Dados de cadastro:</strong> e-mail e senha. A senha é guardada de forma cifrada pelo serviço de autenticação, e ninguém do ATOS 2 tem acesso a ela.</li>
+      <li><strong>Se você entrar com o Google:</strong> o Google nos informa seu nome, seu e-mail, sua foto de perfil e um identificador da conta. Usamos o nome e a foto para preencher seu perfil, e você pode trocá-los quando quiser.</li>
+      <li><strong>Perfil:</strong> nome, foto e preferências do app.</li>
+      <li><strong>O que você cria:</strong> favoritos e coleções, destaques, anotações, planos e progresso de leitura, estudos, devocionais pessoais, cartões e artes do Estúdio (incluindo imagens que você escolher adicionar) e configurações.</li>
+      <li><strong>Jornada da Sabedoria:</strong> respostas às perguntas, pontos, nível, medalhas e data e hora das rodadas. Os pontos são calculados no servidor para que a pontuação seja justa.</li>
+      <li><strong>Equipe editorial:</strong> se você tiver função de editor ou administrador, registramos qual conta publicou ou alterou cada conteúdo do app.</li>
+      <li><strong>Registros técnicos:</strong> os serviços de hospedagem e de banco de dados mantêm registros de acesso, como endereço IP, data e hora, por motivos de segurança e funcionamento.</li>
+    </ul>
+    <h3>O que não coletamos</h3>
+    <p>O app não acessa sua localização, seus contatos, seu microfone nem suas mensagens. Também não usa identificadores de publicidade, cookies de rastreamento ou ferramentas de análise de comportamento. A galeria de fotos só é aberta quando você mesmo escolhe uma imagem.</p>
+  </section>
+
+  <section class="cartao" id="uso">
+    <h2>Para que usamos os dados</h2>
+    <ul>
+      <li>Criar e manter sua conta e permitir que você entre nela.</li>
+      <li>Guardar e sincronizar seus dados entre os aparelhos em que você entrar.</li>
+      <li>Calcular e mostrar seus pontos, seu nível e suas medalhas na Jornada da Sabedoria.</li>
+      <li>Proteger o app contra uso indevido e corrigir falhas.</li>
+    </ul>
+    <p>Pela Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018), tratamos esses dados para executar o serviço que você pediu ao criar a conta (art. 7º, V) e, quando for o caso, com o seu consentimento (art. 7º, I), como ao escolher entrar com o Google. Não usamos seus dados para publicidade nem os vendemos a ninguém.</p>
+    <p class="destaque">Recursos de inteligência artificial não fazem parte da versão publicada do app. Seus textos e anotações não são enviados a serviços de IA.</p>
+  </section>
+
+  <section class="cartao" id="onde">
+    <h2>Onde os dados ficam e com quem são compartilhados</h2>
+    <p>Usamos apenas os serviços necessários para o app funcionar:</p>
+    <ul>
+      <li><strong>Supabase:</strong> banco de dados e autenticação das contas. Os dados ficam em servidores na região de <strong>São Paulo, Brasil</strong>.</li>
+      <li><strong>Google:</strong> somente se você escolher “Continuar com o Google”. O login segue também a política de privacidade do Google.</li>
+      <li><strong>GitHub Pages:</strong> hospedagem dos arquivos do app. Ao abrir o app, o GitHub pode registrar dados técnicos de acesso, como o endereço IP.</li>
+    </ul>
+    <p>Quando você compartilha um versículo ou cartão por WhatsApp ou outro app, o envio é feito por você e segue as regras do app escolhido.</p>
+    <p>Podemos fornecer dados a autoridades somente quando a lei exigir.</p>
+    <h3>Segurança</h3>
+    <p>A comunicação é feita sempre por conexão segura (HTTPS). Regras de segurança no banco de dados garantem que cada conta só consiga ler e alterar os próprios dados.</p>
+    <h3>Por quanto tempo</h3>
+    <p>Os dados da conta ficam guardados enquanto ela existir. Quando você exclui a conta, os dados são apagados do banco de dados na hora. Cópias de segurança técnicas do provedor podem guardá-los por um período curto, até serem substituídas.</p>
+  </section>
+
+  <section class="cartao" id="direitos">
+    <h2>Seus direitos</h2>
+    <p>Pela LGPD (art. 18), você pode pedir: confirmação de que tratamos seus dados, acesso a eles, correção, portabilidade, informações sobre compartilhamento, revogação do consentimento e a eliminação dos dados.</p>
+    <ul>
+      <li><strong>Corrigir:</strong> em Perfil › Editar perfil você altera seu nome e sua foto.</li>
+      <li><strong>Apagar do aparelho:</strong> em Perfil › Dados e armazenamento.</li>
+      <li><strong>Excluir tudo:</strong> veja os passos abaixo.</li>
+      <li>Para os demais pedidos, escreva para o e-mail de contato do desenvolvedor na página do ATOS 2 na Google Play.</li>
+    </ul>
+    <p>Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p>
+  </section>
+
+  <section class="cartao" id="excluir-conta">
+    <h2>Como excluir sua conta</h2>
+    <ol class="passos">
+      <li>Abra o ATOS 2 e entre na sua conta.</li>
+      <li>Toque em <strong>Perfil</strong> e desça até a seção <strong>Conta</strong>.</li>
+      <li>Toque em <strong>Excluir minha conta</strong>, confirme e digite <strong>EXCLUIR</strong>.</li>
+    </ol>
+    <p>A exclusão é imediata e definitiva. São apagados a conta, o perfil, os favoritos, os destaques, as anotações, os planos, os estudos, as artes, o progresso de leitura e os dados da Jornada da Sabedoria. A cópia guardada no aparelho também é apagada.</p>
+    <p>Se você não consegue mais entrar no app, peça a exclusão pelo e-mail de contato do desenvolvedor na página do ATOS 2 na Google Play, usando o mesmo e-mail da conta.</p>
+  </section>
+
+  <section class="cartao">
+    <h2>Crianças e adolescentes</h2>
+    <p>O ATOS 2 pode ser usado por toda a família. Menores de 18 anos devem criar conta com a autorização e o acompanhamento dos pais ou responsáveis, como prevê a LGPD (art. 14).</p>
+    <h2 style="margin-top:18px">Mudanças nesta política</h2>
+    <p>Se esta política mudar, a data no topo será atualizada. Mudanças importantes serão avisadas dentro do app.</p>
+  </section>
+</main>
+<footer>ATOS 2 · De volta à doutrina dos apóstolos · <a href="./#inicio">Abrir o app</a></footer>
+</body>
+</html>

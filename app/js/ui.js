@@ -101,13 +101,13 @@
 
   // Logotipo: chama (Atos 2:3) sobre o livro aberto, em dourado, dentro de um selo azul.
   function logo(tam, semFundo) {
-    var fundo = semFundo ? '' : '<rect x="2" y="2" width="116" height="116" rx="30" fill="#14284B"/><rect x="7" y="7" width="106" height="106" rx="26" fill="none" stroke="#C7A56B" stroke-opacity=".45" stroke-width="1.2"/>';
+    var fundo = semFundo ? '' : '<rect class="lg-fundo" x="2" y="2" width="116" height="116" rx="30" fill="#14284B"/><rect class="lg-borda" x="7" y="7" width="106" height="106" rx="26" fill="none" stroke="#C7A56B" stroke-opacity=".45" stroke-width="1.2"/>';
     return '<svg viewBox="0 0 120 120" width="' + (tam || 120) + '" height="' + (tam || 120) + '" role="img" aria-label="ATOS 2">' + fundo +
       '<defs><linearGradient id="lg-ch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1D9A4"/><stop offset="1" stop-color="#B98E4E"/></linearGradient></defs>' +
-      '<path d="M60 23c3 9 13 14 13 27 0 8-6 13-13 13s-13-5-13-13c0-7 4-10 6-15 1 4 3 6 6 7-1-7 0-13 1-19z" fill="url(#lg-ch)"/>' +
-      '<path d="M60 43c1.5 4 5 6 5 11 0 3.5-2.3 5.6-5 5.6s-5-2.1-5-5.6c0-3 1.6-4.4 2.6-6.6.4 1.6 1.4 2.6 2.4 3 0-2.7-.3-5 0-7.4z" fill="#14284B" fill-opacity=".55"/>' +
-      '<path d="M22 72c14-4 28-2 38 6 10-8 24-10 38-6v22c-14-4-28-2-38 6-10-8-24-10-38-6z" fill="none" stroke="#E9D3A1" stroke-width="3.2" stroke-linejoin="round"/>' +
-      '<path d="M60 78v22" stroke="#E9D3A1" stroke-width="3.2" stroke-linecap="round"/></svg>';
+      '<path class="lg-chama" d="M60 23c3 9 13 14 13 27 0 8-6 13-13 13s-13-5-13-13c0-7 4-10 6-15 1 4 3 6 6 7-1-7 0-13 1-19z" fill="url(#lg-ch)"/>' +
+      '<path class="lg-miolo" d="M60 43c1.5 4 5 6 5 11 0 3.5-2.3 5.6-5 5.6s-5-2.1-5-5.6c0-3 1.6-4.4 2.6-6.6.4 1.6 1.4 2.6 2.4 3 0-2.7-.3-5 0-7.4z" fill="#14284B" fill-opacity=".55"/>' +
+      '<path class="lg-livro" d="M22 72c14-4 28-2 38 6 10-8 24-10 38-6v22c-14-4-28-2-38 6-10-8-24-10-38-6z" fill="none" stroke="#E9D3A1" stroke-width="3.2" stroke-linejoin="round"/>' +
+      '<path class="lg-livro" d="M60 78v22" stroke="#E9D3A1" stroke-width="3.2" stroke-linecap="round"/></svg>';
   }
 
   // ---------- avisos ----------

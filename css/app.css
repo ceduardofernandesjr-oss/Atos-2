@@ -87,17 +87,17 @@ img, canvas { max-width: 100%; }
 .abas a[aria-current="page"]::after { opacity: 1; transform: scaleX(1); }
 .abas a:focus-visible { outline: 2px solid var(--nav-ouro); outline-offset: -4px; }
 .abas a:active .ico { transform: scale(.92); }
-/* botão central Criar */
-.abas .aba-criar { align-content: end; padding-bottom: 12px; }
-.abas .aba-criar::after { display: none; }
-.abas .aba-criar .ico, .abas .aba-criar[aria-current="page"] .ico { width: 56px; height: 56px; margin-top: -30px; padding: 15px; border-radius: 50%;
+/* botão central em destaque: Bíblia (v2.8.5; antes era Criar) */
+.abas .aba-centro { align-content: end; padding-bottom: 12px; }
+.abas .aba-centro::after { display: none; }
+.abas .aba-centro .ico, .abas .aba-centro[aria-current="page"] .ico { width: 56px; height: 56px; margin-top: -30px; padding: 15px; border-radius: 50%;
   background: #192D50; color: #C9AE78; border: 3px solid var(--nav-fundo-solido, #FFFFFF);
   box-shadow: 0 8px 20px rgba(25, 45, 80, .28), 0 2px 6px rgba(25, 45, 80, .18); transition: transform .18s ease, box-shadow .18s ease; }
-:root[data-tema="escuro"] .abas .aba-criar .ico, :root[data-theme="dark"]:not([data-tema="claro"]) .abas .aba-criar .ico { border-color: #1B2540; }
-@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .abas .aba-criar .ico { border-color: #1B2540; } }
-.abas .aba-criar:active .ico { transform: scale(.94); box-shadow: 0 4px 12px rgba(25, 45, 80, .25); }
-.abas .aba-criar[aria-current="page"] { color: var(--nav-azul); }
-.abas .aba-criar[aria-current="page"] .ico { color: #E2C894; }
+:root[data-tema="escuro"] .abas .aba-centro .ico, :root[data-theme="dark"]:not([data-tema="claro"]) .abas .aba-centro .ico { border-color: #1B2540; }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .abas .aba-centro .ico { border-color: #1B2540; } }
+.abas .aba-centro:active .ico { transform: scale(.94); box-shadow: 0 4px 12px rgba(25, 45, 80, .25); }
+.abas .aba-centro[aria-current="page"] { color: var(--nav-azul); }
+.abas .aba-centro[aria-current="page"] .ico { color: #E2C894; }
 /* teclado aberto: a barra sai de cena para não cobrir campos */
 body.teclado .abas { transform: translateY(calc(100% + 40px)); opacity: 0; pointer-events: none; }
 @media (min-width: 900px) { .abas { --nav-margem: 0px; } }
@@ -798,8 +798,8 @@ body.imersivo .abas, body.imersivo .audio, body.imersivo .barra-sel { display: n
 @media (max-width: 360px) { .continue { grid-template-columns: 1fr; } .estudio-card { grid-template-columns: 1fr 90px; } .estudio-mini { width: 90px; height: 112px; } }
 
 /* Navegação flutuante: fundo suave na aba ativa */
-.abas a[aria-current="page"]:not(.aba-criar)::before { content: ''; position: absolute; inset: 5px 6px 5px; border-radius: 18px; background: color-mix(in srgb, #A58A57 12%, transparent); z-index: -1; }
-.abas a:not(.aba-criar) { isolation: isolate; }
+.abas a[aria-current="page"]:not(.aba-centro)::before { content: ''; position: absolute; inset: 5px 6px 5px; border-radius: 18px; background: color-mix(in srgb, #A58A57 12%, transparent); z-index: -1; }
+.abas a:not(.aba-centro) { isolation: isolate; }
 
 /* ---------- Minha jornada (v2.2) ---------- */
 .jornada2 { display: grid; gap: 14px; padding: 16px; border-radius: 20px; background: var(--papel); border: 1px solid var(--linha); box-shadow: 0 6px 18px rgba(25, 45, 80, .05); }
@@ -1615,3 +1615,17 @@ body.lendo-obra .tela { background: var(--areia); }
 /* Sem zoom de pinça nem de duplo toque: o app se comporta como aplicativo (v2.8.4).
    O tamanho do texto continua ajustável pelo botão Aa do leitor e pela fonte do sistema. */
 html, body { touch-action: pan-x pan-y; }
+
+/* Logo do topo no modo escuro: cores invertidas (fundo bege, desenho azul-marinho) para destacar sobre o fundo escuro (v2.8.5) */
+:root[data-tema="escuro"] .marca-peq .lg-fundo, :root[data-theme="dark"]:not([data-tema="claro"]) .marca-peq .lg-fundo { fill: #F4F0E5; }
+:root[data-tema="escuro"] .marca-peq .lg-borda, :root[data-theme="dark"]:not([data-tema="claro"]) .marca-peq .lg-borda { stroke: #A58A57; stroke-opacity: .7; }
+:root[data-tema="escuro"] .marca-peq .lg-chama, :root[data-theme="dark"]:not([data-tema="claro"]) .marca-peq .lg-chama { fill: #192D50; }
+:root[data-tema="escuro"] .marca-peq .lg-miolo, :root[data-theme="dark"]:not([data-tema="claro"]) .marca-peq .lg-miolo { fill: #A58A57; fill-opacity: 1; }
+:root[data-tema="escuro"] .marca-peq .lg-livro, :root[data-theme="dark"]:not([data-tema="claro"]) .marca-peq .lg-livro { stroke: #192D50; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .marca-peq .lg-fundo { fill: #F4F0E5; }
+  :root:not([data-tema="claro"]) .marca-peq .lg-borda { stroke: #A58A57; stroke-opacity: .7; }
+  :root:not([data-tema="claro"]) .marca-peq .lg-chama { fill: #192D50; }
+  :root:not([data-tema="claro"]) .marca-peq .lg-miolo { fill: #A58A57; fill-opacity: 1; }
+  :root:not([data-tema="claro"]) .marca-peq .lg-livro { stroke: #192D50; }
+}

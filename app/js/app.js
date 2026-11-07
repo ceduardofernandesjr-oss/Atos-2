@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.8.3';
+  var VERSAO_APP = '2.8.4';
   var ABAS = ['inicio', 'biblia', 'livros', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
@@ -284,3 +284,10 @@
   }
   iniciar();
 })(window);
+
+// Safari (iPhone) ignora user-scalable=no: bloqueia o gesto de pinça também lá
+(function () {
+  if (typeof document === 'undefined') return;
+  ['gesturestart', 'gesturechange'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false }); });
+  document.addEventListener('touchmove', function (e) { if (e.scale !== undefined && e.scale !== 1) e.preventDefault(); }, { passive: false });
+})();

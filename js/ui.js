@@ -83,7 +83,12 @@
     cruz: '<path d="M12 3v18M6.5 8.5h11"/>', harpa: '<path d="M6 20V5c5 0 11 4 12 15zM9 8v12M12 10v10M15 13.5V20"/>',
     lampada: '<path d="M4 15c2 0 3-1 5-1h7.5c2 0 3.5-1.5 3.5-3H9c-3 0-5 2-5 4zM13 11c0-2 1-3 1-5 1 1.5 2 3 2 5"/>',
     luz: '<circle cx="12" cy="12" r="3.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
-    pedra: '<path d="M4 19h16l-2-6-4-1-2-5-4 2-2 5z"/>', globo: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>'
+    pedra: '<path d="M4 19h16l-2-6-4-1-2-5-4 2-2 5z"/>',
+    tabuas: '<path d="M4 20V8a4 4 0 0 1 7.5-2V20zM12.5 20V6A4 4 0 0 1 20 8v12z"/><path d="M6.5 11h3M6.5 14h3M15 11h3M15 14h3"/>',
+    coroa: '<path d="M4 17.5 3 7.5l5 4 4-6 4 6 5-4-1 10z"/><path d="M5 20.5h14"/>',
+    pergaminho: '<path d="M8 4h11a2 2 0 0 1 0 4h-2v10a2 2 0 0 1-2 2H6a2 2 0 0 1 0-4h2z"/><path d="M8 16V4M11 9h4M11 12.5h4"/>',
+    carta: '<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="m4 7 8 6 8-6"/>',
+    pena: '<path d="M20 4c-7 0-12 5-13.5 12.5L5 20M20 4c0 6-3.5 10.5-10 12M13 9.5 9 13.5"/>', globo: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/>'
   };
   function icone(nome, extra) {
     var s = h('span.ico', { 'aria-hidden': 'true', html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + (P[nome] || P.info) + '</svg>' });

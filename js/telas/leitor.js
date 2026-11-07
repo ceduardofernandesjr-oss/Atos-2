@@ -310,36 +310,8 @@
   }
 
   // ---------- seletores ----------
-  function escolherLivro() {
-    UI.folha('Livros', function (api) {
-      var ir = h('input.entrada#ir-ref', { type: 'text', placeholder: 'Ir para… ex.: Jo 3:16, Sl 23, 1 Co 13', autocomplete: 'off' });
-      var erro = h('p.sub', { style: { color: 'var(--perigo)' } });
-      var form = h('form', { on: { submit: function (e) {
-        e.preventDefault(); var r = Biblia.interpretar(ir.value);
-        if (!r.ok) { erro.textContent = r.erro; return; }
-        api.fechar(); App.abrirBiblia(r.ref.livro, r.ref.cap, r.ref.v1);
-      } } }, h('label.sr', { for: 'ir-ref' }, 'Ir para referência'), ir, erro);
-      var corpo = h('div.form', form);
-      var lidos = (Dados.obter('leitura', 'capitulos') || {}).lidos || {};
-      ['AT', 'NT'].forEach(function (t) {
-        corpo.appendChild(h('div.rotulo', t === 'AT' ? 'Antigo Testamento' : 'Novo Testamento'));
-        corpo.appendChild(h('div.livros-grade', A2Ref.LIVROS.filter(function (l) { return l.test === t; }).map(function (l) {
-          return h('button' + (l.id === atual.livro ? '.atual' : ''), { on: { click: function () { capitulos(l.id); } } }, l.nome);
-        })));
-      });
-      function capitulos(id) {
-        var n = Biblia.contagemSinc(versaoAtual())(id).length;
-        if (n === 1) { api.fechar(); App.abrirBiblia(id, 1); return; }
-        corpo.replaceChildren(h('button.bt.peq', { on: { click: function () { api.fechar(); escolherLivro(); } } }, ico('esquerda'), 'Livros'),
-          h('h3', { style: { font: '700 24px var(--f-display)', color: 'var(--azul-texto)' } }, A2Ref.POR_ID[id].nome),
-          h('div.caps-grade', Array.from({ length: n }, function (_, i) {
-            var k = id + '.' + (i + 1);
-            return h('button' + (id === atual.livro && i + 1 === atual.cap ? '.atual' : '') + (lidos[k] ? '.lido' : ''), { 'aria-label': 'Capítulo ' + (i + 1) + (lidos[k] ? ', lido' : ''), on: { click: function () { api.fechar(); App.abrirBiblia(id, i + 1); } } }, String(i + 1));
-          })));
-      }
-      return corpo;
-    }, { foco: false });
-  }
+  // A escolha de livro e capítulo é a tela #livros (js/telas/livros.js); a barra inferior continua na aba Bíblia
+  function escolherLivro() { App.ir('livros'); }
 
   function escolherTraducao() {
     UI.folha('Traduções', function (api) {
@@ -432,5 +404,5 @@
   function salvarPosicao() { if (audio) Dados.salvar('leitura', 'audio', { livro: atual.livro, cap: atual.cap, v: audio.v }); }
   function pararAudio() { if (audio) { try { speechSynthesis.cancel(); } catch (e) {} if (audio.el) audio.el.remove(); salvarPosicao(); audio = null; } }
 
-  root.Telas.biblia = { render: render };
+  root.Telas.biblia = { render: render, escolherTraducao: escolherTraducao };
 })(window);

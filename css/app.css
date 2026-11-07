@@ -1278,7 +1278,7 @@ body.lendo-obra .tela { background: var(--areia); }
 .leitor-cab .seletor-cap { min-width: 0; flex: 0 1 auto; }
 .leitor-cab .seletor-cap .sc-livro { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .leitor-cab .seletor-cap .sc-cap, .leitor-cab .seletor-cap .ico, .leitor-cab .trad, .leitor-cab .bt-ico { flex: none; }
-@media (max-width: 380px) { .leitor-cab .bt-ico { width: 38px; height: 38px; } }
+@media (max-width: 380px) { .leitor-cab { gap: 2px; padding-left: 6px; padding-right: 6px; } .leitor-cab .bt-ico { width: 34px; height: 34px; } .leitor-cab .seletor-cap { padding: 6px 6px; gap: 4px; font-size: 19px; } .leitor-cab .trad { padding-left: 8px; padding-right: 8px; } }
 .leitor-cab .sc-curto { display: none; }
 @media (max-width: 430px) { .leitor-cab .sc-longo { display: none; } .leitor-cab .sc-curto { display: inline; } }
 

@@ -82,7 +82,8 @@ async function entrar(p) {
   await a.keyboard.press('Escape');
   await c.click('a[data-aba="perfil"]'); await c.waitForTimeout(500); await c.screenshot({ path: '/tmp/shots/31-conta-logada.png', fullPage: true });
   // política de privacidade e exclusão da conta (exigências da Google Play / LGPD)
-  checar(await c.getAttribute('#link-privacidade', 'href') === 'privacidade.html', 'Perfil: link para a Política de privacidade');
+  checar(await c.getAttribute('#link-privacidade', 'href') === 'privacidade.html' && await c.getAttribute('#link-termos', 'href') === 'termos.html', 'Perfil: links para a Política de privacidade e os Termos de uso');
+  checar(await c.evaluate(async () => { const r = await fetch('termos.html'); const t = await r.text(); return r.ok && /Termos de uso/.test(t) && /Licenças e créditos/.test(t); }), 'Termos de uso publicados');
   const priv = await c.evaluate(async () => { const r = await fetch('privacidade.html'); const t = await r.text(); return r.ok && /Excluir minha conta/.test(t) && /Supabase/.test(t) && /LGPD/.test(t); });
   checar(priv, 'Política de privacidade publicada com exclusão de conta, Supabase e LGPD');
   await c.click('button:has-text("Excluir minha conta")'); await c.click('.folha .bt.perigo');

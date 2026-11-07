@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Termos de uso — ATOS 2</title>
+<meta name="description" content="Regras de uso do aplicativo ATOS 2: conta, conteúdo, licenças dos textos bíblicos e responsabilidades.">
+<meta name="theme-color" content="#192D50">
+<link rel="icon" href="icones/icone.svg" type="image/svg+xml">
+<style>
+@font-face { font-family: "Cormorant Garamond"; font-weight: 700; font-display: swap; src: url(fontes/cormorant-garamond-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 600; font-display: swap; src: url(fontes/cormorant-garamond-latin-600-italic.woff2) format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 400; font-display: swap; src: url(fontes/manrope-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Manrope"; font-weight: 700; font-display: swap; src: url(fontes/manrope-latin-700-normal.woff2) format("woff2"); }
+:root { --azul: #192D50; --ouro: #A58A57; --areia: #F4F0E5; --branco: #FFFFFF; --tinta: #2A3142; --tinta-2: #5C6170; --linha: #E4DCC8; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--areia); color: var(--tinta); font: 400 16px/1.65 Manrope, system-ui, sans-serif; }
+header { background: radial-gradient(90% 120% at 100% 0%, rgba(165,138,87,.35), transparent 60%), linear-gradient(160deg, #213B68, var(--azul) 60%, #0F1D37); color: var(--areia);
+  padding: calc(28px + env(safe-area-inset-top)) 22px 34px; }
+.topo { max-width: 760px; margin: 0 auto; }
+.marca { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+.marca img { width: 44px; height: 44px; }
+.marca b { font: 700 24px/1 "Cormorant Garamond", Georgia, serif; letter-spacing: .12em; font-variant-numeric: lining-nums; }
+h1 { margin: 26px 0 6px; font: 700 40px/1.08 "Cormorant Garamond", Georgia, serif; color: var(--branco); }
+.lema { margin: 0; font: italic 600 20px/1.3 "Cormorant Garamond", Georgia, serif; color: #E2C894; }
+.data { margin: 14px 0 0; font-size: 13px; color: rgba(244,240,229,.75); }
+main { max-width: 760px; margin: -18px auto 0; padding: 0 16px calc(40px + env(safe-area-inset-bottom)); }
+.cartao { background: var(--branco); border: 1px solid var(--linha); border-radius: 20px; padding: 22px 20px; box-shadow: 0 8px 22px rgba(25,45,80,.06); }
+.cartao + .cartao { margin-top: 14px; }
+.resumo { border-color: rgba(165,138,87,.5); }
+h2 { margin: 0 0 8px; font: 700 26px/1.15 "Cormorant Garamond", Georgia, serif; color: var(--azul); }
+h3 { margin: 18px 0 4px; font-size: 15px; color: var(--azul); }
+p { margin: 8px 0; }
+ul { margin: 8px 0; padding-left: 20px; }
+li { margin: 4px 0; }
+li::marker { color: var(--ouro); }
+strong { color: var(--azul); }
+a { color: var(--azul); font-weight: 700; text-decoration-color: var(--ouro); text-underline-offset: 3px; }
+.passos { counter-reset: p; list-style: none; padding: 0; }
+.passos li { counter-increment: p; position: relative; padding-left: 38px; margin: 10px 0; }
+.passos li::before { content: counter(p); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--azul); color: #E2C894; font: 700 13px/26px Manrope, sans-serif; text-align: center; }
+.destaque { border-left: 3px solid var(--ouro); background: rgba(165,138,87,.09); padding: 10px 14px; border-radius: 0 12px 12px 0; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.indice a { display: inline-block; padding: 6px 12px; border: 1px solid var(--linha); border-radius: 999px; background: var(--areia); font-size: 13px; text-decoration: none; }
+footer { max-width: 760px; margin: 0 auto; padding: 0 22px 40px; font-size: 13px; color: var(--tinta-2); text-align: center; }
+@media (min-width: 640px) { h1 { font-size: 48px; } .cartao { padding: 28px 30px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="topo">
+    <a class="marca" href="./#inicio"><img src="icones/icone.svg" alt=""><b>ATOS 2</b></a>
+    <h1>Termos de uso</h1>
+    <p class="lema">De volta à doutrina dos apóstolos</p>
+    <p class="data">Última atualização: 7 de novembro de 2026</p>
+  </div>
+</header>
+
+<main>
+  <section class="cartao resumo">
+    <h2>Em poucas palavras</h2>
+    <ul>
+      <li>O ATOS 2 é <strong>gratuito</strong>, sem anúncios, e pode ser usado com ou sem conta.</li>
+      <li>O que você cria no app (anotações, estudos, cartões) <strong>é seu</strong>. Nós apenas guardamos esses dados para você.</li>
+      <li>Os textos bíblicos e os livros do acervo são de domínio público ou têm licença livre, e os créditos de cada um ficam no app.</li>
+      <li>Use o app com respeito, sem tentar invadir, sobrecarregar ou burlar o sistema.</li>
+    </ul>
+    <ul class="indice">
+      <li><a href="#aceite">Aceite</a></li>
+      <li><a href="#conta">Conta</a></li>
+      <li><a href="#uso">Uso permitido</a></li>
+      <li><a href="#conteudo">Conteúdo</a></li>
+      <li><a href="#responsabilidade">Responsabilidade</a></li>
+      <li><a href="#encerramento">Encerramento</a></li>
+    </ul>
+  </section>
+
+  <section class="cartao" id="aceite">
+    <h2>1. Aceite destes termos</h2>
+    <p>Estes termos regem o uso do aplicativo ATOS 2, tanto o app Android quanto a versão web em <a href="https://ceduardofernandesjr-oss.github.io/Atos-2/">ceduardofernandesjr-oss.github.io/Atos-2</a>. Ao usar o app, você concorda com eles e com a <a href="privacidade.html">Política de privacidade</a>. Se não concordar, não use o app.</p>
+    <p>O ATOS 2 é um aplicativo cristão, sem vínculo com denominação, para leitura e estudo da Bíblia. Ele oferece planos de leitura, devocionais, um acervo de livros, a Jornada da Sabedoria e ferramentas para criar cartões com versículos. O serviço é gratuito.</p>
+  </section>
+
+  <section class="cartao" id="conta">
+    <h2>2. Sua conta</h2>
+    <ul>
+      <li>A conta é opcional. Ela serve para guardar e sincronizar seus dados entre aparelhos.</li>
+      <li>Você é responsável por manter sua senha em segredo e por tudo o que for feito com a sua conta. Se perceber uso indevido, troque a senha em Perfil › Conta.</li>
+      <li>Informe dados verdadeiros e use um e-mail que seja seu.</li>
+      <li>Menores de 18 anos devem usar a conta com a autorização e o acompanhamento dos pais ou responsáveis.</li>
+      <li>Você pode excluir a conta a qualquer momento em <strong>Perfil › Conta › Excluir minha conta</strong>. Veja os detalhes na <a href="privacidade.html#excluir-conta">Política de privacidade</a>.</li>
+    </ul>
+  </section>
+
+  <section class="cartao" id="uso">
+    <h2>3. Uso permitido</h2>
+    <p>Você pode usar o ATOS 2 para ler, estudar, anotar, compartilhar versículos e criar conteúdo para uso pessoal, familiar, em igrejas, grupos de estudo e afins. Não é permitido:</p>
+    <ul>
+      <li>tentar acessar dados de outras pessoas, contas ou áreas restritas, como a administração;</li>
+      <li>interferir no funcionamento do app ou sobrecarregá-lo, inclusive com robôs ou acessos automatizados em massa;</li>
+      <li>manipular a pontuação da Jornada da Sabedoria por meios que não sejam responder às perguntas;</li>
+      <li>usar o app para cometer atos ilegais, ofender, ameaçar ou discriminar pessoas;</li>
+      <li>apresentar o ATOS 2, ou conteúdo criado nele, como se fosse de outra pessoa ou organização.</li>
+    </ul>
+    <p>A <strong>equipe editorial</strong> (editores e administradores convidados) também se compromete a publicar apenas conteúdo com direitos verificados e coerente com a proposta do app.</p>
+  </section>
+
+  <section class="cartao" id="conteudo">
+    <h2>4. Conteúdo e licenças</h2>
+    <h3>O que você cria</h3>
+    <p>Anotações, destaques, estudos, devocionais pessoais e cartões que você cria continuam sendo seus. Você nos autoriza apenas a guardá-los, sincronizá-los e exibi-los para você, pelo tempo em que sua conta existir. Esse conteúdo é privado: não é exibido para outras pessoas, a menos que você mesmo o compartilhe.</p>
+    <p>Ao adicionar imagens ou textos de terceiros, certifique-se de que você tem o direito de usá-los.</p>
+    <h3>Textos bíblicos</h3>
+    <p>O app só traz traduções completas em domínio público ou com licença livre, como a Bíblia Livre (Creative Commons Atribuição 3.0 Brasil), a Almeida Revista e Corrigida de 1911 (domínio público) e a Biblica® Open Nova Bíblia Viva (CC BY-SA 4.0). Os créditos e a licença de cada tradução ficam em <strong>Perfil › Licenças e créditos</strong>. Ao reutilizar esses textos fora do app, siga a licença da tradução.</p>
+    <h3>Acervo e conteúdo editorial</h3>
+    <p>As obras do acervo estão em domínio público ou são apresentadas apenas com dados bibliográficos e link para a fonte original. Algumas traduções para o português foram feitas pelo ATOS 2 com apoio de inteligência artificial. Elas só são publicadas depois de revisadas por um editor e aparecem identificadas como tais.</p>
+    <h3>Marca e app</h3>
+    <p>O nome ATOS 2, o logotipo, o visual e o código do app pertencem aos seus autores. Você pode compartilhar cartões e versículos gerados pelo app, mas não pode copiar o app nem apresentá-lo como seu.</p>
+  </section>
+
+  <section class="cartao" id="responsabilidade">
+    <h2>5. Natureza do conteúdo e responsabilidade</h2>
+    <p>Devocionais, estudos, explicações e perguntas da Jornada da Sabedoria têm finalidade de edificação e estudo. Eles não substituem a leitura da própria Bíblia, o acompanhamento pastoral nem orientação profissional (médica, psicológica, jurídica ou financeira). A Jornada da Sabedoria é um jogo de estudo, e pontos, níveis e medalhas não têm valor em dinheiro.</p>
+    <p>Trabalhamos para manter o app disponível e correto, mas ele pode ter falhas, ficar fora do ar por um tempo ou mudar. Recursos podem ser incluídos, alterados ou retirados. Recomendamos entrar na sua conta para ter uma cópia dos seus dados na nuvem.</p>
+    <p>Nada nestes termos limita os direitos que você tem pelo Código de Defesa do Consumidor ou pela LGPD.</p>
+  </section>
+
+  <section class="cartao" id="encerramento">
+    <h2>6. Encerramento</h2>
+    <p>Você pode parar de usar o app e excluir sua conta quando quiser. Podemos suspender ou encerrar contas que violem estes termos, especialmente em caso de tentativa de invasão, abuso do sistema ou uso ilegal. Sempre que possível, você será avisado antes.</p>
+  </section>
+
+  <section class="cartao">
+    <h2>7. Mudanças, lei aplicável e contato</h2>
+    <p>Estes termos podem ser atualizados, e a data no topo indica a última versão. Mudanças importantes serão avisadas dentro do app. Se você continuar usando o app depois de uma mudança, estará concordando com a nova versão.</p>
+    <p>Estes termos seguem as leis do Brasil. Eventuais disputas serão resolvidas no foro do domicílio do usuário, como garante o Código de Defesa do Consumidor.</p>
+    <p>Dúvidas: escreva para o e-mail de contato do desenvolvedor que aparece na página do ATOS 2 na Google Play.</p>
+  </section>
+</main>
+<footer>ATOS 2 · <a href="privacidade.html">Política de privacidade</a> · <a href="./#inicio">Abrir o app</a></footer>
+</body>
+</html>

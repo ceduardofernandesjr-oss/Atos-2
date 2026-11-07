@@ -181,7 +181,7 @@
       h('div.sobre-marca', h('div.marca-peq', { html: UI.logo(40) + '<b>ATOS 2</b>' }), h('p.lema', 'De volta à doutrina dos apóstolos.'),
         h('p.sub', 'O ATOS 2 não pertence a nenhuma denominação. As Escrituras vêm sempre das traduções, sem alterações; conteúdos com apoio de inteligência artificial são identificados e revisados antes de publicar.')),
       linhaAjuste('escudo', 'Licenças e créditos', 'Traduções, textos originais, fotos e fontes', abrirLicencas, '#ver-licencas'),
-      h('p.sub.versao-app.link-priv', h('a#link-privacidade', { href: 'privacidade.html', target: '_blank', rel: 'noopener' }, 'Política de privacidade')),
+      h('p.sub.versao-app.link-priv', h('a#link-privacidade', { href: 'privacidade.html', target: '_blank', rel: 'noopener' }, 'Política de privacidade'), ' · ', h('a#link-termos', { href: 'termos.html', target: '_blank', rel: 'noopener' }, 'Termos de uso')),
       h('p.sub.versao-app', 'Versão ' + (App.versao || '') + (root.A2Nuvem && A2Nuvem.Conta && A2Nuvem.Conta.provedores ? ' · login com Google disponível' : ''))));
   }
 

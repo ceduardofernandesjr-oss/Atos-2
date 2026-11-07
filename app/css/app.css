@@ -266,10 +266,9 @@ input[type="time"].entrada { width: auto; min-height: 36px; padding: 4px 8px; }
 .audio select option { color: #000; }
 
 /* seletor de livros */
-.livros-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; }
-.livros-grade button, .caps-grade button { min-height: 42px; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--linha); background: var(--papel); font-size: 13.5px; font-weight: 600; text-align: left; }
-.livros-grade button.atual, .caps-grade button.atual { background: var(--azul); border-color: var(--azul); color: #F7F2E8; }
-.livros-grade button:hover, .caps-grade button:hover { border-color: var(--ouro); }
+.caps-grade button { min-height: 42px; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--linha); background: var(--papel); font-size: 13.5px; font-weight: 600; text-align: left; }
+.caps-grade button.atual { background: var(--azul); border-color: var(--azul); color: #F7F2E8; }
+.caps-grade button:hover { border-color: var(--ouro); }
 .caps-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 6px; }
 .caps-grade button { text-align: center; font-variant-numeric: tabular-nums; }
 .caps-grade button.lido { box-shadow: inset 0 -3px 0 var(--ouro); }
@@ -1449,3 +1448,164 @@ body.lendo-obra .tela { background: var(--areia); }
 .convite-google .linha-bts { flex-wrap: wrap; gap: 6px; }
 .convite-google .convite-google-bt { flex: 1 1 100%; white-space: nowrap; min-height: 46px; }
 .convite-google #inicio-google-depois { flex: 1 1 100%; min-height: 36px; font-weight: 600; color: var(--tinta-2); }
+
+/* ---------- Bíblia › seleção de livros (v2.8, js/telas/livros.js) ---------- */
+.livros-tela { display: grid; gap: 0; }
+.lv-cab { align-items: flex-start; margin-bottom: 10px; }
+.lv-cab-txt { display: grid; gap: 2px; justify-items: start; }
+.lv-cab-txt h1 { font: 700 32px/1.08 var(--f-display); color: var(--azul-texto); }
+.lv-cab-txt .sub { margin: 0 0 8px; }
+.lv-trad { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 10px 0 6px; border-radius: 999px; border: 1px solid var(--linha); background: var(--papel); color: var(--tinta-2); font-size: 12.5px; font-weight: 600; }
+.lv-trad b { padding: 3px 8px; border-radius: 999px; background: #192D50; color: #F4F0E5; font-size: 10.5px; letter-spacing: .08em; }
+.lv-trad .ico { width: 14px; height: 14px; color: var(--ouro); }
+.lv-cab-int { align-items: center; min-height: 44px; margin-bottom: 6px; }
+.lv-voltar { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 12px 0 6px; border-radius: 999px; border: 1px solid var(--linha); background: var(--papel); color: var(--azul-texto); font-size: 13.5px; font-weight: 700; max-width: 70%; }
+.lv-voltar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-voltar .ico { width: 18px; height: 18px; color: var(--ouro); }
+.lv-sigla { padding: 4px 9px; border-radius: 8px; border: 1px solid var(--linha); background: var(--papel); font-size: 11px; font-weight: 800; letter-spacing: .07em; color: var(--tinta-2); }
+
+/* entrada das vistas: avança da direita, volta da esquerda */
+.lv-corpo { display: grid; gap: 14px; }
+.lv-entra-frente { animation: lvFrente .32s cubic-bezier(.2, .7, .2, 1) both; }
+.lv-entra-volta { animation: lvVolta .32s cubic-bezier(.2, .7, .2, 1) both; }
+.lv-entra-igual { animation: surgir .25s ease both; }
+@keyframes lvFrente { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes lvVolta { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+
+/* barra de progresso dourada */
+.lv-barra { position: relative; height: 4px; border-radius: 99px; background: rgba(165, 138, 87, .2); overflow: hidden; }
+.lv-barra i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: #A58A57; transition: width .5s ease; }
+
+/* continuar lendo */
+.lv-continuar { display: flex; align-items: stretch; border: 1px solid var(--linha); border-radius: 18px; background: var(--papel); box-shadow: 0 6px 16px rgba(25, 45, 80, .05); overflow: hidden; }
+.lv-cont-principal { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; border: 0; background: none; text-align: left; color: var(--tinta); }
+.lv-cont-ico { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: #192D50; }
+.lv-cont-ico .ico { width: 20px; height: 20px; color: #E2C894; }
+.lv-cont-txt { display: grid; min-width: 0; }
+.lv-cont-txt small { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ouro); }
+.lv-cont-txt b { font: 700 20px/1.15 var(--f-display); color: var(--azul-texto); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-cont-caps { display: inline-flex; align-items: center; gap: 2px; padding: 0 12px 0 14px; border: 0; border-left: 1px solid var(--linha); background: none; color: var(--azul-texto); font-size: 13px; font-weight: 700; }
+.lv-cont-caps .ico { width: 16px; height: 16px; color: var(--ouro); }
+
+/* cartões dos testamentos */
+.lv-testamentos { display: grid; gap: 14px; }
+@media (min-width: 640px) { .lv-testamentos { grid-template-columns: 1fr 1fr; } }
+.lv-test { position: relative; display: grid; gap: 6px; justify-items: start; min-height: 212px; padding: 20px 20px 16px; border: 0; border-radius: 24px; text-align: left; color: #F4F0E5; overflow: hidden; isolation: isolate;
+  box-shadow: 0 10px 28px rgba(25, 45, 80, .18); animation: surgir .4s ease both; transition: transform .18s ease, box-shadow .18s ease; }
+.lv-test::after { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(201, 170, 112, .28); border-radius: 18px; pointer-events: none; }
+.lv-test-at { background: radial-gradient(110% 80% at 100% 0%, rgba(165, 138, 87, .34), transparent 58%), linear-gradient(155deg, #213B68, #192D50 55%, #0F1D37); }
+.lv-test-nt { background: radial-gradient(110% 80% at 0% 0%, rgba(165, 138, 87, .30), transparent 58%), linear-gradient(205deg, #213B68, #192D50 55%, #0F1D37); }
+.lv-test:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(25, 45, 80, .24); }
+.lv-test:active { transform: scale(.99); }
+.lv-test-arte { position: absolute; right: 8px; top: 16px; width: 116px; height: 102px; color: #CDB27C; opacity: .42; z-index: -1; }
+.lv-test-arte svg { width: 100%; height: 100%; }
+.lv-test-sobre { font: 700 11px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: #CDB27C; }
+.lv-test-nome { font: 700 30px/1.05 var(--f-display); color: #FFFFFF; max-width: 70%; }
+.lv-test-desc { max-width: 68%; font-size: 13.5px; line-height: 1.45; color: rgba(244, 240, 229, .86); }
+.lv-test-cats { max-width: 92%; font-size: 11.5px; color: rgba(205, 178, 124, .9); }
+.lv-test-pe { display: flex; align-items: flex-end; gap: 12px; width: 100%; margin-top: auto; padding-top: 8px; }
+.lv-test-prog { flex: 1; display: grid; gap: 6px; }
+.lv-test-prog small { font-size: 11.5px; color: rgba(244, 240, 229, .72); }
+.lv-test .lv-barra { background: rgba(255, 255, 255, .14); }
+.lv-test .lv-barra i { background: #CDB27C; }
+.lv-test-seta { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: rgba(205, 178, 124, .16); border: 1px solid rgba(205, 178, 124, .35); }
+.lv-test-seta .ico { width: 18px; height: 18px; color: #E2C894; }
+
+/* vista do testamento */
+.lv-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 14px; background: var(--areia-2); }
+.lv-seg button { min-height: 38px; border: 0; border-radius: 11px; background: transparent; color: var(--tinta-2); font-size: 13.5px; font-weight: 700; transition: background .2s ease, color .2s ease; }
+.lv-seg button.ativo { background: #192D50; color: #F4F0E5; box-shadow: 0 2px 8px rgba(25, 45, 80, .2); }
+.lv-test-cab { display: grid; gap: 4px; }
+.lv-test-cab h1 { font: 700 30px/1.1 var(--f-display); color: var(--azul-texto); }
+.lv-test-cab .sub { margin: 0; }
+.lv-test-cab-prog { display: grid; gap: 6px; margin-top: 6px; }
+.lv-test-cab-prog small, .lv-hero-prog small { font-size: 12px; color: var(--tinta-2); }
+.lv-cats { margin: 0 -16px; padding: 2px 16px 6px; }
+.lv-cat { display: grid; gap: 10px; scroll-margin-top: 14px; }
+.lv-cat + .lv-cat { margin-top: 10px; }
+.lv-cat-cab { display: flex; align-items: center; gap: 12px; }
+.lv-cat-ico { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 13px; background: #192D50; }
+.lv-cat-ico .ico { width: 20px; height: 20px; color: #E2C894; }
+.lv-cat-txt { flex: 1; min-width: 0; }
+.lv-cat-txt h2 { font: 700 21px/1.15 var(--f-display); color: var(--azul-texto); }
+.lv-cat-txt p { font-size: 12.5px; color: var(--tinta-2); }
+.lv-cat-num { display: grid; justify-items: end; flex: none; font-size: 11.5px; font-weight: 700; color: var(--ouro); }
+.lv-cat-num small { font-weight: 600; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.lv-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 560px) { .lv-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* cartão do livro */
+.lv-livro { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 9px; min-height: 62px; padding: 10px 9px; border: 1px solid var(--linha); border-radius: 16px; background: var(--papel); color: var(--tinta); text-align: left;
+  box-shadow: 0 3px 10px rgba(25, 45, 80, .04); transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; overflow: hidden; }
+.lv-livro:hover { transform: translateY(-1px); border-color: var(--ouro); box-shadow: 0 8px 18px rgba(25, 45, 80, .08); }
+.lv-livro:active { transform: scale(.98); }
+.lv-mono { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: color-mix(in srgb, #A58A57 14%, var(--papel)); border: 1px solid color-mix(in srgb, #A58A57 32%, transparent);
+  font: 700 14px/1 var(--f-display); color: var(--azul-texto); font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+.lv-livro-txt { display: grid; min-width: 0; padding-right: 2px; }
+.lv-livro-txt b { font-size: 13.5px; font-weight: 700; line-height: 1.2; color: var(--azul-texto); hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
+.lv-livro-txt small { font-size: 11.5px; color: var(--tinta-2); }
+.lv-livro .lv-barra { position: absolute; left: 10px; right: 10px; bottom: 5px; height: 3px; }
+.lv-livro:has(.lv-barra) { padding-bottom: 13px; }
+.lv-estado { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--ouro); font-variant-numeric: tabular-nums; }
+.lv-estado .ico { width: 13px; height: 13px; }
+.lv-estado.agora::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ouro); }
+.lv-livro.atual { border-color: #A58A57; box-shadow: 0 0 0 1px #A58A57 inset, 0 6px 16px rgba(165, 138, 87, .16); }
+.lv-livro.atual .lv-mono, .lv-livro.completo .lv-mono { background: #192D50; border-color: #192D50; color: #E2C894; }
+
+/* vista do livro */
+.lv-livro-hero { position: relative; display: grid; gap: 6px; justify-items: start; padding: 22px 20px 18px; border-radius: 24px; color: #F4F0E5; overflow: hidden; isolation: isolate;
+  background: radial-gradient(120% 90% at 100% 0%, rgba(165, 138, 87, .35), transparent 55%), linear-gradient(160deg, #1E3660, #192D50 60%, #101E38); box-shadow: 0 10px 28px rgba(25, 45, 80, .18); }
+.lv-livro-hero::after { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(201, 170, 112, .26); border-radius: 18px; pointer-events: none; }
+.lv-hero-mono { position: absolute; right: 20px; bottom: -18px; z-index: -1; font: 700 128px/1 var(--f-display); color: rgba(205, 178, 124, .13); font-feature-settings: "lnum" 1; }
+.lv-hero-sobre { font: 700 11px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: #CDB27C; }
+.lv-livro-hero h1 { font: 700 36px/1.05 var(--f-display); color: #FFFFFF; }
+.lv-livro-hero p { max-width: 85%; font-size: 13.5px; color: rgba(244, 240, 229, .82); }
+.lv-hero-prog { display: grid; gap: 6px; width: 100%; margin-top: 6px; }
+.lv-livro-hero .lv-barra { background: rgba(255, 255, 255, .14); }
+.lv-livro-hero .lv-barra i { background: #CDB27C; }
+.lv-livro-hero .lv-hero-prog small { color: rgba(244, 240, 229, .72); }
+.lv-hero-bts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; position: relative; z-index: 1; }
+.lv-livro-hero .bt.ouro { background: #A58A57; border-color: #A58A57; color: #FFFFFF; }
+.lv-bt-assist { background: rgba(255, 255, 255, .08); border-color: rgba(205, 178, 124, .4); color: #F4F0E5; }
+.lv-bt-assist .ico { color: #E2C894; }
+.lv-caps-cab { margin: 8px 0 0; align-items: center; }
+.lv-legenda { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--tinta-2); }
+.lv-legenda i { display: inline-block; width: 14px; height: 10px; border-radius: 3px; border: 1px solid var(--linha); background: var(--papel); }
+.lv-legenda i.lv-leg-lido { box-shadow: inset 0 -3px 0 var(--ouro); }
+.lv-legenda i.lv-leg-atual { margin-left: 6px; background: #192D50; border-color: #192D50; }
+.lv-caps { grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; }
+.lv-caps button { min-height: 48px; border-radius: 13px; font-size: 15px; transition: transform .12s ease, border-color .15s ease; }
+.lv-caps button:active { transform: scale(.95); }
+.lv-caps button.lido { background: color-mix(in srgb, #A58A57 9%, var(--papel)); color: var(--azul-texto); }
+
+/* busca */
+.lv-busca { display: grid; gap: 10px; margin-bottom: 14px; }
+.lv-busca.aberta { animation: surgir .2s ease both; }
+.lv-busca-form { position: relative; display: flex; align-items: center; }
+.lv-busca-ico { position: absolute; left: 13px; display: grid; color: var(--ouro); pointer-events: none; }
+.lv-busca-ico .ico { width: 18px; height: 18px; }
+.lv-busca .entrada { min-height: 48px; padding: 10px 46px 10px 42px; border-radius: 14px; font-size: 15px; }
+.lv-busca .entrada::-webkit-search-cancel-button { display: none; }
+.lv-busca-fechar { position: absolute; right: 4px; }
+.lv-resultados { display: grid; gap: 8px; }
+.lv-resultados:empty { display: none; }
+.lv-res { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 10px 12px; border: 1px solid var(--linha); border-radius: 16px; background: var(--papel); color: var(--tinta); text-align: left; animation: surgir .18s ease both; }
+.lv-res:hover { border-color: var(--ouro); }
+.lv-res > .ico { width: 18px; height: 18px; color: var(--ouro); flex: none; }
+.lv-res-txt { flex: 1; display: grid; min-width: 0; }
+.lv-res-txt b { font-size: 14.5px; color: var(--azul-texto); }
+.lv-res-txt small { font-size: 12px; color: var(--tinta-2); }
+.lv-res-ref { background: #192D50; border-color: #192D50; }
+.lv-res-ref .lv-res-txt b { color: #FFFFFF; } .lv-res-ref .lv-res-txt small { color: rgba(244, 240, 229, .75); }
+.lv-res-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: rgba(205, 178, 124, .18); }
+.lv-res-ico .ico { width: 18px; height: 18px; color: #E2C894; }
+.lv-res-vazio { padding: 14px; border-radius: 14px; background: var(--areia-2); font-size: 13.5px; color: var(--tinta-2); text-align: center; }
+@media (max-width: 360px) {
+  .lv-cab-txt h1, .lv-test-nome, .lv-test-cab h1 { font-size: 27px; }
+  .lv-test-desc { max-width: 100%; }
+  .lv-grade { gap: 6px; }
+  .lv-mono { width: 30px; height: 30px; font-size: 12.5px; }
+  .lv-livro-txt b { font-size: 13px; }
+  .lv-livro { column-gap: 8px; padding: 9px 8px; }
+}
+:root[data-tema="escuro"] .lv-livro-txt b, :root[data-tema="escuro"] .lv-res-txt b { color: var(--azul-texto); }

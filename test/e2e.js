@@ -54,7 +54,7 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   await p.keyboard.press('Escape'); await p.click('.barra-sel .bt-ico');
   await p.screenshot({ path: '/tmp/shots/2-biblia.png' });
   // ir para referência
-  await p.click('.seletor-cap'); await p.fill('#ir-ref', 'At 2:42'); await p.press('#ir-ref', 'Enter');
+  await p.click('.seletor-cap'); await p.waitForSelector('.lv-test'); await p.click('#livros-buscar'); await p.fill('#ir-ref', 'At 2:42'); await p.press('#ir-ref', 'Enter');
   await p.waitForFunction(() => document.querySelector('.seletor-cap').textContent.includes('Atos 2'), null, { timeout: 5000 }).catch(async () => console.log('DEBUG folhas:', await p.$$eval('.folha h2', x => x.map(y => y.textContent)), await p.$$eval('.folha .sub', x => x.map(y => y.textContent))));
   checar((await p.textContent('.seletor-cap')).includes('Atos 2'), 'Navegação por referência: Atos 2');
   checar((await p.textContent('.v[data-v="38"]')).includes('recebereis o dom do Espírito Santo'), 'Texto: Atos 2:38 completo');
@@ -63,8 +63,42 @@ function checar(cond, msg) { (cond ? ok : falhas).push(msg); if (!cond) console.
   checar(await p.locator('button:has-text("Capítulo lido")').count() === 1, 'Capítulo marcado como lido');
   await p.click('.nav-cap .bt:last-child'); await p.waitForTimeout(300);
   checar((await p.textContent('.seletor-cap')).includes('Atos 3'), 'Navegação: próximo capítulo');
+  // seleção de livros (v2.8): visão geral → testamento → livro → capítulo
+  await p.click('.seletor-cap'); await p.waitForSelector('.lv-test');
+  checar(await p.evaluate(() => location.hash) === '#livros' && await p.locator('.lv-test').count() === 2, 'Livros: visão geral com os dois testamentos');
+  checar((await p.textContent('h1')).includes('Bíblia Sagrada') && (await p.textContent('.lv-cab')).includes('Explore as Escrituras') && (await p.textContent('.lv-trad')).includes('BLIVRE'), 'Livros: cabeçalho com título, subtítulo e tradução');
+  checar(await p.getAttribute('.abas a[data-aba="biblia"]', 'aria-current') === 'page', 'Livros: a barra inferior continua na aba Bíblia');
+  checar((await p.textContent('.lv-continuar')).includes('Atos 3'), 'Livros: “Continuar lendo” mostra o último capítulo aberto');
+  checar((await p.textContent('.lv-test[data-test="AT"]')).includes('39 livros') && (await p.textContent('.lv-test[data-test="NT"]')).includes('27 livros'), 'Livros: 39 e 27 livros');
+  checar((await p.textContent('.lv-test[data-test="NT"]')).includes('1 de 260 capítulos lidos'), 'Livros: progresso real do Novo Testamento (Atos 2 lido)');
+  await p.click('.lv-test[data-test="NT"]'); await p.waitForSelector('.lv-cat');
+  checar(await p.locator('.lv-cat').count() === 5 && await p.locator('.lv-livro').count() === 27, 'Livros: Novo Testamento com 5 categorias e 27 livros');
+  checar(JSON.stringify(await p.$$eval('.lv-cat h2', x => x.map(y => y.textContent))) === JSON.stringify(['Evangelhos', 'História da Igreja', 'Cartas de Paulo', 'Cartas gerais', 'Profecia']), 'Livros: categorias do NT na ordem');
+  checar(JSON.stringify(await p.$$eval('.lv-livro', x => x.map(y => y.dataset.livro))) === JSON.stringify(await p.evaluate(() => A2Ref.LIVROS.filter(l => l.test === 'NT').map(l => l.id))), 'Livros: ordem original dos livros preservada');
+  checar((await p.textContent('.lv-livro[data-livro="ACT"]')).includes('Lendo agora') && await p.locator('.lv-livro[data-livro="ACT"] .lv-barra').count() === 1, 'Livros: Atos marcado como em leitura, com barra de progresso');
+  await p.click('.lv-seg button:has-text("Antigo Testamento")'); await p.waitForFunction(() => location.hash === '#livros/AT' && document.querySelectorAll('.lv-livro').length === 39, null, { timeout: 5000 }).catch(() => {});
+  checar(await p.locator('.lv-cat').count() === 5 && await p.locator('.lv-livro').count() === 39, 'Livros: Antigo Testamento com 5 categorias e 39 livros');
+  await p.click('.lv-livro[data-livro="GEN"]'); await p.waitForSelector('.lv-livro-hero');
+  checar((await p.textContent('.lv-livro-hero h1')) === 'Gênesis' && await p.locator('.lv-caps button').count() === 50, 'Livros: Gênesis com 50 capítulos');
+  checar((await p.textContent('#livro-seguir')).includes('Começar a leitura'), 'Livros: livro sem leitura sugere começar');
+  await p.goBack(); await p.waitForFunction(() => location.hash === '#livros/AT' && document.querySelectorAll('.lv-livro').length === 39, null, { timeout: 5000 }).catch(() => {});
+  checar(await p.locator('.lv-livro').count() === 39, 'Livros: voltar do aparelho retorna ao testamento');
+  await p.click('.lv-livro[data-livro="ACT"]').catch(() => {});
+  await p.evaluate(() => { location.hash = 'livros/ACT'; }); await p.waitForSelector('.lv-livro-hero');
+  checar((await p.textContent('#livro-seguir')).includes('Continuar no capítulo 3') && await p.locator('.lv-caps button.lido').count() === 1, 'Livros: Atos continua no capítulo 3 e mostra o capítulo 2 lido');
+  await p.click('.lv-voltar'); await p.waitForFunction(() => location.hash === '#livros/NT' && document.querySelectorAll('.lv-livro').length === 27, null, { timeout: 5000 }).catch(() => {});
+  checar(await p.locator('.lv-livro').count() === 27, 'Livros: botão voltar leva ao testamento do livro');
+  await p.click('#livros-buscar'); await p.fill('#ir-ref', 'roma'); await p.waitForSelector('.lv-res');
+  checar(await p.getAttribute('.lv-res', 'data-livro') === 'ROM' && await p.locator('.lv-corpo').isHidden(), 'Busca de livros: “roma” acha Romanos');
+  await p.fill('#ir-ref', 'jo'); checar(await p.getAttribute('.lv-res', 'data-livro') === 'JHN', 'Busca de livros: “jo” traz João primeiro');
+  await p.fill('#ir-ref', 'Obadias'); await p.press('#ir-ref', 'Enter'); await p.waitForSelector('.seletor-cap');
+  checar((await p.textContent('.seletor-cap')).includes('Obadias 1'), 'Busca de livros: livro de um capítulo abre direto no leitor');
+  await p.click('.seletor-cap'); await p.waitForSelector('.lv-continuar'); await p.click('.lv-cont-caps').catch(() => {});
+  await p.evaluate(() => { location.hash = 'livros/GEN'; }); await p.waitForSelector('.lv-caps');
+  await p.click('.lv-caps button:has-text("3")'); await p.waitForSelector('.seletor-cap');
+  checar((await p.textContent('.seletor-cap')).includes('Gênesis 3'), 'Livros: tocar no capítulo abre o leitor');
   // salmo com título
-  await p.click('.seletor-cap'); await p.fill('#ir-ref', 'Sl 3'); await p.press('#ir-ref', 'Enter');
+  await p.click('.seletor-cap'); await p.waitForSelector('.lv-test'); await p.click('#livros-buscar'); await p.fill('#ir-ref', 'Sl 3'); await p.press('#ir-ref', 'Enter');
   await p.waitForSelector('.titulo-salmo');
   checar((await p.textContent('.titulo-salmo')).includes('Absalão'), 'Salmo 3 com título');
   // pesquisa

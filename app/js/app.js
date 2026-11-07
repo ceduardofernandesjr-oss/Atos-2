@@ -2,8 +2,8 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.7.6';
-  var ABAS = ['inicio', 'biblia', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
+  var VERSAO_APP = '2.8.0';
+  var ABAS = ['inicio', 'biblia', 'livros', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
 
@@ -101,7 +101,7 @@
   };
 
   // ---------------------------------------------------------------- navegação
-  function abaAtual() { var a = location.hash.replace('#', ''); return ABAS.indexOf(a) >= 0 ? a : 'inicio'; }
+  function abaAtual() { var a = location.hash.replace('#', '').split('/')[0]; return ABAS.indexOf(a) >= 0 ? a : 'inicio'; }
   var pendenteAtualizar = false;
   window.addEventListener('folhas-fechadas', function () { if (pendenteAtualizar) { pendenteAtualizar = false; App.atualizar(); } });
   function mostrar(manterFoco) {
@@ -109,7 +109,7 @@
     UI.fecharTodas(); pendenteAtualizar = false;
     var aba = abaAtual(), tela = document.getElementById('tela');
     App.estado.aba = aba;
-    var abaNav = aba === 'obra' ? 'biblioteca' : aba;   // o leitor de livros pertence à Biblioteca
+    var abaNav = aba === 'obra' ? 'biblioteca' : aba === 'livros' ? 'biblia' : aba;   // o leitor de livros pertence à Biblioteca; a seleção de livros, à Bíblia
     document.querySelectorAll('.abas a').forEach(function (a) { if (a.dataset.aba === abaNav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     tela.replaceChildren();
     try { Telas[aba].render(tela); }

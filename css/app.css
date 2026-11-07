@@ -1611,3 +1611,7 @@ body.lendo-obra .tela { background: var(--areia); }
   .lv-livro { column-gap: 8px; padding: 9px 8px; }
 }
 :root[data-tema="escuro"] .lv-livro-txt b, :root[data-tema="escuro"] .lv-res-txt b { color: var(--azul-texto); }
+
+/* Sem zoom de pinça nem de duplo toque: o app se comporta como aplicativo (v2.8.4).
+   O tamanho do texto continua ajustável pelo botão Aa do leitor e pela fonte do sistema. */
+html, body { touch-action: pan-x pan-y; }

@@ -48,6 +48,7 @@
 
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
+html { scrollbar-gutter: stable; background: var(--areia); }   /* sem salto lateral quando a barra de rolagem aparece (computador) e sem fundo branco atrás das telas */
 body { background: var(--areia); color: var(--tinta); font: 15px/1.5 var(--f-ui); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -67,7 +68,23 @@ img, canvas { max-width: 100%; }
 
 /* ---------- estrutura ---------- */
 .app { min-height: 100%; }
-.tela { max-width: 760px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px calc(var(--abas-h) + var(--nav-baixo, 12px) + 36px + env(safe-area-inset-bottom)); outline: none; }
+.tela { max-width: 760px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 16px calc(var(--abas-h) + var(--nav-baixo, 12px) + 36px + env(safe-area-inset-bottom)); outline: none; min-height: 100vh; min-height: 100dvh; }
+/* ---------- transição entre telas (View Transitions API; v2.8.6) ----------
+   A tela antiga fica parada por baixo e a nova entra por cima: nunca aparece fundo vazio. A barra inferior não se move. */
+::view-transition { background: var(--areia); }
+.abas { view-transition-name: abas; }
+::view-transition-group(abas), ::view-transition-old(abas), ::view-transition-new(abas) { animation: none; }
+::view-transition-old(abas) { display: none; }
+::view-transition-group(root) { animation-duration: .24s; }
+::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { mix-blend-mode: normal; animation: .24s cubic-bezier(.2, .7, .2, 1) both nav-aba; }
+:root[data-nav="frente"]::view-transition-new(root) { animation-name: nav-frente; }
+:root[data-nav="volta"]::view-transition-new(root) { animation-name: nav-volta; }
+@keyframes nav-aba { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes nav-frente { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes nav-volta { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+/* Bíblia: reserva altura enquanto o capítulo carrega, para o texto não pular */
+.texto-biblico:has(> .carregando) { min-height: 60vh; min-height: 60dvh; }
 /* ---------- navegação inferior flutuante ---------- */
 :root { --nav-azul: #192D50; --nav-ouro: #A58A57; --nav-cinza: #8C909A; --nav-fundo: rgba(255, 255, 255, .94); --nav-margem: 16px; --nav-baixo: 12px; }
 :root[data-tema="escuro"], :root[data-theme="dark"]:not([data-tema="claro"]) { --nav-fundo: rgba(27, 37, 64, .94); --nav-cinza: #9AA2B4; --nav-azul: #ECE6DA; }

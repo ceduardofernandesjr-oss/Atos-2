@@ -40,7 +40,7 @@
       favoritos: A2Biblioteca.favVersiculos(Dados.todos('favoritos')).length, devocionais: tudo.devocionais, quizzes: tudo.quizzes
     };
   }
-  function abrirPlano(p) { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(p.def.id); }, 50); }
+  function abrirPlano(p) { location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.planos.abrir(p.def.id); }); }
   function semana(iso) { var n = new Date(iso + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''); return n.charAt(0).toUpperCase() + n.slice(1, 3); }
   function n(v) { return Number(v || 0).toLocaleString('pt-BR'); }
 
@@ -169,7 +169,7 @@
       g.itens.forEach(function (e) {
         var hora = e.anterior || /T12:00:00$/.test(e.em) ? '' : new Date(e.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         var acao = e.tipo === 'capitulo' ? function () { var pp = e.chave.split('.'); App.abrirBiblia(pp[0], +pp[1]); }
-          : e.tipo === 'devocional' ? function () { location.hash = 'biblioteca'; setTimeout(function () { Telas.devocionais.abrir(e.chave); }, 50); }
+          : e.tipo === 'devocional' ? function () { location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.devocionais.abrir(e.chave); }); }
             : e.tipo === 'plano' ? function () { var p = ps.filter(function (x) { return x.def.id === e.chave.split(':')[0]; })[0]; if (p) abrirPlano(p); } : null;
         lista.appendChild(h(acao ? 'button.j-item' : 'div.j-item', acao ? { on: { click: acao } } : {}, h('span.j-item-ico.t-' + e.tipo, ico(ICONE_TIPO[e.tipo])),
           h('div', h('span.j-item-tipo', A2Jornada.TIPOS[e.tipo].nome), h('b', e.titulo)), hora ? h('small', hora) : null));

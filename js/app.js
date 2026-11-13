@@ -2,7 +2,7 @@
 (function (root) {
   'use strict';
   var h = UI.h;
-  var VERSAO_APP = '2.8.5';
+  var VERSAO_APP = '2.8.6';
   var ABAS = ['inicio', 'biblia', 'livros', 'criar', 'biblioteca', 'perfil', 'assistente', 'quiz', 'mural', 'jornada', 'obra'];
   var Telas = root.Telas = root.Telas || {};
   var limpezas = [];
@@ -54,7 +54,7 @@
     abrirBiblia: function (livro, cap, v, contexto) {
       App.estado.leitor = { livro: livro, cap: cap, alvo: v || null };
       App.estado.plano = contexto || null;
-      if (location.hash !== '#biblia') location.hash = 'biblia'; else mostrar();
+      if (location.hash !== '#biblia') location.hash = 'biblia'; else mostrar(false, true);
     },
     aoMudar: function (fn) { var off = Dados.ouvir(fn); limpezas.push(off); return off; },
     aoSair: function (fn) { limpezas.push(fn); },
@@ -64,7 +64,7 @@
       if (UI.temFolha()) { pendenteAtualizar = true; return; }
       var y = window.scrollY; mostrar(true); window.scrollTo(0, y);
     },
-    ir: function (aba) { if (location.hash !== '#' + aba) location.hash = aba; else mostrar(); }
+    ir: function (aba) { if (location.hash !== '#' + aba) location.hash = aba; else mostrar(false, true); }
   });
 
   function aplicarAparencia() {
@@ -104,17 +104,59 @@
   function abaAtual() { var a = location.hash.replace('#', '').split('/')[0]; return ABAS.indexOf(a) >= 0 ? a : 'inicio'; }
   var pendenteAtualizar = false;
   window.addEventListener('folhas-fechadas', function () { if (pendenteAtualizar) { pendenteAtualizar = false; App.atualizar(); } });
-  function mostrar(manterFoco) {
+
+  // Transição entre telas (v2.8.6). Usa a View Transitions API do navegador (a tela antiga fica visível até a nova estar
+  // pronta e a nova entra por cima, sem tela vazia); onde não existe, a tela nova entra com uma animação curta.
+  // Só há transição quando o destino muda; atualizar a mesma tela (dados novos, trocar capítulo) continua instantâneo.
+  var exibido = null, transicao = null, filaApos = [];
+  function reduzMovimento() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  function profundidade(hash) { return hash.replace('#', '').split('/').filter(Boolean).length; }
+  function direcao(de, para) { var a = profundidade(de), b = profundidade(para); return b > a ? 'frente' : b < a ? 'volta' : 'aba'; }
+  function esvaziarFila() { var fs = filaApos.splice(0); fs.forEach(function (f) { try { f(); } catch (e) { console.error(e); } }); }
+  // Executa fn depois que a tela do destino aparecer (substitui os antigos setTimeout de 50 ms após mudar o endereço)
+  App.aposNavegar = function (fn) {
+    if (exibido === location.hash && !transicao) { setTimeout(fn, 0); return; }
+    filaApos.push(fn);
+  };
+  function entradaSimples(tela, dir) {
+    if (reduzMovimento() || !tela.animate) return;
+    var dx = dir === 'frente' ? 18 : dir === 'volta' ? -18 : 0, dy = dx ? 0 : 8;
+    tela.animate([{ opacity: 0, transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'cubic-bezier(.2,.7,.2,1)' });
+  }
+  // Troca o conteúdo da tela. Se a tela devolver uma promessa (ex.: Bíblia carregando o capítulo), devolve-a para a transição esperar.
+  function trocarTela(manterFoco) {
     limpezas.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
     UI.fecharTodas(); pendenteAtualizar = false;
-    var aba = abaAtual(), tela = document.getElementById('tela');
+    var aba = abaAtual(), tela = document.getElementById('tela'), pronto = null;
     App.estado.aba = aba;
     var abaNav = aba === 'obra' ? 'biblioteca' : aba === 'livros' ? 'biblia' : aba;   // o leitor de livros pertence à Biblioteca; a seleção de livros, à Bíblia
     document.querySelectorAll('.abas a').forEach(function (a) { if (a.dataset.aba === abaNav) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     tela.replaceChildren();
-    try { Telas[aba].render(tela); }
-    catch (e) { console.error(e); tela.appendChild(h('div.vazio', h('b', 'Algo deu errado ao abrir esta tela.'), h('span', String(e.message || e)), h('button.bt', { on: { click: mostrar } }, 'Tentar de novo'))); }
+    try { pronto = Telas[aba].render(tela); }
+    catch (e) { console.error(e); tela.appendChild(h('div.vazio', h('b', 'Algo deu errado ao abrir esta tela.'), h('span', String(e.message || e)), h('button.bt', { on: { click: function () { mostrar(); } } }, 'Tentar de novo'))); }
     if (manterFoco !== true) { tela.focus({ preventScroll: true }); window.scrollTo(0, 0); }
+    exibido = location.hash;
+    return pronto && typeof pronto.then === 'function' ? pronto : null;
+  }
+  // manterFoco: não leva ao topo. animar: força transição mesmo com o mesmo endereço (ex.: abrir outro capítulo).
+  function mostrar(manterFoco, animar) {
+    var destino = location.hash;
+    var muda = exibido !== null && manterFoco !== true && (destino !== exibido || animar === true);
+    if (!muda) { trocarTela(manterFoco); esvaziarFila(); return; }
+    var dir = destino === exibido ? 'aba' : direcao(exibido, destino), tela = document.getElementById('tela');
+    if (!document.startViewTransition || reduzMovimento() || document.hidden) {
+      trocarTela(manterFoco); entradaSimples(tela, dir); esvaziarFila(); return;
+    }
+    var raiz = document.documentElement, t;
+    raiz.dataset.nav = dir;
+    function limpar() { if (transicao === t) { transicao = null; delete raiz.dataset.nav; } esvaziarFila(); }
+    t = transicao = document.startViewTransition(function () {
+      var pronto = trocarTela(manterFoco);
+      // espera, no máximo 450 ms, o conteúdo principal carregar, para a tela nova já entrar completa
+      return pronto ? Promise.race([pronto.catch(function () {}), new Promise(function (r) { setTimeout(r, 450); })]) : undefined;
+    });
+    t.finished.then(limpar, limpar);
+    t.ready.catch(function () {});
   }
   window.addEventListener('hashchange', function () { mostrar(); });
 
@@ -194,8 +236,8 @@
     return out;
   };
   App.abrirLembrete = function (l) {
-    if (l.ir === 'devocional') { location.hash = 'biblioteca'; setTimeout(function () { Telas.devocionais.abrir(l.id); }, 60); }
-    else if (l.ir === 'plano') { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(l.id); }, 60); }
+    if (l.ir === 'devocional') { location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.devocionais.abrir(l.id); }); }
+    else if (l.ir === 'plano') { location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.planos.abrir(l.id); }); }
     else if (l.ir === 'estudos') { App.estado.secaoBiblioteca = 'estudos'; App.ir('biblioteca'); }
     else App.ir(l.ir);
   };
@@ -264,9 +306,12 @@
     });
     await new Promise(function (r) { setTimeout(r, Math.max(0, 900 - (Date.now() - t0))); });
     document.getElementById('app').hidden = false;
+    // A primeira tela é montada por baixo da abertura e só aparece com as fontes prontas: sem tela vazia nem troca de fonte
+    var jaViu = App.config().boasVindas;
+    if (jaViu) mostrar();
+    try { if (document.fonts && document.fonts.ready) await Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1200); })]); } catch (e) {}
     var ab = document.getElementById('abertura'); ab.classList.add('sai'); setTimeout(function () { ab.remove(); }, 600);
-    if (!App.config().boasVindas) await boasVindas();
-    mostrar();
+    if (!jaViu) { await boasVindas(); mostrar(); }
     if (root.A2Nuvem && A2Nuvem.configurado()) {
       // espera a conta sincronizar o perfil antes de conferir se já recebeu os dados do Google
       setTimeout(function () { App.perfilDoGoogle(); }, 2500);
@@ -278,7 +323,13 @@
       // quando uma versão nova do app assume, recarrega uma vez para já usar os arquivos novos
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         var recarregou = false;
-        navigator.serviceWorker.addEventListener('controllerchange', function () { if (recarregou || UI.temFolha()) return; recarregou = true; location.reload(); });
+        // v2.8.6: o recarregamento espera a pessoa sair do app (aba em segundo plano), para não piscar a tela no meio do uso
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (recarregou) return;
+          function recarregar() { if (recarregou) return; recarregou = true; location.reload(); }
+          if (document.hidden) { recarregar(); return; }
+          document.addEventListener('visibilitychange', function aoSair() { if (document.hidden) { document.removeEventListener('visibilitychange', aoSair); recarregar(); } });
+        });
       }
     } catch (e) {}
   }

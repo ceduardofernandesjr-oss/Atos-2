@@ -145,7 +145,7 @@
       h('b.cont-titulo', 'Escolha um plano'), h('span.cont-sub', '8 planos, de 28 a 365 dias, com progresso e lembretes'),
       h('span.cont-acao', 'Ver planos', ico('direita')));
     var r = plano.r, status = r.concluido ? 'Concluído' : r.lidoHoje ? 'Leitura de hoje feita' : r.atrasados ? r.atrasados + (r.atrasados > 1 ? ' dias' : ' dia') + ' em atraso' : 'Em dia';
-    return h('button.cont-card.plano', { on: { click: function () { location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(plano.def.id); }, 50); } } },
+    return h('button.cont-card.plano', { on: { click: function () { location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.planos.abrir(plano.def.id); }); } } },
       h('div.cont-topo', h('span.cont-ico', ico('planos')), h('span.cont-rotulo', 'Seu plano'), anel(r.percentual, 'Progresso do plano de leitura')),
       h('b.cont-titulo', plano.def.nome),
       h('span.cont-sub', r.concluido ? 'Você concluiu os ' + r.total + ' dias.' : 'Dia ' + (r.proximo + 1) + ' de ' + r.total + ': ' + A2Planos.rotuloLeitura(plano.cron[r.proximo], A2Ref.formatar)),
@@ -154,7 +154,7 @@
   }
   function cardDevocional() {
     var dev = Telas.devocionais.doDia();
-    function abrirDev() { location.hash = 'biblioteca'; setTimeout(function () { if (dev) Telas.devocionais.abrir(dev.id); else { App.estado.secaoBiblioteca = 'devocionais'; App.recarregar(); } }, 50); }
+    function abrirDev() { location.hash = 'biblioteca'; App.aposNavegar(function () { if (dev) Telas.devocionais.abrir(dev.id); else { App.estado.secaoBiblioteca = 'devocionais'; App.recarregar(); } }); }
     if (!dev) return h('button.devo-card.vazio', { on: { click: abrirDev } }, h('span.devo-ico', ico('luz')),
       h('div.devo-corpo', h('b', 'O devocional de hoje ainda não foi publicado'), h('small', 'Enquanto isso, leia os devocionais anteriores.')), ico('direita'));
     var lido = !!Dados.obter('devLidos', dev.id), ref = Biblia.interpretar(dev.passagem || '');

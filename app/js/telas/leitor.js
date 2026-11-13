@@ -29,11 +29,12 @@
     var fl = App.config().fonteLeitura;
     if (fl === 'ui') conteudoEl.classList.add('serifa-ui'); if (fl === 'display') conteudoEl.classList.add('serifa-display');
     tela.appendChild(conteudoEl);
-    carregar();
+    var pronto = carregar();
     App.aoMudar(function (col) { if (col === 'destaques' || col === 'favoritos' || col === 'notas') redesenharMarcas(); });
     App.aoSair(function () { if (barraEl) barraEl.remove(); barraEl = null; fecharPainel(); document.body.classList.remove('selecionando'); pararAudio(); });
     document.addEventListener('keydown', teclas);
     App.aoSair(function () { document.removeEventListener('keydown', teclas); });
+    return pronto;   // a transição de tela espera o capítulo carregar (até 450 ms)
   }
   function teclas(e) {
     if (e.target.closest && e.target.closest('input, textarea, select, .folha')) return;
@@ -73,7 +74,10 @@
     frag.appendChild(h('p.sub', { style: { textAlign: 'center', fontSize: '12px', marginTop: '18px' } }, vv.nome + ' (' + vv.sigla + ').' +
       (versaoAtual() === 'onbv' ? '' : ' Palavras em itálico foram acrescentadas pelos tradutores para clareza.') +
       (versaoAtual() === 'alm1911' ? ' Grafia original de 1911.' : versaoAtual() === 'alm1911at' ? ' Texto de 1911 com a grafia atualizada pelo ATOS 2.' : '')));
+    var primeira = !!conteudoEl.querySelector('.carregando');
     conteudoEl.replaceChildren(frag);
+    if (primeira && conteudoEl.animate && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches))
+      conteudoEl.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });   // texto entra suave, sem salto
     if (atual.alvo) {
       var alvo = conteudoEl.querySelector('[data-v="' + atual.alvo + '"]');
       if (alvo) { setTimeout(function () { alvo.scrollIntoView({ block: 'center', behavior: 'smooth' }); alvo.classList.add('foco'); }, 80); }
@@ -186,7 +190,7 @@
           dia.forEach(function (x) { marcarLido(true, x.livro, x.cap); });
           App.registrar('plano', { titulo: def.nome + ' — dia ' + (ctx.dia + 1) });
           UI.aviso('Dia ' + (ctx.dia + 1) + ' concluído.');
-          App.estado.plano = null; location.hash = 'biblioteca'; setTimeout(function () { Telas.planos.abrir(def.id); }, 50);
+          App.estado.plano = null; location.hash = 'biblioteca'; App.aposNavegar(function () { Telas.planos.abrir(def.id); });
         } } }, ico('ok'), 'Concluir dia'),
       h('button.bt-ico', { 'aria-label': 'Sair do plano', on: { click: function () { App.estado.plano = null; App.recarregar(); } } }, ico('fechar')));
   }
